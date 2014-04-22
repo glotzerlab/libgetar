@@ -2,21 +2,24 @@
 // by Matthew Spellings <mspells@umich.edu>
 
 #include "GTAR.hpp"
+#include "SharedArray.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 #include <stdint.h>
 
 #define IS_BIG_ENDIAN (*(uint16_t *)"\0\xff" < 0x100)
 
 namespace gtar{
 
+    using std::runtime_error;
     using std::string;
     using std::swap;
     using std::vector;
 
     // Swap the bytes of a series of characters if this is a big-endian machine
     template<typename T>
-    void toLittleEndian(char *target, size_t byteLength)
+    void maybeSwapEndian(char *target, size_t byteLength)
     {
         if(byteLength % sizeof(T) != 0)
             throw runtime_error("Trying to convert an incorrect number of bytes to little-endian");
@@ -33,7 +36,7 @@ namespace gtar{
 
     void GTAR::writeString(const string &path, const string &contents)
     {
-        m_archive.writePtr(path, contents.begin(), contents.size());
+        m_archive.writePtr(path, contents.data(), contents.size());
     }
 
     void GTAR::writeBytes(const string &path, const vector<char> &contents)
@@ -51,7 +54,7 @@ namespace gtar{
     {
         vector<T> buffer(start, end);
 
-        toLittleEndian(&buffer[0], buffer.size()*sizeof(T));
+        maybeSwapEndian<T>((char*) &buffer[0], buffer.size()*sizeof(T));
         writePtr(path, &buffer[0], buffer.size()*sizeof(T));
     }
 
@@ -60,10 +63,30 @@ namespace gtar{
     {
         T local(val);
 
-        toLittleEndian(&local, sizeof(T));
+        maybeSwapEndian<T>((char*) &local, sizeof(T));
         writePtr(path, &local, sizeof(T));
     }
 
     template<typename T>
-    vector<T> readIndividual(const string &path)
+    SharedArray<T> GTAR::readIndividual(const string &path)
+    {
+        SharedArray<char> bytes(m_archive.read(path));
+
+        maybeSwapEndian<T>((char*) bytes.get(), bytes.size());
+        return *((T*) bytes.get());
+    }
+
+    template<typename T>
+    T GTAR::readUniform(const string &path)
+    {
+        SharedArray<char> bytes(m_archive.read(path));
+
+        maybeSwapEndian<T>((char*) bytes.get(), bytes.size());
+        return *((T*) bytes.get());
+    }
+
+    SharedArray<char> GTAR::readBytes(const string &path)
+    {
+        return m_archive.read(path);
+    }
 }

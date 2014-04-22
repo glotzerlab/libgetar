@@ -2,6 +2,10 @@
 // by Matthew Spellings <mspells@umich.edu>
 
 #include <string>
+#include <vector>
+
+#include "Archive.hpp"
+#include "SharedArray.hpp"
 
 #ifndef __GTAR_HPP_
 #define __GTAR_HPP_
@@ -34,13 +38,16 @@ namespace gtar{
         void writeUniform(const string &path, const T &val);
 
         template<typename T>
-        vector<T> readIndividual(const string &path);
+        SharedArray<T> readIndividual(const string &path);
         template<typename T>
         T readUniform(const string &path);
+        SharedArray<char> readBytes(const string &path);
 
     private:
         Archive m_archive;
     };
 }
+
+#include "GTAR.cpp"
 
 #endif

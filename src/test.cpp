@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "Archive.hpp"
+#include "GTAR.hpp"
 
 using namespace gtar;
 using namespace std;
@@ -10,26 +11,24 @@ using namespace std;
 int main()
 {
     {
-        Archive arch("test.zip", gtar::Write);
+        GTAR arch("test.zip", gtar::Write);
 
         string foo("this is a test string blah blah blah");
 
-        vector<char> vec;
-
-        for(string::iterator i(foo.begin()); i != foo.end(); ++i)
-            vec.push_back(*i);
-
-        arch.writeVec(string("foo/test.txt"), vec);
+        arch.writeString(string("foo/test.txt"), foo);
+        arch.writeUniform<int>(string("test.uniform"), (int) 23);
     }
 
     {
-        Archive arch("test.zip", gtar::Read);
+        GTAR arch("test.zip", gtar::Read);
 
-        SharedArray<char> res(arch.read("foo/test.txt"));
+        SharedArray<char> res(arch.readBytes(string("foo/test.txt")));
+        int res2(arch.readUniform<int>(string("test.uniform")));
 
         for(SharedArray<char>::iterator iter(res.begin()); iter != res.end(); ++iter)
             std::cout << *iter;
         std::cout << std::endl;
+        std::cout << res2 << std::endl;
     }
     return 0;
 }
