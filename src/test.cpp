@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-    Archive arch("test.zip", gtar::Write);
+    Archive arch("test.zip", gtar::Append);
 
     string foo("this is a test string blah blah blah");
 

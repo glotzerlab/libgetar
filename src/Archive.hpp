@@ -5,7 +5,10 @@
 #include <vector>
 #include <string>
 
-#include <archive.h>
+#include "miniz.h"
+
+#ifndef __ARCHIVE_HPP_
+#define __ARCHIVE_HPP_
 
 namespace gtar{
 
@@ -13,7 +16,7 @@ namespace gtar{
     using std::string;
     using std::vector;
 
-    enum OpenMode {Read, Write};
+    enum OpenMode {Read, Write, Append};
 
     class Archive
     {
@@ -28,7 +31,9 @@ namespace gtar{
     private:
         const string m_filename;
         const OpenMode m_mode;
-        auto_ptr<archive> m_archiveptr;
+        mz_zip_archive m_archive;
     };
 
 }
+
+#endif

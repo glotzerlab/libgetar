@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "Archive.hpp"
-#include <archive_entry.h>
+#include "miniz.h"
 
 namespace gtar{
 
@@ -14,41 +14,50 @@ namespace gtar{
     using std::vector;
 
     Archive::Archive(const string &filename, const OpenMode mode):
-        m_filename(filename), m_mode(mode), m_archiveptr()
+        m_filename(filename), m_mode(mode), m_archive()
     {
         if(m_mode == Write)
         {
-            m_archiveptr.reset(archive_write_new());
+            mz_bool success(
+                mz_zip_writer_init_file(&m_archive, filename.c_str(), 0));
 
-            archive_write_set_compression_none(m_archiveptr.get());
-            archive_write_set_format_zip(m_archiveptr.get());
+            if(!success)
+                throw runtime_error("Error opening file for write");
+        }
+        else if(m_mode == Read)
+        {
+            mz_bool success(
+                mz_zip_reader_init_file(&m_archive, filename.c_str(),
+                                        MZ_ZIP_FLAG_CASE_SENSITIVE));
 
-            int err(archive_write_open_filename(m_archiveptr.get(), m_filename.c_str()));
-
-            if(err != ARCHIVE_OK)
-                throw runtime_error("Archive opening for write failed");
+            if(!success)
+                throw runtime_error("Error opening file for read");
         }
         else
         {
-            m_archiveptr.reset(archive_read_new());
+            mz_bool success(
+                mz_zip_reader_init_file(&m_archive, filename.c_str(),
+                                        MZ_ZIP_FLAG_CASE_SENSITIVE));
 
-            // Enable any formats that libarchive supports
-            archive_read_support_filter_all(m_archiveptr.get());
-            archive_read_support_format_all(m_archiveptr.get());
+            if(!success)
+                throw runtime_error("Error opening file for append (stage 1)");
 
-            int err(archive_read_open_filename(m_archiveptr.get(), m_filename.c_str(), 8192));
+            success = mz_zip_writer_init_from_reader(&m_archive, filename.c_str());
 
-            if(err != ARCHIVE_OK)
-                throw runtime_error("Archive opening for read failed");
+            if(!success)
+                throw runtime_error("Error opening file for append (stage 2)");
         }
     }
 
     Archive::~Archive()
     {
-        if(m_mode == Write)
-            archive_write_free(m_archiveptr.release());
+        if(m_mode == Write || m_mode == Append)
+        {
+            mz_zip_writer_finalize_archive(&m_archive);
+            mz_zip_writer_end(&m_archive);
+        }
         else
-            archive_read_free(m_archiveptr.release());
+            mz_zip_reader_end(&m_archive);
     }
 
     void Archive::writeVec(const string &path, const vector<char> &contents)
@@ -61,19 +70,11 @@ namespace gtar{
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
 
-        archive_entry *entry(archive_entry_new());
+        bool success(
+            mz_zip_writer_add_mem(&m_archive, path.c_str(), contents,
+                                  byteLength, MZ_BEST_SPEED | MZ_ZIP_FLAG_CASE_SENSITIVE));
 
-        if(!entry)
-            throw runtime_error("Failed allocating a libarchive archive_entry");
-
-        archive_entry_set_pathname(entry, path.c_str());
-        archive_entry_set_size(entry, byteLength);
-        archive_entry_set_filetype(entry, AE_IFREG);
-        archive_entry_set_perm(entry, 0644);
-
-        archive_write_header(m_archiveptr.get(), entry);
-        archive_write_data(m_archiveptr.get(), contents, byteLength);
-
-        archive_entry_free(entry);
+        if(!success)
+            throw runtime_error("Failed adding a file to archive");
     }
 }
