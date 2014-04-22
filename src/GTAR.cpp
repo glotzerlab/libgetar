@@ -19,8 +19,10 @@ namespace gtar{
 
     // Swap the bytes of a series of characters if this is a big-endian machine
     template<typename T>
-    void maybeSwapEndian(char *target, size_t byteLength)
+    void maybeSwapEndian(T *target, size_t byteLength)
     {
+        char *recast((char*) target);
+
         if(byteLength % sizeof(T) != 0)
             throw runtime_error("Trying to convert an incorrect number of bytes to little-endian");
 
@@ -29,7 +31,7 @@ namespace gtar{
             for(size_t i(0); i < byteLength/sizeof(T); ++i)
             {
                 for(size_t j(0); j < sizeof(T)/2; ++j)
-                    swap(target[i*sizeof(T) + j], target[(i + 1)*sizeof(T) - j - 1]);
+                    swap(recast[i*sizeof(T) + j], recast[(i + 1)*sizeof(T) - j - 1]);
             }
         }
     }
@@ -54,7 +56,7 @@ namespace gtar{
     {
         vector<T> buffer(start, end);
 
-        maybeSwapEndian<T>((char*) &buffer[0], buffer.size()*sizeof(T));
+        maybeSwapEndian<T>(&buffer[0], buffer.size()*sizeof(T));
         writePtr(path, &buffer[0], buffer.size()*sizeof(T));
     }
 
@@ -63,7 +65,7 @@ namespace gtar{
     {
         T local(val);
 
-        maybeSwapEndian<T>((char*) &local, sizeof(T));
+        maybeSwapEndian<T>(&local, sizeof(T));
         writePtr(path, &local, sizeof(T));
     }
 
@@ -72,7 +74,7 @@ namespace gtar{
     {
         SharedArray<char> bytes(m_archive.read(path));
 
-        maybeSwapEndian<T>((char*) bytes.get(), bytes.size());
+        maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
         return *((T*) bytes.get());
     }
 
@@ -81,7 +83,7 @@ namespace gtar{
     {
         SharedArray<char> bytes(m_archive.read(path));
 
-        maybeSwapEndian<T>((char*) bytes.get(), bytes.size());
+        maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
         return *((T*) bytes.get());
     }
 
