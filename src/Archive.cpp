@@ -5,6 +5,7 @@
 
 #include "Archive.hpp"
 #include "miniz.h"
+#include "SharedArray.hpp"
 
 namespace gtar{
 
@@ -76,5 +77,24 @@ namespace gtar{
 
         if(!success)
             throw runtime_error("Failed adding a file to archive");
+    }
+
+    SharedArray<char> Archive::read(const string &path)
+    {
+        if(m_mode != Read)
+            throw runtime_error("Can't read from a file not opened for reading");
+
+        int fileIndex(mz_zip_reader_locate_file(&m_archive, path.c_str(), NULL, MZ_ZIP_FLAG_CASE_SENSITIVE));
+        mz_zip_archive_file_stat stat;
+
+        if(fileIndex == -1)
+            return SharedArray<char>();
+
+        mz_zip_reader_file_stat(&m_archive, fileIndex, &stat);
+
+        auto_ptr<char> result(new char[stat.m_uncomp_size]);
+        mz_zip_reader_extract_to_mem(&m_archive, fileIndex, result.get(), stat.m_uncomp_size, MZ_ZIP_FLAG_CASE_SENSITIVE);
+
+        return SharedArray<char>(result.release(), stat.m_uncomp_size);
     }
 }

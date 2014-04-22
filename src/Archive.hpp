@@ -4,8 +4,10 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <utility>
 
 #include "miniz.h"
+#include "SharedArray.hpp"
 
 #ifndef __ARCHIVE_HPP_
 #define __ARCHIVE_HPP_
@@ -14,6 +16,7 @@ namespace gtar{
 
     using std::auto_ptr;
     using std::string;
+    using std::pair;
     using std::vector;
 
     enum OpenMode {Read, Write, Append};
@@ -28,6 +31,9 @@ namespace gtar{
         void writeVec(const string &path, const vector<char> &contents);
 
         void writePtr(const string &path, const void *contents, const size_t byteLength);
+
+        SharedArray<char> read(const string &path);
+
     private:
         const string m_filename;
         const OpenMode m_mode;
