@@ -1,6 +1,8 @@
 // GTAR.hpp
 // by Matthew Spellings <mspells@umich.edu>
 
+#include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -10,17 +12,22 @@
 #ifndef __GTAR_HPP_
 #define __GTAR_HPP_
 
-#define IS_BIG_ENDIAN (*(uint16_t *)"\0\xff" < 0x100)
+// TODO find a proper compile-time way to determine endianness
+// #define IS_BIG_ENDIAN (1 != *(unsigned char *)&(const int){1})
+#define IS_BIG_ENDIAN false
 
 namespace gtar{
 
+    using std::runtime_error;
     using std::string;
+    using std::swap;
     using std::vector;
 
     // Swap bytes to little-endian order if necessary
     template<typename T>
     void toLittleEndian(char *target, size_t byteLength);
 
+    // TODO enforce bytesize constraints on items?
     class GTAR
     {
     public:
