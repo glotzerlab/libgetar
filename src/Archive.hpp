@@ -21,6 +21,8 @@ namespace gtar{
 
     enum OpenMode {Read, Write, Append};
 
+    enum CompressMode {NoCompress, FastCompress, MediumCompress, SlowCompress};
+
     class Archive
     {
     public:
@@ -28,9 +30,10 @@ namespace gtar{
 
         ~Archive();
 
-        void writeVec(const string &path, const vector<char> &contents);
+        void writeVec(const string &path, const vector<char> &contents, CompressMode mode);
 
-        void writePtr(const string &path, const void *contents, const size_t byteLength);
+        void writePtr(const string &path, const void *contents,
+                      const size_t byteLength, CompressMode mode);
 
         SharedArray<char> read(const string &path);
 

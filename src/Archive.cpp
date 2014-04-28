@@ -61,19 +61,39 @@ namespace gtar{
             mz_zip_reader_end(&m_archive);
     }
 
-    void Archive::writeVec(const string &path, const vector<char> &contents)
+    void Archive::writeVec(const string &path, const vector<char> &contents,
+                           CompressMode mode)
     {
-        writePtr(path, (void*) &contents[0], contents.size());
+        writePtr(path, (void*) &contents[0], contents.size(), mode);
     }
 
-    void Archive::writePtr(const string &path, const void *contents, const size_t byteLength)
+    void Archive::writePtr(const string &path, const void *contents,
+                           const size_t byteLength, CompressMode mode)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
 
+        mz_uint flags(MZ_ZIP_FLAG_CASE_SENSITIVE);
+
+        switch(mode)
+        {
+        case FastCompress:
+            flags |= MZ_BEST_SPEED;
+            break;
+        case MediumCompress:
+            flags |= MZ_DEFAULT_LEVEL;
+            break;
+        case SlowCompress:
+            flags |= MZ_BEST_COMPRESSION;
+            break;
+        case NoCompress:
+        default:
+            flags |= MZ_NO_COMPRESSION;
+        }
+
         bool success(
             mz_zip_writer_add_mem(&m_archive, path.c_str(), contents,
-                                  byteLength, MZ_BEST_SPEED | MZ_ZIP_FLAG_CASE_SENSITIVE));
+                                  byteLength, flags));
 
         if(!success)
             throw runtime_error("Failed adding a file to archive");

@@ -35,14 +35,16 @@ namespace gtar{
             m_archive(filename, mode) {}
 
         // Most generic functions. Toss some bytes into a location.
-        void writeString(const string &path, const string &contents);
-        void writeBytes(const string &path, const vector<char> &contents);
-        void writePtr(const string &path, const void *contents, const size_t byteLength);
+        void writeString(const string &path, const string &contents, CompressMode mode);
+        void writeBytes(const string &path, const vector<char> &contents, CompressMode mode);
+        void writePtr(const string &path, const void *contents,
+                      const size_t byteLength, CompressMode mode);
 
         // Write individual and uniform binary properties to the specified
         // location, converting to little endian if necessary.
         template<typename iter, typename T>
-        void writeIndividual(const string &path, const iter &start, const iter &end);
+        void writeIndividual(const string &path, const iter &start,
+                             const iter &end, CompressMode mode);
         template<typename T>
         void writeUniform(const string &path, const T &val);
 
@@ -76,12 +78,13 @@ namespace gtar{
     }
 
     template<typename iter, typename T>
-    void GTAR::writeIndividual(const string &path, const iter &start, const iter &end)
+    void GTAR::writeIndividual(const string &path, const iter &start,
+                               const iter &end, CompressMode mode)
     {
         vector<T> buffer(start, end);
 
         maybeSwapEndian<T>(&buffer[0], buffer.size()*sizeof(T));
-        writePtr(path, &buffer[0], buffer.size()*sizeof(T));
+        writePtr(path, &buffer[0], buffer.size()*sizeof(T), mode);
     }
 
     template<typename T>
