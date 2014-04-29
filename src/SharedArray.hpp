@@ -109,6 +109,18 @@ public:
         m_shim = NULL;
     }
 
+    // Stop managing this array and give it to C.
+    T *disown()
+    {
+        T *result(NULL);
+        if(m_shim)
+        {
+            result = m_shim->m_target;
+            delete m_shim;
+        }
+        return result;
+    }
+
     void swap(SharedArray<T> &target)
     {
         std::swap(m_shim, target.m_shim);
