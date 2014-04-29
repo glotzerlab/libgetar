@@ -117,6 +117,7 @@ public:
         {
             result = m_shim->m_target;
             delete m_shim;
+            m_shim = NULL;
         }
         return result;
     }
