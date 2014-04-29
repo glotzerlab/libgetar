@@ -23,9 +23,8 @@ class GTAR:
 
     def writeBytes(self, path, contents, compressMode):
         cpath = _str_to_char_p(path)
-        cconts = _str_to_char_p(contents)
 
-        libgetar.writePtr(self.cgtar, cpath, cconts, len(cconts), compressMode)
+        libgetar.writePtr(self.cgtar, cpath, contents, len(contents), compressMode)
 
     def readBytes(self, path):
         size = pointer(c_uint(0))
