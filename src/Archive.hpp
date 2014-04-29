@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 
-#include "miniz.h"
+#include "vogl_miniz_zip.h"
 #include "SharedArray.hpp"
 
 #ifndef __ARCHIVE_HPP_

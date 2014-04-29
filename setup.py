@@ -2,7 +2,7 @@
 
 from distutils.core import Extension, setup
 
-cFiles = ['Archive.cpp', 'miniz.c', 'capi.cpp', 'GTAR.cpp']
+cFiles = ['Archive.cpp', 'capi.cpp', 'GTAR.cpp', 'vogl_miniz.cpp', 'vogl_miniz_zip.cpp']
 moduleSrc = ['src/{}'.format(name) for name in cFiles]
 cExt = Extension('gtar._libgetar', moduleSrc)
 
