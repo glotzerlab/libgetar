@@ -36,6 +36,11 @@ extern "C"
         return result;
     }
 
+    void freeBytes(char *target)
+    {
+        delete[] target;
+    }
+
     unsigned int enumOpenMode_Read(){return static_cast<unsigned int>(Read);}
     unsigned int enumOpenMode_Write(){return static_cast<unsigned int>(Write);}
     unsigned int enumOpenMode_Append(){return static_cast<unsigned int>(Append);}

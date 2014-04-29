@@ -30,5 +30,7 @@ class GTAR:
     def readBytes(self, path):
         size = pointer(c_uint(0))
         result = libgetar.readBytes(self.cgtar, _str_to_char_p(path), size)
+        copy = string_at(result, size.contents.value)
+        libgetar.freeBytes(result)
 
-        return string_at(result, size.contents.value)
+        return copy

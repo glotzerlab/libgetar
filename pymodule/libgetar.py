@@ -34,8 +34,12 @@ _libgetar.writePtr.restype = None
 writePtr = _libgetar.writePtr
 
 _libgetar.readBytes.argtypes = [c_void_p, c_char_p, c_void_p]
-_libgetar.readBytes.restype = c_char_p
+_libgetar.readBytes.restype = c_void_p
 readBytes = _libgetar.readBytes
+
+_libgetar.freeBytes.argtypes = [c_void_p]
+_libgetar.freeBytes.restype = None
+freeBytes = _libgetar.freeBytes
 
 # helper function to convert a str to a char_p array for use in ctypes
 def _str_to_char_p(s):
