@@ -15,7 +15,7 @@ extern "C"
     void writePtr(GTAR *gtar, const char *path, const void *contents,
                   const size_t byteLength, unsigned int mode);
 
-    char *readBytes(GTAR *gtar, const char *path, size_t &byteLength);
+    char *readBytes(GTAR *gtar, const char *path, size_t *byteLength);
 
     unsigned int enumOpenMode_Read();
     unsigned int enumOpenMode_Write();

@@ -28,7 +28,7 @@ class GTAR:
         libgetar.writePtr(self.cgtar, cpath, cconts, len(cconts), compressMode)
 
     def readBytes(self, path):
-        size = c_uint(0)
+        size = pointer(c_uint(0))
         result = libgetar.readBytes(self.cgtar, _str_to_char_p(path), size)
 
-        return string_at(result, size)
+        return string_at(result, size.contents.value)

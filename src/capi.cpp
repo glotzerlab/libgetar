@@ -26,11 +26,11 @@ extern "C"
         gtar->writePtr(string(path), contents, byteLength, static_cast<CompressMode>(mode));
     }
 
-    char *readBytes(GTAR *gtar, const char *path, size_t &byteLength)
+    char *readBytes(GTAR *gtar, const char *path, size_t *byteLength)
     {
         SharedArray<char> arr(gtar->readBytes(string(path)));
 
-        byteLength = arr.size();
+        *byteLength = arr.size();
         char *result(arr.disown());
 
         return result;

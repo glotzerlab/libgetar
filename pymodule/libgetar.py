@@ -33,7 +33,7 @@ _libgetar.writePtr.argtypes = [c_void_p, c_char_p, c_void_p, c_uint, c_uint]
 _libgetar.writePtr.restype = None
 writePtr = _libgetar.writePtr
 
-_libgetar.readBytes.argtypes = [c_void_p, c_char_p, c_uint]
+_libgetar.readBytes.argtypes = [c_void_p, c_char_p, c_void_p]
 _libgetar.readBytes.restype = c_char_p
 readBytes = _libgetar.readBytes
 
