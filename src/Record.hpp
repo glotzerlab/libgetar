@@ -28,8 +28,14 @@ namespace gtar{
                const string &suffix, Behavior behavior, Format format,
                Resolution resolution);
 
+        Record(const Record &rhs);
+
+        void operator=(const Record &rhs);
         bool operator==(const Record &rhs) const;
         bool operator!=(const Record &rhs) const;
+        bool operator<(const Record &rhs) const;
+
+        Record withNullifiedIndex() const;
 
     private:
         void process(const string &target, size_t start);

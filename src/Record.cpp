@@ -21,6 +21,22 @@ namespace gtar{
         m_behavior(behavior), m_format(format), m_resolution(resolution)
     {}
 
+    Record::Record(const Record &rhs):
+        m_group(rhs.m_group), m_name(rhs.m_name), m_index(rhs.m_index), m_suffix(rhs.m_suffix),
+        m_behavior(rhs.m_behavior), m_format(rhs.m_format), m_resolution(rhs.m_resolution)
+    {}
+
+    void Record::operator=(const Record &rhs)
+    {
+        m_group = rhs.m_group;
+        m_name = rhs.m_name;
+        m_index = rhs.m_index;
+        m_suffix = rhs.m_suffix;
+        m_behavior = rhs.m_behavior;
+        m_format = rhs.m_format;
+        m_resolution = rhs.m_resolution;
+    }
+
     bool Record::operator==(const Record &rhs) const
     {
         return m_group == rhs.m_group && m_name == rhs.m_name &&
@@ -32,6 +48,21 @@ namespace gtar{
     bool Record::operator!=(const Record &rhs) const
     {
         return !(*this == rhs);
+    }
+
+    bool Record::operator<(const Record &rhs) const
+    {
+        return m_group < rhs.m_group || m_name < rhs.m_name ||
+             m_suffix < rhs.m_suffix || m_behavior < rhs.m_behavior ||
+             m_format < rhs.m_format || m_resolution < rhs.m_resolution ||
+             m_index < rhs.m_index;
+    }
+
+    Record Record::withNullifiedIndex() const
+    {
+        Record result(*this);
+        result.m_index = string();
+        return result;
     }
 
     void Record::process(const string &target, size_t start)
