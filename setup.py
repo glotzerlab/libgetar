@@ -24,5 +24,5 @@ setup(name='gtar',
       author_email='mspells@umich.edu',
       url='',
       packages=['gtar'],
-      ext_modules=myCythonize('gtar/gtar.pyx', include_dirs=['.'])
+      ext_modules=myCythonize('gtar/_gtar.pyx')
 )
