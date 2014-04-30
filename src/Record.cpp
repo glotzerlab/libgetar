@@ -139,6 +139,11 @@ namespace gtar{
         return result.str();
     }
 
+    void Record::setIndex(const string &index)
+    {
+        m_index = index;
+    }
+
     void Record::process(const string &target, size_t start)
     {
         if(start == target.size()) return;

@@ -2,6 +2,9 @@
 // by Matthew Spellings <mspells@umich.edu>
 // provides a C-api wrapper to libgetar functionality
 
+#include <cstring>
+#include <string>
+
 #include "GTAR.hpp"
 #include "capi.hpp"
 
@@ -39,6 +42,44 @@ extern "C"
     void freeBytes(char *target)
     {
         delete[] target;
+    }
+
+    unsigned int queryRecordCount(GTAR *gtar, const char *group,
+                                  const char *name, const char *suffix,
+                                  unsigned int behavior, unsigned int format,
+                                  unsigned int resolution)
+    {
+        Record rec(string(group), string(name), string(), string(suffix),
+                   static_cast<Behavior>(behavior), static_cast<Format>(format),
+                   static_cast<Resolution>(resolution));
+
+        return gtar->queryRecordCount(rec);
+    }
+
+    char *getRecordIndex(GTAR *gtar, const char *group, const char *name,
+                        const char *suffix, unsigned int behavior,
+                        unsigned int format, unsigned int resolution,
+                        unsigned int index, size_t *byteLength)
+    {
+        Record rec(string(group), string(name), string(), string(suffix),
+                   static_cast<Behavior>(behavior), static_cast<Format>(format),
+                   static_cast<Resolution>(resolution));
+
+        std::string strresult(gtar->getRecordIndex(rec, index));
+        char *result(new char[strresult.length() + 1]);
+        std::strcpy(result, strresult.c_str());
+        return result;
+    }
+
+    char *readRecord(GTAR *gtar, const char *group, const char *name,
+                     const char *index, const char *suffix, unsigned int behavior,
+                     unsigned int format, unsigned int resolution, size_t *byteLength)
+    {
+        Record rec(string(group), string(name), string(index), string(suffix),
+                   static_cast<Behavior>(behavior), static_cast<Format>(format),
+                   static_cast<Resolution>(resolution));
+
+        return readBytes(gtar, rec.getPath().c_str(), byteLength);
     }
 
     unsigned int enumOpenMode_Read(){return static_cast<unsigned int>(Read);}

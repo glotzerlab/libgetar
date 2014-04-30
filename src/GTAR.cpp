@@ -18,7 +18,7 @@ namespace gtar{
     using std::vector;
 
     GTAR::GTAR(const string &filename, const OpenMode mode):
-        m_archive(filename, mode), m_records()
+        m_archive(filename, mode), m_records(), m_indexedRecords()
     {
         // Populate our record list
         if(mode == Read)
@@ -50,15 +50,40 @@ namespace gtar{
         return m_archive.read(path);
     }
 
+    unsigned int GTAR::queryRecordCount(const Record &rec)
+    {
+        const Record query(rec.withNullifiedIndex());
+
+        if(m_records.find(query) != m_records.end())
+            return m_records[rec].size();
+
+        return 0;
+    }
+
+    string GTAR::getRecordIndex(const Record &rec, unsigned int index)
+    {
+        Record query(rec.withNullifiedIndex());
+
+        if(m_indexedRecords.find(query) != m_indexedRecords.end() &&
+           index < m_indexedRecords[rec].size())
+            return m_indexedRecords[rec][index];
+
+        return string();
+    }
+
     void GTAR::insertRecord(const string &path)
     {
         Record rec(path);
         const string index(rec.nullifyIndex());
 
         if(m_records.find(rec) == m_records.end())
+        {
             m_records[rec] = set<string>();
+            m_indexedRecords[rec] = vector<string>();
+        }
 
         m_records[rec].insert(index);
+        m_indexedRecords[rec].push_back(index);
     }
 
 }

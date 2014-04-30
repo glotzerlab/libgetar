@@ -18,6 +18,19 @@ if libfile is None:
 
 _libgetar = CDLL(libfile, use_errno=True);
 
+
+# helper function to convert a str to a char_p array for use in ctypes
+def _str_to_char_p(s):
+    # return the same thing if it is already a bytes object
+    if isinstance(s, bytes):
+        return s;
+
+    # need to convert to a bytes object, which is different in python2 and python3
+    if sys.version_info[0] > 2:
+        return bytes(s, 'utf_8');
+    else:
+        return bytes(s);
+
 OpenMode = enums._OpenMode(_libgetar)
 CompressMode = enums._CompressMode(_libgetar)
 
@@ -41,14 +54,31 @@ _libgetar.freeBytes.argtypes = [c_void_p]
 _libgetar.freeBytes.restype = None
 freeBytes = _libgetar.freeBytes
 
-# helper function to convert a str to a char_p array for use in ctypes
-def _str_to_char_p(s):
-    # return the same thing if it is already a bytes object
-    if isinstance(s, bytes):
-        return s;
+_libgetar.queryRecordCount.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p,
+                                       c_char_p, c_uint, c_uint, c_uint]
+_libgetar.queryRecordCount.restype = c_uint
+queryRecordCount = _libgetar.queryRecordCount
 
-    # need to convert to a bytes object, which is different in python2 and python3
-    if sys.version_info[0] > 2:
-        return bytes(s, 'utf_8');
-    else:
-        return bytes(s);
+_libgetar.getRecordIndex.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p,
+                                     c_uint, c_uint, c_uint, c_uint, c_void_p]
+_libgetar.getRecordIndex.restype = c_char_p
+def getRecordIndex(gtar, group, name, suffix, behavior, format, resolution, index):
+    size = pointer(c_uint(0))
+    result = _libgetar.getRecordIndex(
+        gtar, _str_to_char_p(group), _str_to_char_p(name), _str_to_char_p(suffix),
+        behavior, format, resolution, index, size)
+    copy = string_at(result, size.contents.value)
+    libgetar.freeBytes(result)
+    return copy
+
+_libgetar.readRecord.argtypes = [c_void_p, c_char_p, c_char_p, c_char_p,
+                            c_char_p, c_uint, c_uint, c_uint, c_uint, c_void_p]
+_libgetar.readRecord.restype = c_char_p
+def readRecord(gtar, group, name, index, suffix, behavior, format, resolution):
+    size = pointer(c_uint(0))
+    result = _libgetar.readRecord(
+        gtar, _str_to_char_p(group), _str_to_char_p(name), _str_to_char_p(index),
+        _str_to_char_p(suffix), behavior, format, resolution, size)
+    copy = string_at(result, size.contents.value)
+    libgetar.freeBytes(result)
+    return copy

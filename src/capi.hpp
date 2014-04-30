@@ -3,6 +3,7 @@
 // provides a C-api wrapper to libgetar functionality
 
 #include "GTAR.hpp"
+#include "Record.hpp"
 
 extern "C"
 {
@@ -17,6 +18,20 @@ extern "C"
 
     char *readBytes(GTAR *gtar, const char *path, size_t *byteLength);
     void freeBytes(char *target);
+
+    unsigned int queryRecordCount(GTAR *gtar, const char *group,
+                                  const char *name, const char *suffix,
+                                  unsigned int behavior, unsigned int format,
+                                  unsigned int resolution);
+
+    char *getRecordIndex(GTAR *gtar, const char *group, const char *name,
+                        const char *suffix, unsigned int behavior,
+                        unsigned int format, unsigned int resolution,
+                        unsigned int index, size_t *byteLength);
+
+    char *readRecord(GTAR *gtar, const char *group, const char *name,
+                     const char *index, const char *suffix, unsigned int behavior,
+                     unsigned int format, unsigned int resolution, size_t *byteLength);
 
     unsigned int enumOpenMode_Read();
     unsigned int enumOpenMode_Write();

@@ -40,6 +40,8 @@ namespace gtar{
 
         string getPath() const;
 
+        void setIndex(const string &index);
+
     private:
         void process(const string &target, size_t start);
         void processVars(const string &target, size_t start);

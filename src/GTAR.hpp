@@ -58,11 +58,15 @@ namespace gtar{
         T readUniform(const string &path);
         SharedArray<char> readBytes(const string &path);
 
+        unsigned int queryRecordCount(const Record &rec);
+        string getRecordIndex(const Record &rec, unsigned int index);
+
     private:
         void insertRecord(const string &path);
 
         Archive m_archive;
         map<Record, set<string> > m_records;
+        map<Record, vector<string> > m_indexedRecords;
     };
 
     // Swap the bytes of a series of characters if this is a big-endian machine
