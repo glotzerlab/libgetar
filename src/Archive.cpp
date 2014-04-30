@@ -17,6 +17,8 @@ namespace gtar{
     Archive::Archive(const string &filename, const OpenMode mode):
         m_filename(filename), m_mode(mode), m_archive()
     {
+        mz_zip_zero_struct(&m_archive);
+
         if(m_mode == Write)
         {
             mz_bool success(
