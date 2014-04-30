@@ -2,12 +2,15 @@
 // by Matthew Spellings <mspells@umich.edu>
 
 #include <algorithm>
+#include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "Archive.hpp"
 #include "SharedArray.hpp"
+#include "Record.hpp"
 
 #ifndef __GTAR_HPP_
 #define __GTAR_HPP_
@@ -18,7 +21,9 @@
 
 namespace gtar{
 
+    using std::map;
     using std::runtime_error;
+    using std::set;
     using std::string;
     using std::swap;
     using std::vector;
@@ -31,8 +36,7 @@ namespace gtar{
     class GTAR
     {
     public:
-        GTAR(const string &filename, const OpenMode mode):
-            m_archive(filename, mode) {}
+        GTAR(const string &filename, const OpenMode mode);
 
         // Most generic functions. Toss some bytes into a location.
         void writeString(const string &path, const string &contents, CompressMode mode);
@@ -55,7 +59,10 @@ namespace gtar{
         SharedArray<char> readBytes(const string &path);
 
     private:
+        void insertRecord(const string &path);
+
         Archive m_archive;
+        map<Record, set<string> > m_records;
     };
 
     // Swap the bytes of a series of characters if this is a big-endian machine

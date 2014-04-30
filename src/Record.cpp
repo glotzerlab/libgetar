@@ -3,8 +3,11 @@
 
 #include "Record.hpp"
 
+#include <sstream>
+
 namespace gtar{
     using std::string;
+    using std::stringstream;
     using std::vector;
 
     Record::Record(const string &path):
@@ -58,11 +61,82 @@ namespace gtar{
              m_index < rhs.m_index;
     }
 
+    string Record::nullifyIndex()
+    {
+        string result(m_index);
+        m_index = string();
+        return result;
+    }
+
     Record Record::withNullifiedIndex() const
     {
         Record result(*this);
-        result.m_index = string();
+        result.nullifyIndex();
         return result;
+    }
+
+    string Record::getPath() const
+    {
+        stringstream result;
+
+        if(m_group.size())
+            result << m_group << '/';
+
+        switch(m_behavior)
+        {
+        case Continuous:
+            result << "vars/" << m_name << '/' << m_index;
+            break;
+        case Discrete:
+            result << "frames/" << m_index << '/' << m_name;
+            break;
+        case Constant:
+        default:
+            result << m_name;
+        }
+
+        if(m_resolution != Text)
+        {
+            switch(m_format)
+            {
+            case Float32:
+                result << ".f32";
+                break;
+            case Float64:
+                result << ".f64";
+                break;
+            case Int32:
+                result << ".i32";
+                break;
+            case Int64:
+                result << ".i64";
+                break;
+            case UInt32:
+                result << ".u32";
+                break;
+            case UInt64:
+                result << ".u64";
+                break;
+            case UInt8:
+            default:
+                result << ".u8";
+            }
+        }
+
+        switch(m_resolution)
+        {
+        case Uniform:
+            result << ".uni";
+            break;
+        case Individual:
+            result << ".ind";
+            break;
+        case Text:
+        default:
+            result << m_suffix;
+        }
+
+        return result.str();
     }
 
     void Record::process(const string &target, size_t start)

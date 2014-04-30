@@ -1,6 +1,7 @@
 // Archive.cpp
 // by Matthew Spellings <mspells@umich.edu>
 
+#include <sstream>
 #include <stdexcept>
 
 #include "Archive.hpp"
@@ -12,6 +13,7 @@ namespace gtar{
     using std::auto_ptr;
     using std::runtime_error;
     using std::string;
+    using std::stringstream;
     using std::vector;
 
     Archive::Archive(const string &filename, const OpenMode mode):
@@ -122,5 +124,27 @@ namespace gtar{
             throw runtime_error("Failed extracting file " + path);
 
         return SharedArray<char>(result.release(), stat.m_uncomp_size);
+    }
+
+    unsigned int Archive::size()
+    {
+        return mz_zip_get_num_files(&m_archive);
+    }
+
+    string Archive::getItemName(unsigned int index)
+    {
+        const size_t bufSize(64);
+        stringstream name;
+        char buf[bufSize];
+        unsigned int len(0);
+
+        do
+        {
+            len = mz_zip_get_filename(&m_archive, index, buf, bufSize);
+            name << string(buf, len);
+        }
+        while(len < bufSize);
+
+        return name.str();
     }
 }

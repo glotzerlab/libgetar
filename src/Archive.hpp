@@ -37,6 +37,9 @@ namespace gtar{
 
         SharedArray<char> read(const string &path);
 
+        unsigned int size();
+        string getItemName(unsigned int index);
+
     private:
         const string m_filename;
         const OpenMode m_mode;

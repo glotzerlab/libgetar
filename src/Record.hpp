@@ -35,7 +35,10 @@ namespace gtar{
         bool operator!=(const Record &rhs) const;
         bool operator<(const Record &rhs) const;
 
+        string nullifyIndex();
         Record withNullifiedIndex() const;
+
+        string getPath() const;
 
     private:
         void process(const string &target, size_t start);

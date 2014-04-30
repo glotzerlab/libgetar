@@ -10,10 +10,24 @@
 
 namespace gtar{
 
+    using std::map;
     using std::runtime_error;
+    using std::set;
     using std::string;
     using std::swap;
     using std::vector;
+
+    GTAR::GTAR(const string &filename, const OpenMode mode):
+        m_archive(filename, mode), m_records()
+    {
+        // Populate our record list
+        if(mode == Read)
+        {
+            const unsigned int size(m_archive.size());
+            for(unsigned int index(0); index < size; ++index)
+                insertRecord(m_archive.getItemName(index));
+        }
+    }
 
     void GTAR::writeString(const string &path, const string &contents, CompressMode mode)
     {
@@ -35,4 +49,16 @@ namespace gtar{
     {
         return m_archive.read(path);
     }
+
+    void GTAR::insertRecord(const string &path)
+    {
+        Record rec(path);
+        const string index(rec.nullifyIndex());
+
+        if(m_records.find(rec) == m_records.end())
+            m_records[rec] = set<string>();
+
+        m_records[rec].insert(index);
+    }
+
 }
