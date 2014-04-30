@@ -10,6 +10,13 @@ if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')
 
+def myCythonize(*args, **kwargs):
+    result = cythonize(*args, **kwargs)
+    for r in result:
+        r.define_macros.extend(macros)
+
+    return result
+
 setup(name='gtar',
       version='0.1',
       description='GTAR format file wrapper',
@@ -17,5 +24,5 @@ setup(name='gtar',
       author_email='mspells@umich.edu',
       url='',
       packages=['gtar'],
-      ext_modules=cythonize(os.path.join('gtar', '*.pyx'), include_dirs=['.'])
+      ext_modules=myCythonize('gtar/gtar.pyx', include_dirs=['.'])
 )
