@@ -133,18 +133,9 @@ namespace gtar{
 
     string Archive::getItemName(unsigned int index)
     {
-        const size_t bufSize(64);
-        stringstream name;
-        char buf[bufSize];
-        unsigned int len(0);
-
-        do
-        {
-            len = mz_zip_get_filename(&m_archive, index, buf, bufSize);
-            name << string(buf, len);
-        }
-        while(len < bufSize);
-
-        return name.str();
+        const unsigned int len(mz_zip_get_filename(&m_archive, index, NULL, 0));
+        auto_ptr<char> result(new char[len]);
+        mz_zip_get_filename(&m_archive, index, result.get(), len);
+        return string(result.get(), len);
     }
 }
