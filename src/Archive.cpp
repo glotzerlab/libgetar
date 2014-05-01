@@ -117,13 +117,13 @@ namespace gtar{
 
         mz_zip_file_stat(&m_archive, fileIndex, &stat);
 
-        auto_ptr<char> result(new char[stat.m_uncomp_size]);
+        SharedArray<char> result(new char[stat.m_uncomp_size], stat.m_uncomp_size);
         success = mz_zip_extract_to_mem(&m_archive, fileIndex, result.get(), stat.m_uncomp_size, MZ_ZIP_FLAG_CASE_SENSITIVE);
 
         if(!success)
             throw runtime_error("Failed extracting file " + path);
 
-        return SharedArray<char>(result.release(), stat.m_uncomp_size);
+        return result;
     }
 
     unsigned int Archive::size()
@@ -134,7 +134,7 @@ namespace gtar{
     string Archive::getItemName(unsigned int index)
     {
         const unsigned int len(mz_zip_get_filename(&m_archive, index, NULL, 0));
-        auto_ptr<char> result(new char[len]);
+        SharedArray<char> result(new char[len], len);
         mz_zip_get_filename(&m_archive, index, result.get(), len);
         return string(result.get(), len);
     }
