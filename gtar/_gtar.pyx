@@ -125,14 +125,6 @@ cdef class GTAR:
 
         cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
         cdef unsigned int n = inter.size()
-        cdef view.array result = <char[:n]> inter.get()
-
-        # cdef array[char] result = array('c')
-        # cdef unsigned int n = inter.size()
-        # cdef view.array arr = <char[:n]> inter.get()
-        # result = clone(arr, inter.size(), False)
-
-        # result = SharedArray()
-        # print(rec.thisptr.getPath())
-        # result.copy(self.thisptr.readBytes(rec.thisptr.getPath()))
-        return result.copy()
+        cdef view.array arr = view.array(shape=(n,), itemsize=sizeof(char), format='c', allocate_buffer=True)
+        arr[:] = <char[:n]> inter.get()
+        return arr
