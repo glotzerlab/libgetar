@@ -1,11 +1,11 @@
 # distutils: language = c++
 # distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp
 
+from cython cimport view
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 
-from sharedarray cimport *
 cimport cpp
 
 cdef class OpenMode:
@@ -37,6 +37,27 @@ cdef class Resolution:
     Text = cpp.Text
     Uniform = cpp.Uniform
     Individual = cpp.Individual
+
+cdef class SharedArray:
+    cdef cpp.SharedArray[char] *thisptr
+
+    def __cinit__(self):
+        self.thisptr = new cpp.SharedArray[char]()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    cdef copy(self, const cpp.SharedArray[char] &other):
+        self.thisptr.copy(other)
+
+    def __len__(self):
+        return self.thisptr.size()
+
+    def __getitem__(self, index):
+        if(index < self.thisptr.size()):
+            return self.thisptr.get()[index]
+        else:
+            raise IndexError('Index out of range')
 
 cdef class Record:
     cdef cpp.Record *thisptr
@@ -96,3 +117,22 @@ cdef class GTAR:
         for f in frames:
             result.append(f)
         return result
+
+    def getRecord(self, Record query, string index=""):
+        rec = Record()
+        rec.copy(deref(query.thisptr))
+        rec.setIndex(index)
+
+        cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
+        cdef unsigned int n = inter.size()
+        cdef view.array result = <char[:n]> inter.get()
+
+        # cdef array[char] result = array('c')
+        # cdef unsigned int n = inter.size()
+        # cdef view.array arr = <char[:n]> inter.get()
+        # result = clone(arr, inter.size(), False)
+
+        # result = SharedArray()
+        # print(rec.thisptr.getPath())
+        # result.copy(self.thisptr.readBytes(rec.thisptr.getPath()))
+        return result.copy()

@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+namespace gtar{
+
 template<typename T> class SharedArray;
 
 template<typename T>
@@ -67,9 +69,23 @@ public:
         release();
     }
 
+    void copy(const SharedArray<T> &rhs)
+    {
+        *this = rhs;
+    }
+
     bool isNull()
     {
         return m_shim == NULL || m_shim->target == NULL;
+    }
+
+    void operator=(const SharedArray<T> &rhs)
+    {
+        if(this != &rhs)
+        {
+            SharedArray<T> cpy(rhs);
+            swap(cpy);
+        }
     }
 
     iterator begin()
@@ -140,5 +156,7 @@ public:
 private:
     SharedArrayShim<T> *m_shim;
 };
+
+}
 
 #endif

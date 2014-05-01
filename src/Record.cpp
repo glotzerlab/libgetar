@@ -37,7 +37,13 @@ namespace gtar{
 
     void Record::operator=(const Record &rhs)
     {
-        copy(rhs);
+        m_group = rhs.m_group;
+        m_name = rhs.m_name;
+        m_index = rhs.m_index;
+        m_suffix = rhs.m_suffix;
+        m_behavior = rhs.m_behavior;
+        m_format = rhs.m_format;
+        m_resolution = rhs.m_resolution;
     }
 
     bool Record::operator==(const Record &rhs) const
@@ -72,13 +78,7 @@ namespace gtar{
 
     void Record::copy(const Record &rhs)
     {
-        m_group = rhs.m_group;
-        m_name = rhs.m_name;
-        m_index = rhs.m_index;
-        m_suffix = rhs.m_suffix;
-        m_behavior = rhs.m_behavior;
-        m_format = rhs.m_format;
-        m_resolution = rhs.m_resolution;
+        *this = rhs;
     }
 
     string Record::nullifyIndex()

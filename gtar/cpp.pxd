@@ -4,7 +4,30 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 
-from sharedarray cimport *
+from libcpp cimport bool
+
+cdef extern from "../src/SharedArray.hpp" namespace "gtar":
+    cdef cppclass SharedArray[T]:
+        # ctypedef (T*) iterator
+
+        SharedArray()
+        SharedArray(T*, size_t)
+        SharedArray(const SharedArray[T]&)
+        # ~SharedArray()
+
+        void copy(const SharedArray[T]&)
+        bool isNull()
+        T* begin()
+        T* end()
+
+        T *get()
+        size_t size() const
+        void release()
+        T *disown()
+
+        void swap(SharedArray[T]&)
+        T &operator[]
+        const T &operator[] const
 
 cdef extern from "../src/Archive.hpp" namespace "gtar":
     cdef enum OpenMode:
