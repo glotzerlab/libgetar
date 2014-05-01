@@ -3,6 +3,7 @@
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from cython.operator cimport dereference as deref
 
 from sharedarray cimport *
 
@@ -39,15 +40,20 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
         Individual
 
     cdef cppclass Record:
+        Record()
         Record(const string&)
         Record(const string&, const string&, const string&, const string&,
                Behavior, Format, Resolution)
         Record(const Record&)
 
+        void copy(const Record&)
+
+        string nullifyIndex()
         Record withNullifiedIndex() const
 
         string getPath() const
 
+        string getIndex() const
         void setIndex(const string&)
 
 cdef extern from "../src/GTAR.hpp" namespace "gtar":
@@ -58,6 +64,9 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         void writePtr(const string&, const void*, const size_t, CompressMode)
 
         SharedArray[char] readBytes(const string&)
+
+        vector[Record] getRecordTypes() const
+        vector[string] queryFrames(const Record&) const
 
 cdef class PyOpenMode:
     PyRead = Read
@@ -89,6 +98,37 @@ cdef class PyResolution:
     PyUniform = Uniform
     PyIndividual = Individual
 
+cdef class PyRecord:
+    cdef Record *thisptr
+
+    def __cinit__(self, *args):
+        if len(args) == 0:
+            self.thisptr = new Record()
+        elif len(args) == 1:
+            self.thisptr = new Record(<string> args[0])
+        elif len(args) == 7:
+            self.thisptr = new Record(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+        else:
+            raise TypeError('Incorrect number of arguments to PyRecord()')
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    cdef copy(self, const Record &other):
+        self.thisptr.copy(other)
+
+    def nullifyIndex(self):
+        return self.thisptr.nullifyIndex()
+
+    def getPath(self):
+        return self.thisptr.getPath()
+
+    def getIndex(self):
+        return self.thisptr.getIndex()
+
+    def setIndex(self, index):
+        self.thisptr.setIndex(index)
+
 cdef class PyGTAR:
     cdef GTAR *thisptr
 
@@ -100,3 +140,19 @@ cdef class PyGTAR:
 
     def writeBytes(self, path, contents, mode=FastCompress):
         self.thisptr.writeString(path, contents, mode)
+
+    def getRecordTypes(self):
+        result = []
+        types = self.thisptr.getRecordTypes()
+        for rec in types:
+            copy = PyRecord()
+            copy.copy(rec)
+            result.append(copy)
+        return result
+
+    def queryFrames(self, PyRecord target):
+        result = []
+        frames = self.thisptr.queryFrames(deref(target.thisptr))
+        for f in frames:
+            result.append(f)
+        return result

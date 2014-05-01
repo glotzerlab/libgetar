@@ -83,5 +83,12 @@ int main()
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
+    {
+        string str("frame/2000/position.f32.ind");
+        Record rec(str);
+        result |= check(rec, "frame/2000", "position", "", "", Constant, Float32, Individual, true, __LINE__);
+        result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
+    }
+
     return result;
 }

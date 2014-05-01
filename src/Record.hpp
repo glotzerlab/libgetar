@@ -22,6 +22,8 @@ namespace gtar{
     class Record
     {
     public:
+        Record();
+
         Record(const string &path);
 
         Record(const string &group, const string &name, const string &index,
@@ -35,11 +37,14 @@ namespace gtar{
         bool operator!=(const Record &rhs) const;
         bool operator<(const Record &rhs) const;
 
+        void copy(const Record &rhs);
+
         string nullifyIndex();
         Record withNullifiedIndex() const;
 
         string getPath() const;
 
+        string getIndex() const;
         void setIndex(const string &index);
 
     private:

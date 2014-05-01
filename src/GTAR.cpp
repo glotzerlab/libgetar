@@ -50,37 +50,32 @@ namespace gtar{
         return m_archive.read(path);
     }
 
-    unsigned int GTAR::queryRecordCount(const Record &rec)
+    vector<Record> GTAR::getRecordTypes() const
     {
-        const Record query(rec.withNullifiedIndex());
+        vector<Record> result;
 
-        if(m_records.find(query) != m_records.end())
-            return m_records[rec].size();
+        for(map<Record, set<string> >::const_iterator iter(m_records.begin());
+            iter != m_records.end(); ++iter)
+            result.push_back(iter->first);
 
-        return 0;
+        return result;
     }
 
-    string GTAR::getRecordIndex(const Record &rec, unsigned int index)
+    vector<string> GTAR::queryFrames(const Record &target) const
     {
-        Record query(rec.withNullifiedIndex());
+        Record query(target.withNullifiedIndex());
+        map<Record, set<string> >::const_iterator result(m_records.find(query));
 
-        if(m_indexedRecords.find(query) != m_indexedRecords.end() &&
-           index < m_indexedRecords[rec].size())
-            return m_indexedRecords[rec][index];
+        if(result != m_records.end())
+            return vector<string>(result->second.begin(), result->second.end());
 
-        return string();
+        return vector<string>();
     }
 
     void GTAR::insertRecord(const string &path)
     {
         Record rec(path);
         const string index(rec.nullifyIndex());
-
-        if(m_records.find(rec) == m_records.end())
-        {
-            m_records[rec] = set<string>();
-            m_indexedRecords[rec] = vector<string>();
-        }
 
         m_records[rec].insert(index);
         m_indexedRecords[rec].push_back(index);

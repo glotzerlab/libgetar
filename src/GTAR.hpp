@@ -58,8 +58,8 @@ namespace gtar{
         T readUniform(const string &path);
         SharedArray<char> readBytes(const string &path);
 
-        unsigned int queryRecordCount(const Record &rec);
-        string getRecordIndex(const Record &rec, unsigned int index);
+        vector<Record> getRecordTypes() const;
+        vector<string> queryFrames(const Record &target) const;
 
     private:
         void insertRecord(const string &path);
