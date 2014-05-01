@@ -17,6 +17,11 @@ namespace gtar{
     using std::swap;
     using std::vector;
 
+    bool IndexCompare::operator()(const string &a, const string &b)
+    {
+        return a.size() < b.size() || ((a.size() == b.size()) && a < b);
+    }
+
     GTAR::GTAR(const string &filename, const OpenMode mode):
         m_archive(filename, mode), m_records(), m_indexedRecords()
     {
@@ -54,7 +59,7 @@ namespace gtar{
     {
         vector<Record> result;
 
-        for(map<Record, set<string> >::const_iterator iter(m_records.begin());
+        for(map<Record, indexSet>::const_iterator iter(m_records.begin());
             iter != m_records.end(); ++iter)
             result.push_back(iter->first);
 
@@ -64,7 +69,7 @@ namespace gtar{
     vector<string> GTAR::queryFrames(const Record &target) const
     {
         Record query(target.withNullifiedIndex());
-        map<Record, set<string> >::const_iterator result(m_records.find(query));
+        map<Record, indexSet>::const_iterator result(m_records.find(query));
 
         if(result != m_records.end())
             return vector<string>(result->second.begin(), result->second.end());

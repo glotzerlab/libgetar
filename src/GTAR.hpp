@@ -30,12 +30,21 @@ namespace gtar{
 
     // Swap bytes to little-endian order if necessary
     template<typename T>
-    void toLittleEndian(char *target, size_t byteLength);
+    void maybeSwapEndian(char *target, size_t byteLength);
+
+    // Special sorter for index strings
+    class IndexCompare
+    {
+    public:
+        bool operator()(const string &a, const string &b);
+    };
 
     // TODO enforce bytesize constraints on items?
     class GTAR
     {
     public:
+        typedef set<string, IndexCompare> indexSet;
+
         GTAR(const string &filename, const OpenMode mode);
 
         // Most generic functions. Toss some bytes into a location.
@@ -65,7 +74,7 @@ namespace gtar{
         void insertRecord(const string &path);
 
         Archive m_archive;
-        map<Record, set<string> > m_records;
+        map<Record, indexSet> m_records;
         map<Record, vector<string> > m_indexedRecords;
     };
 
