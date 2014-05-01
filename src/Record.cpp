@@ -10,6 +10,12 @@ namespace gtar{
     using std::stringstream;
     using std::vector;
 
+    Record::Record():
+        m_group(), m_name(), m_index(), m_suffix(), m_behavior(Constant),
+        m_format(UInt8), m_resolution(Text)
+    {
+    }
+
     Record::Record(const string &path):
         m_group(), m_name(), m_index(), m_suffix(), m_behavior(Constant),
         m_format(UInt8), m_resolution(Text)
@@ -31,13 +37,7 @@ namespace gtar{
 
     void Record::operator=(const Record &rhs)
     {
-        m_group = rhs.m_group;
-        m_name = rhs.m_name;
-        m_index = rhs.m_index;
-        m_suffix = rhs.m_suffix;
-        m_behavior = rhs.m_behavior;
-        m_format = rhs.m_format;
-        m_resolution = rhs.m_resolution;
+        copy(rhs);
     }
 
     bool Record::operator==(const Record &rhs) const
@@ -53,18 +53,38 @@ namespace gtar{
         return !(*this == rhs);
     }
 
+    template<typename T>
+    bool lthelper(T a, T b, bool rest)
+    {
+        return a < b || ((a == b) && rest);
+    }
+
     bool Record::operator<(const Record &rhs) const
     {
-        return m_group < rhs.m_group || m_name < rhs.m_name ||
-             m_suffix < rhs.m_suffix || m_behavior < rhs.m_behavior ||
-             m_format < rhs.m_format || m_resolution < rhs.m_resolution ||
-             m_index < rhs.m_index;
+        return lthelper(m_group, rhs.m_group,
+               lthelper(m_name, rhs.m_name,
+               lthelper(m_suffix, rhs.m_suffix,
+               lthelper(m_behavior, rhs.m_behavior,
+               lthelper(m_format, rhs.m_format,
+               lthelper(m_resolution, rhs.m_resolution,
+                        m_index < rhs.m_index))))));
+    }
+
+    void Record::copy(const Record &rhs)
+    {
+        m_group = rhs.m_group;
+        m_name = rhs.m_name;
+        m_index = rhs.m_index;
+        m_suffix = rhs.m_suffix;
+        m_behavior = rhs.m_behavior;
+        m_format = rhs.m_format;
+        m_resolution = rhs.m_resolution;
     }
 
     string Record::nullifyIndex()
     {
-        string result(m_index);
-        m_index = string();
+        string result;
+        m_index.swap(result);
         return result;
     }
 
@@ -139,6 +159,11 @@ namespace gtar{
         return result.str();
     }
 
+    string Record::getIndex() const
+    {
+        return m_index;
+    }
+
     void Record::setIndex(const string &index)
     {
         m_index = index;
@@ -160,6 +185,8 @@ namespace gtar{
                 processVars(target, firstSlash + 1);
             else
             {
+                if(m_group.size())
+                    m_group += '/';
                 m_group += target.substr(start, firstSlash - start);
                 process(target, firstSlash + 1);
             }
