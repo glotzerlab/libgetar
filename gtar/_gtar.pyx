@@ -13,22 +13,31 @@ cimport cpp
 np.import_array()
 
 cdef class OpenMode:
+    """Enum for ways in which an archive file can be opened: Read,
+    Write, and Append"""
     Read = cpp.Read
     Write = cpp.Write
     Append = cpp.Append
 
 cdef class CompressMode:
+    """Enum for ways in which files within an archive can be
+    compressed: NoCompress, FastCompress, MediumCompress, and
+    SlowCompress"""
     NoCompress = cpp.NoCompress
     FastCompress = cpp.FastCompress
     MediumCompress = cpp.MediumCompress
     SlowCompress = cpp.SlowCompress
 
 cdef class Behavior:
+    """Enum for how properties can behave over time: Constant,
+    Discrete, and Continuous"""
     Constant = cpp.Constant
     Discrete = cpp.Discrete
     Continuous = cpp.Continuous
 
 cdef class Format:
+    """Formats in which binary properties can be stored: Float{32,
+    64}, Int{32, 64}, UInt{8, 32, 64}"""
     Float32 = cpp.Float32
     Float64 = cpp.Float64
     Int32 = cpp.Int32
@@ -38,42 +47,57 @@ cdef class Format:
     UInt64 = cpp.UInt64
 
 cdef class Resolution:
+    """Resolution at which properties can be recorded: Text, Uniform,
+    and Individual"""
     Text = cpp.Text
     Uniform = cpp.Uniform
     Individual = cpp.Individual
 
 cdef class SharedArray:
+    """Wrapper for the c++ SharedArray<char> class"""
     cdef cpp.SharedArray[char] *thisptr
 
     def __cinit__(self):
+        """Initialize an empty SharedArray object"""
         self.thisptr = new cpp.SharedArray[char]()
 
     def __dealloc__(self):
+        """Deallocate the reference to the currently-held SharedArray
+        object"""
         del self.thisptr
 
     cdef copy(self, const cpp.SharedArray[char] &other):
+        """Make this SharedArray point to the given target"""
         self.thisptr.copy(other)
 
     def __len__(self):
+        """Return the number of elements (characters) in this
+        SharedArray"""
         return self.thisptr.size()
 
     def __getitem__(self, index):
+        """Access to individual elements in the SharedArray"""
         if(index < self.thisptr.size()):
             return self.thisptr.get()[index]
         else:
             raise IndexError('Index out of range')
 
     def __array__(self):
+        """Interface to create a numpy array from this object"""
         cdef np.npy_intp shape[1]
         shape[0] = <np.npy_intp> self.thisptr.size()
         return np.PyArray_SimpleNewFromData(1, shape,
                                             np.NPY_UINT8, self.thisptr.get())
 
     def _setBase(self, arr):
+        """Sets the base of arr to be this object and increases the
+        reference count"""
         cpp.PyArray_SetBaseObject(arr, self)
         Py_INCREF(self)
 
     def _arrayRecord(self, rec):
+        """Create a numpy array from this object given some metadata
+        in a Record object"""
         buf = np.asarray(self)
         self._setBase(buf)
 
@@ -98,9 +122,18 @@ cdef class SharedArray:
         return result
 
 cdef class Record:
+    """Python wrapper for the c++ Record class. Provides basic access
+    to Record methods."""
     cdef cpp.Record *thisptr
 
     def __cinit__(self, *args):
+        """Initialize a record object in different ways depending on
+        the arguments:
+
+        - No arguments: default constructor
+        - 1 argument: Parse the given path
+        - 7 arguments: Fill each field of the Record object
+        """
         if len(args) == 0:
             self.thisptr = new cpp.Record()
         elif len(args) == 1:
@@ -111,42 +144,63 @@ cdef class Record:
             raise TypeError('Incorrect number of arguments to Record()')
 
     def __dealloc__(self):
+        """Clean up the record allocated for this object"""
         del self.thisptr
 
     cdef copy(self, const cpp.Record &other):
+        """Set this object to be a copy of the given object"""
         self.thisptr.copy(other)
 
     def nullifyIndex(self):
+        """Nullify the index field of this object"""
         return self.thisptr.nullifyIndex()
 
     def getName(self):
+        """Returns the name field of this object"""
         return self.thisptr.getName()
 
     def getFormat(self):
+        """Returns the format field of this object"""
         return self.thisptr.getFormat()
 
     def getPath(self):
+        """Generates the path of the file inside the archive for this object"""
         return self.thisptr.getPath()
 
     def getIndex(self):
+        """Returns the index field for this object"""
         return self.thisptr.getIndex()
 
     def setIndex(self, index):
+        """Sets the index field of this object"""
         self.thisptr.setIndex(index)
 
 cdef class GTAR:
+    """Python wrapper for the GTAR c++ class. Provides basic access to
+    its methods and simple methods to read and write files within
+    archives."""
     cdef cpp.GTAR *thisptr
 
     def __cinit__(self, path, cpp.OpenMode mode):
+        """Initialize a GTAR object given an archive path and open mode"""
         self.thisptr = new cpp.GTAR(path, mode)
 
     def __dealloc__(self):
+        """Destroy the held GTAR object"""
         del self.thisptr
 
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
+        """Write the given contents to the location within the
+        archive, using the given compression mode.
+
+        Example:
+        >> gtar.writeBytes('params.json', json.dumps(params))
+        """
         self.thisptr.writeString(path, contents, mode)
 
     def getRecordTypes(self):
+        """Returns a python list of all the record types (without
+        index information) available in this archive"""
         result = []
         types = self.thisptr.getRecordTypes()
         for rec in types:
@@ -156,6 +210,8 @@ cdef class GTAR:
         return result
 
     def queryFrames(self, Record target):
+        """Returns a python list of all indices associated with a
+        given record available in this archive"""
         result = []
         frames = self.thisptr.queryFrames(deref(target.thisptr))
         for f in frames:
@@ -163,6 +219,8 @@ cdef class GTAR:
         return result
 
     def getRecord(self, Record query, string index=""):
+        """Returns a numpy array of the contents of the given base
+        record and index."""
         rec = Record()
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
