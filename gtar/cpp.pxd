@@ -4,7 +4,11 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 
+cimport numpy
 from libcpp cimport bool
+
+cdef extern from "numpy/arrayobject.h":
+    cdef int PyArray_SetBaseObject(numpy.ndarray arr, obj)
 
 cdef extern from "../src/SharedArray.hpp" namespace "gtar":
     cdef cppclass SharedArray[T]:
@@ -75,6 +79,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 
         string getPath() const
 
+        string getName() const
         Format getFormat() const
         string getIndex() const
         void setIndex(const string&)
@@ -86,7 +91,7 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         void writeBytes(const string&, const vector[char]&, CompressMode)
         void writePtr(const string&, const void*, const size_t, CompressMode)
 
-        SharedArray[T] readIndividual[T](const string&)
+        # SharedArray[T] readIndividual[T](const string&)
         SharedArray[char] readBytes(const string&)
 
         vector[Record] getRecordTypes() const

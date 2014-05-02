@@ -6,6 +6,7 @@ from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
+from cpython cimport PyObject, Py_INCREF
 
 cimport cpp
 
@@ -68,6 +69,34 @@ cdef class SharedArray:
         return np.PyArray_SimpleNewFromData(1, shape,
                                             np.NPY_UINT8, self.thisptr.get())
 
+    def _setBase(self, arr):
+        cpp.PyArray_SetBaseObject(arr, self)
+        Py_INCREF(self)
+
+    def _arrayRecord(self, rec):
+        buf = np.asarray(self)
+        self._setBase(buf)
+
+        formats = {cpp.Float32: '<f4',
+                   cpp.Float64: '<f8',
+                   cpp.Int32: '<i4',
+                   cpp.Int64: '<i8',
+                   cpp.UInt32: '<u4',
+                   cpp.UInt64: '<u8',
+                   cpp.UInt8: 'c'}
+
+        widths = {'position': 3,
+                  'velocity': 3,
+                  'orientation': 4}
+
+        result = np.frombuffer(buf, dtype=formats[rec.getFormat()])
+
+        name = rec.getName()
+        if name in widths:
+            result = result.reshape((-1, widths[name]))
+
+        return result
+
 cdef class Record:
     cdef cpp.Record *thisptr
 
@@ -89,6 +118,12 @@ cdef class Record:
 
     def nullifyIndex(self):
         return self.thisptr.nullifyIndex()
+
+    def getName(self):
+        return self.thisptr.getName()
+
+    def getFormat(self):
+        return self.thisptr.getFormat()
 
     def getPath(self):
         return self.thisptr.getPath()
@@ -132,8 +167,7 @@ cdef class GTAR:
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
 
-        cdef cpp.Format fmt = rec.thisptr.getFormat()
         cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
         result = SharedArray()
         result.copy(inter)
-        return result
+        return result._arrayRecord(rec)

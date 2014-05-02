@@ -159,14 +159,19 @@ namespace gtar{
         return result.str();
     }
 
-    Format Record::getFormat() const
+    string Record::getName() const
     {
-        return m_format;
+        return m_name;
     }
 
     string Record::getIndex() const
     {
         return m_index;
+    }
+
+    Format Record::getFormat() const
+    {
+        return m_format;
     }
 
     void Record::setIndex(const string &index)

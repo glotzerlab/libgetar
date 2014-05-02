@@ -44,8 +44,9 @@ namespace gtar{
 
         string getPath() const;
 
-        Format getFormat() const;
+        string getName() const;
         string getIndex() const;
+        Format getFormat() const;
         void setIndex(const string &index);
 
     private:
