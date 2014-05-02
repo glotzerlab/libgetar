@@ -28,26 +28,31 @@ namespace gtar{
     using std::swap;
     using std::vector;
 
-    // Swap bytes to little-endian order if necessary
+    // Swap the endianness of all elements, if necessary on this
+    // architecture
     template<typename T>
     void maybeSwapEndian(char *target, size_t byteLength);
 
-    // Special sorter for index strings
+    // Special sorter for index strings such that shorter strings
+    // appear first
     class IndexCompare
     {
     public:
         bool operator()(const string &a, const string &b);
     };
 
-    // TODO enforce bytesize constraints on items?
+    // Accessor interface for a trajectory archive
     class GTAR
     {
     public:
         typedef set<string, IndexCompare> indexSet;
 
+        // Constructor. Opens the zip file at filename in the given
+        // mode.
         GTAR(const string &filename, const OpenMode mode);
 
-        // Most generic functions. Toss some bytes into a location.
+        // Most generic functions. Toss some bytes into a location,
+        // overloaded for different sources.
         void writeString(const string &path, const string &contents, CompressMode mode);
         void writeBytes(const string &path, const vector<char> &contents, CompressMode mode);
         void writePtr(const string &path, const void *contents,
@@ -61,19 +66,30 @@ namespace gtar{
         template<typename T>
         void writeUniform(const string &path, const T &val);
 
+        // Read individual and uniform binary properties (or just a
+        // stream of bytes) from the specified location, converting
+        // from little endian if necessary.
         template<typename T>
         SharedArray<T> readIndividual(const string &path);
         template<typename T>
         T readUniform(const string &path);
         SharedArray<char> readBytes(const string &path);
 
+        // Query all of the records in the archive. These will all
+        // have empty indices.
         vector<Record> getRecordTypes() const;
+        // Query the indices associated with a given record. The
+        // record is not required to have a null index.
         vector<string> queryFrames(const Record &target) const;
 
     private:
+        // Insert a record into the set of cached records
         void insertRecord(const string &path);
 
+        // The archive abstraction object we'll use
         Archive m_archive;
+
+        // Cached record objects
         map<Record, indexSet> m_records;
         map<Record, vector<string> > m_indexedRecords;
     };
