@@ -111,7 +111,9 @@ cdef class SharedArray:
 
         widths = {'position': 3,
                   'velocity': 3,
-                  'orientation': 4}
+                  'orientation': 4,
+                  'image': 3,
+                  'body_angular_momentum': 3}
 
         result = np.frombuffer(buf, dtype=formats[rec.getFormat()])
 
