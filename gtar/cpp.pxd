@@ -75,6 +75,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 
         string getPath() const
 
+        Format getFormat() const
         string getIndex() const
         void setIndex(const string&)
 
@@ -85,6 +86,7 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         void writeBytes(const string&, const vector[char]&, CompressMode)
         void writePtr(const string&, const void*, const size_t, CompressMode)
 
+        SharedArray[T] readIndividual[T](const string&)
         SharedArray[char] readBytes(const string&)
 
         vector[Record] getRecordTypes() const

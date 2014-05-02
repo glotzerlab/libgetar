@@ -159,6 +159,11 @@ namespace gtar{
         return result.str();
     }
 
+    Format Record::getFormat() const
+    {
+        return m_format;
+    }
+
     string Record::getIndex() const
     {
         return m_index;
