@@ -2,7 +2,6 @@
 
 import os, sys
 from distutils.core import Extension, setup
-from Cython.Build import cythonize
 import numpy
 
 macros = []
@@ -11,13 +10,24 @@ if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')
 
-def myCythonize(*args, **kwargs):
-    result = cythonize(*args, **kwargs)
-    for r in result:
-        r.define_macros.extend(macros)
-        r.include_dirs.append(numpy.get_include())
+if '--cython' in sys.argv:
+    from Cython.Build import cythonize
+    sys.argv.remove('--cython')
 
-    return result
+    def myCythonize(macros, *args, **kwargs):
+        result = cythonize(*args, **kwargs)
+        for r in result:
+            r.define_macros.extend(macros)
+            r.include_dirs.append(numpy.get_include())
+
+        return result
+
+    modules = myCythonize(macros, 'gtar/_gtar.pyx')
+else:
+    sources = ['gtar/_gtar.cpp', 'src/Archive.cpp', 'src/vogl_miniz.cpp',
+               'src/vogl_miniz_zip.cpp', 'src/GTAR.cpp', 'src/Record.cpp']
+    modules = [Extension('gtar._gtar', sources=sources,
+                         include_dirs=[numpy.get_include()])]
 
 setup(name='gtar',
       version='0.1',
@@ -26,5 +36,5 @@ setup(name='gtar',
       author_email='mspells@umich.edu',
       url='',
       packages=['gtar'],
-      ext_modules=myCythonize('gtar/_gtar.pyx')
+      ext_modules=modules
 )
