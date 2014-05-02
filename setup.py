@@ -3,6 +3,7 @@
 import os, sys
 from distutils.core import Extension, setup
 from Cython.Build import cythonize
+import numpy
 
 macros = []
 
@@ -14,6 +15,7 @@ def myCythonize(*args, **kwargs):
     result = cythonize(*args, **kwargs)
     for r in result:
         r.define_macros.extend(macros)
+        r.include_dirs.append(numpy.get_include())
 
     return result
 

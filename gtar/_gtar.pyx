@@ -1,12 +1,15 @@
 # distutils: language = c++
 # distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp
 
-from cython cimport view
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
+import numpy as np
+cimport numpy as np
 
 cimport cpp
+
+np.import_array()
 
 cdef class OpenMode:
     Read = cpp.Read
@@ -58,6 +61,12 @@ cdef class SharedArray:
             return self.thisptr.get()[index]
         else:
             raise IndexError('Index out of range')
+
+    def __array__(self):
+        cdef np.npy_intp shape[1]
+        shape[0] = <np.npy_intp> self.thisptr.size()
+        return np.PyArray_SimpleNewFromData(1, shape,
+                                            np.NPY_UINT8, self.thisptr.get())
 
 cdef class Record:
     cdef cpp.Record *thisptr
@@ -123,8 +132,8 @@ cdef class GTAR:
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
 
+        cdef cpp.Format fmt = rec.thisptr.getFormat()
         cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
-        cdef unsigned int n = inter.size()
-        cdef view.array arr = view.array(shape=(n,), itemsize=sizeof(char), format='c', allocate_buffer=True)
-        arr[:] = <char[:n]> inter.get()
-        return arr
+        result = SharedArray()
+        result.copy(inter)
+        return result
