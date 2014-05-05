@@ -27,7 +27,12 @@ namespace gtar{
                 mz_zip_writer_init_file(&m_archive, filename.c_str(), 0, MZ_ZIP_FLAG_WRITE_ZIP64));
 
             if(!success)
-                throw runtime_error("Error opening file for write");
+            {
+                stringstream result;
+                result << "Error opening file for write: ";
+                result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+                throw runtime_error(result.str());
+            }
         }
         else if(m_mode == Read)
         {
@@ -36,7 +41,12 @@ namespace gtar{
                                         MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
 
             if(!success)
-                throw runtime_error("Error opening file for read");
+            {
+                stringstream result;
+                result << "Error opening file for read: ";
+                result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+                throw runtime_error(result.str());
+            }
         }
         else
         {
@@ -45,16 +55,31 @@ namespace gtar{
                                         MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
 
             if(!success)
-                throw runtime_error("Error opening file for append (stage 1)");
+            {
+                stringstream result;
+                result << "Error opening file for append (stage 1): ";
+                result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+                throw runtime_error(result.str());
+            }
 
             success = mz_zip_writer_init_from_reader(&m_archive, filename.c_str(), MZ_ZIP_FLAG_WRITE_ZIP64);
 
             if(!success)
-                throw runtime_error("Error opening file for append (stage 2)");
+            {
+                stringstream result;
+                result << "Error opening file for append (stage 2): ";
+                result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+                throw runtime_error(result.str());
+            }
         }
     }
 
     Archive::~Archive()
+    {
+        close();
+    }
+
+    void Archive::close()
     {
         if(m_mode == Write || m_mode == Append)
         {
@@ -63,6 +88,7 @@ namespace gtar{
         }
         else
             mz_zip_reader_end(&m_archive);
+        mz_zip_zero_struct(&m_archive);
     }
 
     void Archive::writeVec(const string &path, const vector<char> &contents,
@@ -100,7 +126,12 @@ namespace gtar{
                                   byteLength, flags));
 
         if(!success)
-            throw runtime_error("Failed adding a file to archive");
+        {
+            stringstream result;
+            result << "Error adding a file to archive: ";
+            result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+            throw runtime_error(result.str());
+        }
     }
 
     SharedArray<char> Archive::read(const string &path)
@@ -121,7 +152,12 @@ namespace gtar{
         success = mz_zip_extract_to_mem(&m_archive, fileIndex, result.get(), stat.m_uncomp_size, MZ_ZIP_FLAG_CASE_SENSITIVE);
 
         if(!success)
-            throw runtime_error("Failed extracting file " + path);
+        {
+            stringstream result;
+            result << "Failed extracting file " + path + ": ";
+            result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+            throw runtime_error(result.str());
+        }
 
         return result;
     }

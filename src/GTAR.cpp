@@ -34,6 +34,11 @@ namespace gtar{
         }
     }
 
+    void GTAR::close()
+    {
+        m_archive.close();
+    }
+
     void GTAR::writeString(const string &path, const string &contents, CompressMode mode)
     {
         m_archive.writePtr(path, contents.data(), contents.size(), mode);

@@ -87,6 +87,8 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 cdef extern from "../src/GTAR.hpp" namespace "gtar":
     cdef cppclass GTAR:
         GTAR(const string&, OpenMode)
+
+        void close()
         void writeString(const string&, const string&, CompressMode)
         void writeBytes(const string&, const vector[char]&, CompressMode)
         void writePtr(const string&, const void*, const size_t, CompressMode)

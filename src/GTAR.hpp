@@ -51,6 +51,10 @@ namespace gtar{
         // mode.
         GTAR(const string &filename, const OpenMode mode);
 
+        // Manually close the opened archive (it automatically closes
+        // itself upon destruction)
+        void close();
+
         // Most generic functions. Toss some bytes into a location,
         // overloaded for different sources.
         void writeString(const string &path, const string &contents, CompressMode mode);

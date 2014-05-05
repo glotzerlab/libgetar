@@ -37,6 +37,9 @@ namespace gtar{
         // Destructor: Clean up memory used
         ~Archive();
 
+        // Close the archive
+        void close();
+
         // Write a char vector of bytes to the given path within the
         // archive with the given compress mode
         void writeVec(const string &path, const vector<char> &contents, CompressMode mode);

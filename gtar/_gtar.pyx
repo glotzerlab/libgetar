@@ -191,6 +191,14 @@ cdef class GTAR:
         """Destroy the held GTAR object"""
         del self.thisptr
 
+    def __enter__(self):
+        """Enter a context with this object"""
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """Exit a context with this object"""
+        self.thisptr.close()
+
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
         archive, using the given compression mode.
