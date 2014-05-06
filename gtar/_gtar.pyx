@@ -89,6 +89,12 @@ cdef class SharedArray:
         return np.PyArray_SimpleNewFromData(1, shape,
                                             np.NPY_UINT8, self.thisptr.get())
 
+    def __bytes__(self):
+        return self.thisptr.get()[:self.thisptr.size()]
+
+    def __str__(self):
+        return self.__bytes__()
+
     def _setBase(self, arr):
         """Sets the base of arr to be this object and increases the
         reference count"""
@@ -207,6 +213,14 @@ cdef class GTAR:
         >> gtar.writeBytes('params.json', json.dumps(params))
         """
         self.thisptr.writeString(path, contents, mode)
+
+    def readBytes(self, path):
+        """Read the contents of the given location within the archive,
+        or return None if not found"""
+        result = SharedArray()
+        result.copy(self.thisptr.readBytes(path))
+
+        return (bytes(result) if len(result) else None)
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
