@@ -172,6 +172,9 @@ namespace gtar{
         const unsigned int len(mz_zip_get_filename(&m_archive, index, NULL, 0));
         SharedArray<char> result(new char[len], len);
         mz_zip_get_filename(&m_archive, index, result.get(), len);
-        return string(result.get(), len);
+        if(len)
+            return string(result.get(), len - 1);
+        else
+            return string();
     }
 }
