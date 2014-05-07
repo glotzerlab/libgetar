@@ -119,7 +119,8 @@ cdef class SharedArray:
                   'velocity': 3,
                   'orientation': 4,
                   'image': 3,
-                  'body_angular_momentum': 3}
+                  'angular_momentum': 3,
+                  'moment_inertia': 3}
 
         result = np.frombuffer(buf, dtype=formats[rec.getFormat()])
 
