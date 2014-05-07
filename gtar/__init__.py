@@ -1,2 +1,3 @@
 
-from _gtar import *
+from . import _gtar
+from ._gtar import *
