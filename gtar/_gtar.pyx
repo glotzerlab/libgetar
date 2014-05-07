@@ -190,9 +190,16 @@ cdef class GTAR:
     archives."""
     cdef cpp.GTAR *thisptr
 
-    def __cinit__(self, path, cpp.OpenMode mode):
+    openModes = {'r': cpp.Read,
+                 'w': cpp.Write,
+                 'a': cpp.Append}
+
+    def __cinit__(self, path, mode):
         """Initialize a GTAR object given an archive path and open mode"""
-        self.thisptr = new cpp.GTAR(path, mode)
+        try:
+            self.thisptr = new cpp.GTAR(path, self.openModes[mode])
+        except KeyError:
+            raise RuntimeError('Unknown open mode: {}'.format(mode))
 
     def __dealloc__(self):
         """Destroy the held GTAR object"""
