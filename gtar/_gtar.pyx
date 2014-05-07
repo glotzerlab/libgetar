@@ -53,6 +53,12 @@ cdef class Resolution:
     Uniform = cpp.Uniform
     Individual = cpp.Individual
 
+cdef string py3str(arg):
+    return <string> arg.encode('utf8')
+
+cdef unpy3str(arg):
+    return arg.decode('utf8')
+
 cdef class SharedArray:
     """Wrapper for the c++ SharedArray<char> class"""
     cdef cpp.SharedArray[char] *thisptr
@@ -86,14 +92,17 @@ cdef class SharedArray:
         """Interface to create a numpy array from this object"""
         cdef np.npy_intp shape[1]
         shape[0] = <np.npy_intp> self.thisptr.size()
-        return np.PyArray_SimpleNewFromData(1, shape,
+        result = np.PyArray_SimpleNewFromData(1, shape,
                                             np.NPY_UINT8, self.thisptr.get())
+        self._setBase(result)
+
+        return result
 
     def __bytes__(self):
-        return self.thisptr.get()[:self.thisptr.size()]
+        return <bytes> self.thisptr.get()[:self.thisptr.size()]
 
     def __str__(self):
-        return self.__bytes__()
+        return unpy3str(self.__bytes__())
 
     def _setBase(self, arr):
         """Sets the base of arr to be this object and increases the
@@ -105,7 +114,6 @@ cdef class SharedArray:
         """Create a numpy array from this object given some metadata
         in a Record object"""
         buf = np.asarray(self)
-        self._setBase(buf)
 
         formats = {cpp.Float32: '<f4',
                    cpp.Float64: '<f8',
@@ -146,9 +154,11 @@ cdef class Record:
         if len(args) == 0:
             self.thisptr = new cpp.Record()
         elif len(args) == 1:
-            self.thisptr = new cpp.Record(<string> args[0])
+            self.thisptr = new cpp.Record(py3str(args[0]))
         elif len(args) == 7:
-            self.thisptr = new cpp.Record(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+            self.thisptr = new cpp.Record(py3str(args[0]), py3str(args[1]),
+                                          py3str(args[2]), py3str(args[3]),
+                                          args[4], args[5], args[6])
         else:
             raise TypeError('Incorrect number of arguments to Record()')
 
@@ -162,11 +172,11 @@ cdef class Record:
 
     def nullifyIndex(self):
         """Nullify the index field of this object"""
-        return self.thisptr.nullifyIndex()
+        return unpy3str(self.thisptr.nullifyIndex())
 
     def getName(self):
         """Returns the name field of this object"""
-        return self.thisptr.getName()
+        return unpy3str(self.thisptr.getName())
 
     def getFormat(self):
         """Returns the format field of this object"""
@@ -174,15 +184,15 @@ cdef class Record:
 
     def getPath(self):
         """Generates the path of the file inside the archive for this object"""
-        return self.thisptr.getPath()
+        return unpy3str(self.thisptr.getPath())
 
     def getIndex(self):
         """Returns the index field for this object"""
-        return self.thisptr.getIndex()
+        return unpy3str(self.thisptr.getIndex())
 
     def setIndex(self, index):
         """Sets the index field of this object"""
-        self.thisptr.setIndex(index)
+        self.thisptr.setIndex(py3str(index))
 
 cdef class GTAR:
     """Python wrapper for the GTAR c++ class. Provides basic access to
@@ -197,7 +207,7 @@ cdef class GTAR:
     def __cinit__(self, path, mode):
         """Initialize a GTAR object given an archive path and open mode"""
         try:
-            self.thisptr = new cpp.GTAR(path, self.openModes[mode])
+            self.thisptr = new cpp.GTAR(py3str(path), self.openModes[mode])
         except KeyError:
             raise RuntimeError('Unknown open mode: {}'.format(mode))
 
@@ -220,13 +230,13 @@ cdef class GTAR:
         Example:
         >> gtar.writeBytes('params.json', json.dumps(params))
         """
-        self.thisptr.writeString(path, contents, mode)
+        self.thisptr.writeString(py3str(path), contents, mode)
 
     def readBytes(self, path):
         """Read the contents of the given location within the archive,
         or return None if not found"""
         result = SharedArray()
-        result.copy(self.thisptr.readBytes(path))
+        result.copy(self.thisptr.readBytes(py3str(path)))
 
         return (bytes(result) if len(result) else None)
 
@@ -247,10 +257,10 @@ cdef class GTAR:
         result = []
         frames = self.thisptr.queryFrames(deref(target.thisptr))
         for f in frames:
-            result.append(f)
+            result.append(unpy3str(f))
         return result
 
-    def getRecord(self, Record query, string index=""):
+    def getRecord(self, Record query, index=""):
         """Returns a numpy array of the contents of the given base
         record and index."""
         rec = Record()
