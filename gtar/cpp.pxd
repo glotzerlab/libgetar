@@ -81,6 +81,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 
         string getName() const
         Format getFormat() const
+        Resolution getResolution() const
         string getIndex() const
         void setIndex(const string&)
 

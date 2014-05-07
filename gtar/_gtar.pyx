@@ -276,4 +276,8 @@ cdef class GTAR:
         cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
         result = SharedArray()
         result.copy(inter)
-        return result._arrayRecord(rec)
+
+        if rec.thisptr.getResolution() != cpp.Text:
+            return result._arrayRecord(rec)
+        else:
+            return str(result)

@@ -174,6 +174,11 @@ namespace gtar{
         return m_format;
     }
 
+    Resolution Record::getResolution() const
+    {
+        return m_resolution;
+    }
+
     void Record::setIndex(const string &index)
     {
         m_index = index;
