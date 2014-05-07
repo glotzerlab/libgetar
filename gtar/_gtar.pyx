@@ -240,6 +240,12 @@ cdef class GTAR:
 
         return (bytes(result) if len(result) else None)
 
+    def writeStr(self, path, contents, mode=cpp.FastCompress):
+        self.writeBytes(self, path, contents.encode('utf8'))
+
+    def readStr(self, path):
+        return self.readBytes(path).decode('utf8')
+
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
         index information) available in this archive"""
