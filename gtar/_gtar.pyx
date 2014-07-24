@@ -282,3 +282,34 @@ cdef class GTAR:
             return result._arrayRecord(rec)
         else:
             return str(result)
+
+    def recordsNamed(self, names):
+        """Returns (frame, [val[frame] for val in names]) for each
+        frame which contains records matching each of the given
+        names."""
+        allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        frames = None
+
+        for n in names:
+            try:
+                rec = allRecords[n]
+            except KeyError:
+                raise KeyError('Can\'t find a record named {}'.format(n))
+
+            f = self.queryFrames(rec)
+
+            if frames is not None:
+                frames.intersection_update(f)
+            else:
+                frames = set(f)
+
+        for frame in sorted(frames):
+            yield frame, tuple(self.getRecord(allRecords[n], frame) for n in names)
+
+    def staticRecordNamed(self, name):
+        """Returns a static record with the given name."""
+        try:
+            rec = [rec for rec in self.getRecordTypes() if rec.getName() == name][0]
+            return self.getRecord(rec)
+        except IndexError:
+            raise KeyError('Can\'t find a static record named {}'.format(name))
