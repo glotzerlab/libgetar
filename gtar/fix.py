@@ -28,9 +28,13 @@ def main(input, output):
     deleteLines = []
     # Bad zip records from miniz always have this size [citation needed]
     if zipLog[-1].strip().endswith(u'(4294967295 bytes)'):
-        frame = re.search('frames/([0-9]+)/', zipLog[-1]).group(0)
+        foundFrame = re.search('frames/([0-9]+)/', zipLog[-1])
 
-        while frame in zipLog[-1]:
+        if foundFrame:
+            frame = foundFrame.group(0)
+            while frame in zipLog[-1]:
+                deleteLines.append(zipLog.pop())
+        else:
             deleteLines.append(zipLog.pop())
 
     toDelete = []
