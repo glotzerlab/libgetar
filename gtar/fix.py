@@ -3,7 +3,6 @@ import argparse
 import os
 import re
 import subprocess
-import StringIO
 
 parser = argparse.ArgumentParser(
     description='Command-line archive fixer')
@@ -21,13 +20,13 @@ def main(input, output):
     cmdLine = ['zip', '-FF', input, '--out', tempName]
 
     proc = subprocess.Popen(cmdLine, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    (zipLog, _) = proc.communicate('y\n')
+    (zipLog, _) = proc.communicate('y\n'.encode('UTF-8'))
     zipLog = zipLog.decode('utf8').split('\n')
     zipLog.pop()
 
     deleteLines = []
     # Bad zip records from miniz always have this size [citation needed]
-    if zipLog[-1].strip().endswith(u'(4294967295 bytes)'):
+    if zipLog[-1].strip().endswith('(4294967295 bytes)'):
         foundFrame = re.search('frames/([0-9]+)/', zipLog[-1])
 
         if foundFrame:
