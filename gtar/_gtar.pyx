@@ -297,7 +297,8 @@ cdef class GTAR:
             try:
                 rec = allRecords[n]
             except KeyError:
-                raise KeyError('Can\'t find a record named {}'.format(n))
+                return []
+                # raise KeyError('Can\'t find a record named {}'.format(n))
 
             f = self.queryFrames(rec)
 
