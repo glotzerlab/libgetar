@@ -286,9 +286,12 @@ cdef class GTAR:
     def recordsNamed(self, names):
         """Returns (frame, [val[frame] for val in names]) for each
         frame which contains records matching each of the given
-        names."""
+        names. If only given a single name, returns (frame, val[frame])."""
         allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
         frames = None
+
+        if type(names) == type(''):
+            names = [names]
 
         for n in names:
             try:
@@ -303,8 +306,12 @@ cdef class GTAR:
             else:
                 frames = set(f)
 
-        for frame in sorted(frames):
-            yield frame, tuple(self.getRecord(allRecords[n], frame) for n in names)
+        if len(names) > 1:
+            for frame in sorted(frames):
+                yield frame, tuple(self.getRecord(allRecords[n], frame) for n in names)
+        else:
+            for frame in sorted(frames):
+                yield frame, self.getRecord(allRecords[names[0]], frame)
 
     def staticRecordNamed(self, name):
         """Returns a static record with the given name."""
