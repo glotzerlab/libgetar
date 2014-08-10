@@ -245,7 +245,11 @@ cdef class GTAR:
         self.writeBytes(self, path, contents.encode('utf8'))
 
     def readStr(self, path):
-        return self.readBytes(path).decode('utf8')
+        result = self.readBytes(path)
+        if result is not None:
+            return result.decode('utf8')
+        else:
+            return result
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
