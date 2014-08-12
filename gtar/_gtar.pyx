@@ -200,6 +200,8 @@ cdef class GTAR:
     its methods and simple methods to read and write files within
     archives."""
     cdef cpp.GTAR *thisptr
+    cdef _path
+    cdef _mode
 
     openModes = {'r': cpp.Read,
                  'w': cpp.Write,
@@ -207,6 +209,8 @@ cdef class GTAR:
 
     def __cinit__(self, path, mode):
         """Initialize a GTAR object given an archive path and open mode"""
+        self._path = path
+        self._mode = mode
         try:
             self.thisptr = new cpp.GTAR(py3str(path), self.openModes[mode])
         except KeyError:
@@ -223,6 +227,9 @@ cdef class GTAR:
     def __exit__(self, type, value, traceback):
         """Exit a context with this object"""
         self.thisptr.close()
+
+    def __reduce__(self):
+        return (self.__class__, (self._path, self._mode))
 
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
