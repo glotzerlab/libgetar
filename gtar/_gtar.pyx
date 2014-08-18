@@ -294,6 +294,36 @@ cdef class GTAR:
         else:
             return str(result)
 
+    def framesWithRecordsNamed(self, names):
+        """Returns ([record(val) for val in names], [frames]) given a
+        set of record names names. If only given a single name,
+        returns (record, [frames])."""
+        allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        frames = None
+        records = []
+
+        if type(names) == type(''):
+            names = [names]
+
+        for n in names:
+            try:
+                rec = allRecords[n]
+                records.append(rec)
+            except KeyError:
+                return (None, [])
+
+            f = self.queryFrames(rec)
+
+            if frames is not None:
+                frames.intersection_update(f)
+            else:
+                frames = set(f)
+
+        if len(names) > 1:
+            return (records, sorted(frames))
+        else:
+            return (records[0], sorted(frames))
+
     def recordsNamed(self, names):
         """Returns (frame, [val[frame] for val in names]) for each
         frame which contains records matching each of the given
