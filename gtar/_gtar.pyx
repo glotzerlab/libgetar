@@ -231,6 +231,10 @@ cdef class GTAR:
     def __reduce__(self):
         return (self.__class__, (self._path, self._mode))
 
+    def _sortFrameKey(self, v):
+        """Key function for sorting frame indices"""
+        return (len(v), v)
+
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
         archive, using the given compression mode. This serializes the
@@ -335,9 +339,9 @@ cdef class GTAR:
                 frames = set(f)
 
         if len(names) > 1:
-            return (records, sorted(frames))
+            return (records, sorted(frames, key=self._sortFrameKey))
         else:
-            return (records[0], sorted(frames))
+            return (records[0], sorted(frames, key=self._sortFrameKey))
 
     def recordsNamed(self, names):
         """Returns (frame, [val[frame] for val in names]) for each
@@ -364,10 +368,10 @@ cdef class GTAR:
                 frames = set(f)
 
         if len(names) > 1:
-            for frame in sorted(frames):
+            for frame in sorted(frames, key=self._sortFrameKey):
                 yield frame, tuple(self.getRecord(allRecords[n], frame) for n in names)
         else:
-            for frame in sorted(frames):
+            for frame in sorted(frames, key=self._sortFrameKey):
                 yield frame, self.getRecord(allRecords[names[0]], frame)
 
     def staticRecordNamed(self, name):
