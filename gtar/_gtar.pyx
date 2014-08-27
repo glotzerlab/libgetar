@@ -246,8 +246,6 @@ cdef class GTAR:
         """
         arr = np.ascontiguousarray(arr.flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
-        print(arr[0])
-        print((<float*>carr.data)[0])
         self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
 
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
