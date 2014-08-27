@@ -268,7 +268,7 @@ cdef class GTAR:
         return (bytes(result) if len(result) else None)
 
     def writeStr(self, path, contents, mode=cpp.FastCompress):
-        self.writeBytes(self, path, contents.encode('utf8'))
+        self.thisptr.writeString(py3str(path), contents.encode('utf-8'), mode)
 
     def readStr(self, path):
         result = self.readBytes(path)
