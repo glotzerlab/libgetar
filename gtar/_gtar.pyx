@@ -231,6 +231,21 @@ cdef class GTAR:
     def __reduce__(self):
         return (self.__class__, (self._path, self._mode))
 
+    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
+        """Write the given numpy array to the location within the
+        archive, using the given compression mode. This serializes the
+        data into the given binary data type or the same binary format
+        that the numpy array is using.
+
+        Example:
+        >> gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
+        """
+        arr = np.ascontiguousarray(arr.flat, dtype=dtype)
+        cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
+        print(arr[0])
+        print((<float*>carr.data)[0])
+        self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
+
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
         archive, using the given compression mode.
