@@ -296,8 +296,7 @@ cdef class GTAR:
         return result
 
     def getRecord(self, Record query, index=""):
-        """Returns a numpy array of the contents of the given base
-        record and index."""
+        """Returns the contents of the given base record and index."""
         rec = Record()
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
@@ -344,7 +343,17 @@ cdef class GTAR:
     def recordsNamed(self, names):
         """Returns (frame, [val[frame] for val in names]) for each
         frame which contains records matching each of the given
-        names. If only given a single name, returns (frame, val[frame])."""
+        names. If only given a single name, returns (frame, val[frame]).
+
+        Example:
+        >> g = gtar.GTAR('dump.zip', 'r')
+        >> # grab single property
+        >> for (_, vel) in g.recordsNamed('velocity'):
+        >>     pass
+        >> # grab multiple properties
+        >> for (idx, (pos, quat)) in g.recordsNamed(['position', 'orientation']):
+        >>     pass
+        """
         allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
         frames = None
 
