@@ -215,6 +215,8 @@ cdef class GTAR:
             self.thisptr = new cpp.GTAR(py3str(path), self.openModes[mode])
         except KeyError:
             raise RuntimeError('Unknown open mode: {}'.format(mode))
+        except RuntimeError as e:
+            raise RuntimeError('{} for file {}'.format(e.args[0], path))
 
     def __dealloc__(self):
         """Destroy the held GTAR object"""
