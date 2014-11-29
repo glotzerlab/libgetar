@@ -1,4 +1,4 @@
-// Archive.h
+// Archive.hpp
 // by Matthew Spellings <mspells@umich.edu>
 
 #include <memory>
@@ -6,7 +6,6 @@
 #include <string>
 #include <utility>
 
-#include "vogl_miniz_zip.h"
 #include "SharedArray.hpp"
 
 #ifndef __ARCHIVE_HPP_
@@ -25,45 +24,34 @@ namespace gtar{
     // Varying degrees to which files can be compressed
     enum CompressMode {NoCompress, FastCompress, MediumCompress, SlowCompress};
 
-    // Archive abstraction layer. Thin wrapper over miniz
-    // functionality.
+    // Archive abstraction layer. Pure virtual interface for archive
+    // (i.e., a handle to a file) functionality
     class Archive
     {
     public:
-        // Constructor: Open or create an archive object with the
-        // given filename and access mode
-        Archive(const string &filename, const OpenMode mode);
-
         // Destructor: Clean up memory used
-        ~Archive();
+        virtual ~Archive() = 0;
 
         // Close the archive
-        void close();
+        virtual void close() = 0;
 
         // Write a char vector of bytes to the given path within the
         // archive with the given compress mode
-        void writeVec(const string &path, const vector<char> &contents, CompressMode mode);
+        virtual void writeVec(const string &path, const vector<char> &contents,
+                              CompressMode mode);
 
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
-        void writePtr(const string &path, const void *contents,
-                      const size_t byteLength, CompressMode mode);
+        virtual void writePtr(const string &path, const void *contents,
+                              const size_t byteLength, CompressMode mode) = 0;
 
         // Read the contents of the given location within the archive
-        SharedArray<char> read(const string &path);
+        virtual SharedArray<char> read(const string &path) = 0;
 
         // Return the number of files stored in the archive
-        unsigned int size();
+        virtual unsigned int size() = 0;
         // Return the name of the file with the given numerical index
-        string getItemName(unsigned int index);
-
-    private:
-        // Name of the archive file we're accessing
-        const string m_filename;
-        // How we're accessing the archive
-        const OpenMode m_mode;
-        // Stored miniz archive object
-        mz_zip_archive m_archive;
+        virtual string getItemName(unsigned int index) = 0;
     };
 
 }

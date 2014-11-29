@@ -23,41 +23,59 @@ namespace gtar{
     }
 
     GTAR::GTAR(const string &filename, const OpenMode mode):
-        m_archive(filename, mode), m_records(), m_indexedRecords()
+        m_archive(), m_records(), m_indexedRecords()
     {
+        if(filename.rfind(".tar") == filename.length() - 4)
+            m_archive.reset(new TarArchive(filename, mode));
+        else
+            m_archive.reset(new ZipArchive(filename, mode));
+
         // Populate our record list
         if(mode == Read)
         {
-            const unsigned int size(m_archive.size());
+            const unsigned int size(m_archive->size());
             for(unsigned int index(0); index < size; ++index)
-                insertRecord(m_archive.getItemName(index));
+                insertRecord(m_archive->getItemName(index));
         }
     }
 
     void GTAR::close()
     {
-        m_archive.close();
+        if(m_archive.get())
+            m_archive->close();
     }
 
     void GTAR::writeString(const string &path, const string &contents, CompressMode mode)
     {
-        m_archive.writePtr(path, contents.data(), contents.size(), mode);
+        if(m_archive.get())
+            m_archive->writePtr(path, contents.data(), contents.size(), mode);
+        else
+            throw runtime_error("Calling writeString() with a closed GTAR object");
     }
 
     void GTAR::writeBytes(const string &path, const vector<char> &contents, CompressMode mode)
     {
-        m_archive.writeVec(path, contents, mode);
+        if(m_archive.get())
+            m_archive->writeVec(path, contents, mode);
+        else
+            throw runtime_error("Calling writeBytes() with a closed GTAR object");
     }
 
     void GTAR::writePtr(const string &path, const void *contents,
                         const size_t byteLength, CompressMode mode)
     {
-        m_archive.writePtr(path, contents, byteLength, mode);
+        if(m_archive.get())
+            m_archive->writePtr(path, contents, byteLength, mode);
+        else
+            throw runtime_error("Calling writePtr() with a closed GTAR object");
     }
 
     SharedArray<char> GTAR::readBytes(const string &path)
     {
-        return m_archive.read(path);
+        if(m_archive.get())
+            return m_archive->read(path);
+        else
+            throw runtime_error("Calling readBytes() with a closed GTAR object");
     }
 
     vector<Record> GTAR::getRecordTypes() const

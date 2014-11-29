@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "Archive.hpp"
+#include "ZipArchive.hpp"
+#include "TarArchive.hpp"
 #include "SharedArray.hpp"
 #include "Record.hpp"
 
@@ -21,6 +23,7 @@
 
 namespace gtar{
 
+    using std::auto_ptr;
     using std::map;
     using std::runtime_error;
     using std::set;
@@ -91,7 +94,7 @@ namespace gtar{
         void insertRecord(const string &path);
 
         // The archive abstraction object we'll use
-        Archive m_archive;
+        auto_ptr<Archive> m_archive;
 
         // Cached record objects
         map<Record, indexSet> m_records;
@@ -139,7 +142,7 @@ namespace gtar{
     template<typename T>
     SharedArray<T> GTAR::readIndividual(const string &path)
     {
-        SharedArray<char> bytes(m_archive.read(path));
+        SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
         return *((T*) bytes.get());
@@ -148,7 +151,7 @@ namespace gtar{
     template<typename T>
     T GTAR::readUniform(const string &path)
     {
-        SharedArray<char> bytes(m_archive.read(path));
+        SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
         return *((T*) bytes.get());
