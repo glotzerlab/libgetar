@@ -11,6 +11,7 @@
 namespace gtar{
 
     using std::ios_base;
+    using std::map;
     using std::oct;
     using std::right;
     using std::runtime_error;
@@ -56,6 +57,61 @@ namespace gtar{
             }
 
             throw runtime_error(result.str());
+        }
+
+        // populate the file location maps
+        if(m_mode == Read)
+        {
+            bool done(false);
+            size_t offset(0);
+            TarHeader recordHeader;
+
+            while(!m_file.eof() && !done)
+            {
+                memset(&recordHeader, 0, sizeof(TarHeader));
+                m_file.read((char*) &recordHeader, sizeof(TarHeader));
+
+                if(recordHeader.magic[0] == '\0')
+                {
+                    bool allZero(true);
+                    // check if this record is all zero; if so, assume
+                    // we're at the end of the file
+                    for(size_t i(0); i < sizeof(TarHeader); ++i)
+                    {
+                        allZero &= ((char*) &recordHeader)[i] == '\0';
+                    }
+
+                    done |= allZero;
+                }
+                else if(strcmp("ustar", recordHeader.magic))
+                {
+                    stringstream message;
+                    message << "Error reading tar record at position " <<
+                        offset << ": magic mismatch";
+                    throw runtime_error(message.str());
+                }
+                else
+                {
+                    string fileName(string(recordHeader.prefix) +
+                                    string(recordHeader.name));
+
+                    size_t size(0);
+                    stringstream sizeStream;
+                    sizeStream << recordHeader.size;
+                    sizeStream >> oct >> size;
+
+                    m_fileNames.push_back(fileName);
+                    m_fileOffsets[fileName] = offset + sizeof(TarHeader);
+                    m_fileSizes[fileName] = size;
+
+                    offset += sizeof(TarHeader) + size/512*512 + (size % 512 != 0)*512;
+
+                    m_file.seekg(offset);
+                }
+            }
+
+            m_file.clear();
+            m_file.seekg(0);
         }
     }
 
@@ -162,17 +218,30 @@ namespace gtar{
 
     SharedArray<char> TarArchive::read(const std::string &path)
     {
-        return SharedArray<char>();
+        if(m_mode != Read)
+            throw runtime_error("Can't read from a file not opened for reading");
+
+        if(m_fileOffsets.find(path) == m_fileOffsets.end())
+            return SharedArray<char>();
+
+        m_file.seekg(m_fileOffsets[path]);
+
+        const size_t size(m_fileSizes[path]);
+        SharedArray<char> result(new char[size], size);
+
+        m_file.read(result.get(), size);
+
+        return result;
     }
 
     unsigned int TarArchive::size()
     {
-        return 0;
+        return m_fileNames.size();
     }
 
     string TarArchive::getItemName(unsigned int index)
     {
-        return string();
+        return m_fileNames[index];
     }
 
 }

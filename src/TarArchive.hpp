@@ -2,6 +2,7 @@
 // by Matthew Spellings <mspells@umich.edu>
 
 #include <fstream>
+#include <map>
 #include <memory>
 #include <vector>
 #include <string>
@@ -18,6 +19,7 @@ namespace gtar{
 
     using std::auto_ptr;
     using std::fstream;
+    using std::map;
     using std::string;
     using std::pair;
     using std::vector;
@@ -56,6 +58,13 @@ namespace gtar{
         const OpenMode m_mode;
         // Handle to the file we're accessing
         fstream m_file;
+
+        // All the file names present in the file, in file order
+        vector<string> m_fileNames;
+        // Map from filenames to offsets within the file
+        map<string, size_t> m_fileOffsets;
+        // Map from filenames to file sizes
+        map<string, size_t> m_fileSizes;
     };
 
     struct TarHeader
