@@ -2,8 +2,8 @@
 // by Matthew Spellings <mspells@umich.edu>
 
 #include <cstring>
-#include <sstream>
 #include <ctime>
+#include <sstream>
 #include <stdexcept>
 
 #include "TarArchive.hpp"
@@ -30,7 +30,7 @@ namespace gtar{
             fileMode |= (ios_base::out | ios_base::trunc);
             break;
         case Append:
-            fileMode |= (ios_base::out | ios_base::app);
+            fileMode |= (ios_base::in | ios_base::out | ios_base::ate);
             break;
         default:
             fileMode |= ios_base::in;
@@ -104,7 +104,7 @@ namespace gtar{
                     m_fileOffsets[fileName] = offset + sizeof(TarHeader);
                     m_fileSizes[fileName] = size;
 
-                    offset += sizeof(TarHeader) + size/512*512 + (size % 512 != 0)*512;
+                    offset += sizeof(TarHeader) + (size + 511)/512*512;
 
                     m_file.seekg(offset);
                 }
@@ -113,6 +113,15 @@ namespace gtar{
             m_file.clear();
             m_file.seekg(0);
         }
+        else if(m_mode == Append)
+        {
+            // Overwrite the two 512B blocks at the end of file if appending
+            const size_t fileSize(m_file.tellp());
+            const int offset(fileSize >= 1024? -1024: 0);
+
+            m_file.seekp(offset, ios_base::end);
+        }
+
     }
 
     TarArchive::~TarArchive()
