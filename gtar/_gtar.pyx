@@ -187,6 +187,10 @@ cdef class Record:
         """Generates the path of the file inside the archive for this object"""
         return unpy3str(self.thisptr.getPath())
 
+    def getResolution(self):
+        """Returns the resolution field for this object"""
+        return self.thisptr.getResolution()
+
     def getIndex(self):
         """Returns the index field for this object"""
         return unpy3str(self.thisptr.getIndex())
@@ -275,6 +279,27 @@ cdef class GTAR:
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
+    def writePath(self, path, contents):
+        """Writes the given contents to the given path, converting as
+        necessary"""
+        dtypes = {cpp.Float32: np.float32,
+                  cpp.Float64: np.float64,
+                  cpp.Int32: np.int32,
+                  cpp.Int64: np.int64,
+                  cpp.UInt8: np.uint8,
+                  cpp.UInt32: np.uint32,
+                  cpp.UInt64: np.uint64}
+
+        rec = Record(path)
+
+        if rec.getResolution() == cpp.Text:
+            if type(contents) == str:
+                self.writeStr(path, contents)
+            else:
+                self.writeBytes(path, contents)
+        else:
+            self.writeArray(path, contents, dtype=dtypes[rec.getFormat()])
+
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
         archive, using the given compression mode. This serializes the
@@ -284,7 +309,7 @@ cdef class GTAR:
         Example:
         >> gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
         """
-        arr = np.ascontiguousarray(arr.flat, dtype=dtype)
+        arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
         self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
 
