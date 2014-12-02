@@ -237,6 +237,44 @@ cdef class GTAR:
         """Key function for sorting frame indices"""
         return (len(v), v)
 
+    def readBytes(self, path):
+        """Read the contents of the given location within the archive,
+        or return None if not found"""
+        result = SharedArray()
+        result.copy(self.thisptr.readBytes(py3str(path)))
+
+        return (bytes(result) if len(result) else None)
+
+    def writeBytes(self, path, contents, mode=cpp.FastCompress):
+        """Write the given contents to the location within the
+        archive, using the given compression mode.
+        """
+        self.thisptr.writeString(py3str(path), contents, mode)
+
+    def readStr(self, path):
+        """Read the contents of the given path as a string or return
+        None if not found."""
+        result = self.readBytes(path)
+        if result is not None:
+            return result.decode('utf8')
+        else:
+            return result
+
+    def writeStr(self, path, contents, mode=cpp.FastCompress):
+        """Write the given string to the given path, optionally
+        compressing with the given mode.
+
+        Example:
+        >> gtar.writeStr('params.json', json.dumps(params))
+        """
+        self.writeBytes(path, contents.encode('utf-8'), mode)
+
+    def readPath(self, path):
+        """Reads the contents of a record at the given path. Returns
+        None if not found."""
+        rec = Record(path)
+        return self.getRecord(rec, rec.getIndex())
+
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
         archive, using the given compression mode. This serializes the
@@ -250,32 +288,20 @@ cdef class GTAR:
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
         self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
 
-    def writeBytes(self, path, contents, mode=cpp.FastCompress):
-        """Write the given contents to the location within the
-        archive, using the given compression mode.
+    def getRecord(self, Record query, index=""):
+        """Returns the contents of the given base record and index."""
+        rec = Record()
+        rec.copy(deref(query.thisptr))
+        rec.setIndex(index)
 
-        Example:
-        >> gtar.writeBytes('params.json', json.dumps(params))
-        """
-        self.thisptr.writeString(py3str(path), contents, mode)
-
-    def readBytes(self, path):
-        """Read the contents of the given location within the archive,
-        or return None if not found"""
+        cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
         result = SharedArray()
-        result.copy(self.thisptr.readBytes(py3str(path)))
+        result.copy(inter)
 
-        return (bytes(result) if len(result) else None)
-
-    def writeStr(self, path, contents, mode=cpp.FastCompress):
-        self.thisptr.writeString(py3str(path), contents.encode('utf-8'), mode)
-
-    def readStr(self, path):
-        result = self.readBytes(path)
-        if result is not None:
-            return result.decode('utf8')
+        if rec.thisptr.getResolution() != cpp.Text:
+            return result._arrayRecord(rec)
         else:
-            return result
+            return str(result)
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
@@ -296,21 +322,6 @@ cdef class GTAR:
         for f in frames:
             result.append(unpy3str(f))
         return result
-
-    def getRecord(self, Record query, index=""):
-        """Returns the contents of the given base record and index."""
-        rec = Record()
-        rec.copy(deref(query.thisptr))
-        rec.setIndex(index)
-
-        cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
-        result = SharedArray()
-        result.copy(inter)
-
-        if rec.thisptr.getResolution() != cpp.Text:
-            return result._arrayRecord(rec)
-        else:
-            return str(result)
 
     def framesWithRecordsNamed(self, names):
         """Returns ([record(val) for val in names], [frames]) given a
