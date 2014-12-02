@@ -41,8 +41,7 @@ namespace gtar{
 
     void GTAR::close()
     {
-        if(m_archive.get())
-            m_archive->close();
+        m_archive.reset();
     }
 
     void GTAR::writeString(const string &path, const string &contents, CompressMode mode)
