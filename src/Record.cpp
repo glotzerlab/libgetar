@@ -291,6 +291,12 @@ namespace gtar{
                 m_resolution = Text;
             }
         }
+        else
+        {
+            m_name = target.substr(start);
+            m_format = UInt8;
+            m_resolution = Text;
+        }
     }
 
     void Record::processVarIdx(const string &target, size_t start)
