@@ -97,6 +97,50 @@ namespace gtar{
 
     string Record::getPath() const
     {
+        stringstream fullName;
+        fullName << m_name;
+
+        if(m_resolution != Text)
+        {
+            switch(m_format)
+            {
+            case Float32:
+                fullName << ".f32";
+                break;
+            case Float64:
+                fullName << ".f64";
+                break;
+            case Int32:
+                fullName << ".i32";
+                break;
+            case Int64:
+                fullName << ".i64";
+                break;
+            case UInt32:
+                fullName << ".u32";
+                break;
+            case UInt64:
+                fullName << ".u64";
+                break;
+            case UInt8:
+            default:
+                fullName << ".u8";
+            }
+        }
+
+        switch(m_resolution)
+        {
+        case Uniform:
+            fullName << ".uni";
+            break;
+        case Individual:
+            fullName << ".ind";
+            break;
+        case Text:
+        default:
+            fullName << m_suffix;
+        }
+
         stringstream result;
 
         if(m_group.size())
@@ -105,55 +149,14 @@ namespace gtar{
         switch(m_behavior)
         {
         case Continuous:
-            result << "vars/" << m_name << '/' << m_index;
+            result << "vars/" << fullName.str() << '/' << m_index;
             break;
         case Discrete:
-            result << "frames/" << m_index << '/' << m_name;
+            result << "frames/" << m_index << '/' << fullName.str();
             break;
         case Constant:
         default:
-            result << m_name;
-        }
-
-        if(m_resolution != Text)
-        {
-            switch(m_format)
-            {
-            case Float32:
-                result << ".f32";
-                break;
-            case Float64:
-                result << ".f64";
-                break;
-            case Int32:
-                result << ".i32";
-                break;
-            case Int64:
-                result << ".i64";
-                break;
-            case UInt32:
-                result << ".u32";
-                break;
-            case UInt64:
-                result << ".u64";
-                break;
-            case UInt8:
-            default:
-                result << ".u8";
-            }
-        }
-
-        switch(m_resolution)
-        {
-        case Uniform:
-            result << ".uni";
-            break;
-        case Individual:
-            result << ".ind";
-            break;
-        case Text:
-        default:
-            result << m_suffix;
+            result << fullName.str();
         }
 
         return result.str();
