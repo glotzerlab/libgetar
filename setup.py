@@ -25,6 +25,7 @@ if '--cython' in sys.argv:
     modules = myCythonize(macros, 'gtar/_gtar.pyx')
 else:
     sources = ['gtar/_gtar.cpp', 'src/Archive.cpp', 'src/vogl_miniz.cpp',
+               'src/TarArchive.cpp', 'src/ZipArchive.cpp',
                'src/vogl_miniz_zip.cpp', 'src/GTAR.cpp', 'src/Record.cpp']
     modules = [Extension('gtar._gtar', sources=sources,
                          include_dirs=[numpy.get_include()])]
