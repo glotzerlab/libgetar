@@ -240,7 +240,7 @@ cdef class GTAR:
 
     def __exit__(self, type, value, traceback):
         """Exit a context with this object"""
-        self.thisptr.close()
+        self.close()
 
     def __reduce__(self):
         return (self.__class__, (self._path, self._mode))
@@ -248,6 +248,12 @@ cdef class GTAR:
     def _sortFrameKey(self, v):
         """Key function for sorting frame indices"""
         return (len(v), v)
+
+    def close(self):
+        """Close the file this object is writing to. It is safe to
+        close a file multiple times, but impossible to read from or
+        write to it after closing."""
+        self.thisptr.close()
 
     def readBytes(self, path):
         """Read the contents of the given location within the archive,
