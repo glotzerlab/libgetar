@@ -12,10 +12,12 @@ parser.add_argument('output',
                     help='File to write to')
 
 def main(input, output):
+    nameHalves = os.path.splitext(output)
     tempName = output
 
     while os.path.exists(tempName):
-        tempName += '_'
+        nameHalves = (nameHalves[0] + '_', nameHalves[1])
+        tempName = nameHalves[0] + nameHalves[1]
 
     with gtar.GTAR(input, 'r') as inpFile, gtar.GTAR(tempName, 'w') as outFile:
 
