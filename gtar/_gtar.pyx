@@ -167,6 +167,10 @@ cdef class Record:
         """Clean up the record allocated for this object"""
         del self.thisptr
 
+    def __repr__(self):
+        """Returns a string representation of this object"""
+        return 'Record("{}")'.format(self.getPath())
+
     cdef copy(self, const cpp.Record &other):
         """Set this object to be a copy of the given object"""
         self.thisptr.copy(other)
