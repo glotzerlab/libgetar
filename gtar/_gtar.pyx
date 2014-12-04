@@ -286,23 +286,8 @@ cdef class GTAR:
     def writePath(self, path, contents):
         """Writes the given contents to the given path, converting as
         necessary"""
-        dtypes = {cpp.Float32: np.float32,
-                  cpp.Float64: np.float64,
-                  cpp.Int32: np.int32,
-                  cpp.Int64: np.int64,
-                  cpp.UInt8: np.uint8,
-                  cpp.UInt32: np.uint32,
-                  cpp.UInt64: np.uint64}
-
         rec = Record(path)
-
-        if rec.getResolution() == cpp.Text:
-            if type(contents) == str:
-                self.writeStr(path, contents)
-            else:
-                self.writeBytes(path, contents)
-        else:
-            self.writeArray(path, contents, dtype=dtypes[rec.getFormat()])
+        self.writeRecord(rec, contents)
 
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
@@ -331,6 +316,24 @@ cdef class GTAR:
             return result._arrayRecord(rec)
         else:
             return str(result)
+
+    def writeRecord(self, Record rec, contents):
+        """Writes the given contents to the path specified by the given record"""
+        dtypes = {cpp.Float32: np.float32,
+                  cpp.Float64: np.float64,
+                  cpp.Int32: np.int32,
+                  cpp.Int64: np.int64,
+                  cpp.UInt8: np.uint8,
+                  cpp.UInt32: np.uint32,
+                  cpp.UInt64: np.uint64}
+
+        if rec.getResolution() == cpp.Text:
+            if type(contents) == str:
+                self.writeStr(rec.getPath(), contents)
+            else:
+                self.writeBytes(rec.getPath(), contents)
+        else:
+            self.writeArray(rec.getPath(), contents, dtype=dtypes[rec.getFormat()])
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
