@@ -7,7 +7,7 @@ def randomPath(term=.25):
     chance to terminate after any segment"""
     validNameChars = ([chr(c) for c in range(ord('a'), ord('z')+1)] +
                       [chr(c) for c in range(ord('A'), ord('A')+1)] +
-                      [chr(c) for c in range(ord('0'), ord('9')+1)] + ['.'])
+                      [chr(c) for c in range(ord('0'), ord('9')+1)] + ['.', '/'])
     meaningfulBits = ['frames', 'vars', '.f32', '.f64', '.u8', '.u64', '.i32',
                       '.i64', '.ind', '.uni']
     randomBits = [''.join(random.sample(validNameChars, random.randint(1, 10))) for _ in range(20)]
@@ -33,10 +33,12 @@ def test_pathIdentity(n=100):
         rec = gtar.Record(path)
         reconstructedPath = rec.getPath()
 
-        if path != reconstructedPath:
+        relPath = path.lstrip('/')
+
+        if relPath != reconstructedPath:
             print('Error reconstructing path from Record!'
                   ' "{}" != "{}" [{}, {}, {}]'.format(
-                      path, reconstructedPath, rec.getGroup(), rec.getName(), rec.getIndex()))
+                      relPath, reconstructedPath, rec.getGroup(), rec.getName(), rec.getIndex()))
             success = False
 
     assert success
