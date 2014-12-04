@@ -15,13 +15,13 @@ namespace gtar{
     using std::vector;
 
     Record::Record():
-        m_group(), m_name(), m_index(), m_suffix(), m_behavior(Constant),
+        m_group(), m_name(), m_index(), m_behavior(Constant),
         m_format(UInt8), m_resolution(Text)
     {
     }
 
     Record::Record(const string &path):
-        m_group(), m_name(), m_index(), m_suffix(), m_behavior(Constant),
+        m_group(), m_name(), m_index(), m_behavior(Constant),
         m_format(UInt8), m_resolution(Text)
     {
         vector<string> dirs;
@@ -42,14 +42,13 @@ namespace gtar{
     }
 
     Record::Record(const string &group, const string &name, const string &index,
-                   const string &suffix, Behavior behavior, Format format,
-                   Resolution resolution):
-        m_group(group), m_name(name), m_index(index), m_suffix(suffix),
+                   Behavior behavior, Format format, Resolution resolution):
+        m_group(group), m_name(name), m_index(index),
         m_behavior(behavior), m_format(format), m_resolution(resolution)
     {}
 
     Record::Record(const Record &rhs):
-        m_group(rhs.m_group), m_name(rhs.m_name), m_index(rhs.m_index), m_suffix(rhs.m_suffix),
+        m_group(rhs.m_group), m_name(rhs.m_name), m_index(rhs.m_index),
         m_behavior(rhs.m_behavior), m_format(rhs.m_format), m_resolution(rhs.m_resolution)
     {}
 
@@ -58,7 +57,6 @@ namespace gtar{
         m_group = rhs.m_group;
         m_name = rhs.m_name;
         m_index = rhs.m_index;
-        m_suffix = rhs.m_suffix;
         m_behavior = rhs.m_behavior;
         m_format = rhs.m_format;
         m_resolution = rhs.m_resolution;
@@ -67,9 +65,8 @@ namespace gtar{
     bool Record::operator==(const Record &rhs) const
     {
         return m_group == rhs.m_group && m_name == rhs.m_name &&
-            m_index == rhs.m_index && m_suffix == rhs.m_suffix &&
-            m_behavior == rhs.m_behavior && m_format == rhs.m_format &&
-            m_resolution == rhs.m_resolution;
+            m_index == rhs.m_index && m_behavior == rhs.m_behavior &&
+            m_format == rhs.m_format && m_resolution == rhs.m_resolution;
     }
 
     bool Record::operator!=(const Record &rhs) const
@@ -87,11 +84,10 @@ namespace gtar{
     {
         return lthelper(m_group, rhs.m_group,
                lthelper(m_name, rhs.m_name,
-               lthelper(m_suffix, rhs.m_suffix,
                lthelper(m_behavior, rhs.m_behavior,
                lthelper(m_format, rhs.m_format,
                lthelper(m_resolution, rhs.m_resolution,
-                        m_index < rhs.m_index))))));
+                        m_index < rhs.m_index)))));
     }
 
     void Record::copy(const Record &rhs)
@@ -154,9 +150,6 @@ namespace gtar{
         case Individual:
             fullName << ".ind";
             break;
-        case Text:
-        default:
-            fullName << m_suffix;
         }
 
         stringstream result;

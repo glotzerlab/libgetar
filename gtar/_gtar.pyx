@@ -150,7 +150,7 @@ cdef class Record:
 
         - No arguments: default constructor
         - 1 argument: Parse the given path
-        - 7 arguments: Fill each field of the Record object
+        - 6 arguments: Fill each field of the Record object
         """
         if len(args) == 0:
             self.thisptr = new cpp.Record()
@@ -158,7 +158,7 @@ cdef class Record:
             self.thisptr = new cpp.Record(py3str(args[0]))
         elif len(args) == 7:
             self.thisptr = new cpp.Record(py3str(args[0]), py3str(args[1]),
-                                          py3str(args[2]), py3str(args[3]),
+                                          py3str(args[2]),
                                           args[4], args[5], args[6])
         else:
             raise TypeError('Incorrect number of arguments to Record()')

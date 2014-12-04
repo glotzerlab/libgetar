@@ -68,7 +68,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
     cdef cppclass Record:
         Record()
         Record(const string&)
-        Record(const string&, const string&, const string&, const string&,
+        Record(const string&, const string&, const string&,
                Behavior, Format, Resolution)
         Record(const Record&)
 

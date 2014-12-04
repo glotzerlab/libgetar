@@ -37,8 +37,7 @@ namespace gtar{
 
         // Create a record directly from the full set of elements
         Record(const string &group, const string &name, const string &index,
-               const string &suffix, Behavior behavior, Format format,
-               Resolution resolution);
+               Behavior behavior, Format format, Resolution resolution);
 
         // Copy constructor
         Record(const Record &rhs);
@@ -83,7 +82,6 @@ namespace gtar{
         string m_group;
         string m_name;
         string m_index;
-        string m_suffix;
         Behavior m_behavior;
         Format m_format;
         Resolution m_resolution;
