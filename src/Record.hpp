@@ -65,6 +65,7 @@ namespace gtar{
         string getPath() const;
 
         // Access fields of this object
+        string getGroup() const;
         string getName() const;
         string getIndex() const;
         Format getFormat() const;
@@ -74,11 +75,10 @@ namespace gtar{
     private:
         // Parse the given target path inside an archive in various
         // stages
-        void process(const string &target, size_t start);
-        void processVars(const string &target, size_t start);
-        void processFrames(const string &target, size_t start);
-        void processName(const string &target, size_t start);
-        void processVarIdx(const string &target, size_t start);
+        void process(const vector<string> &dirs);
+        void processVarIndex(const string &index);
+        void processFrameIndex(const string &index);
+        void processName(const string &name);
 
         string m_group;
         string m_name;

@@ -79,10 +79,11 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 
         string getPath() const
 
+        string getGroup() const
         string getName() const
+        string getIndex() const
         Format getFormat() const
         Resolution getResolution() const
-        string getIndex() const
         void setIndex(const string&)
 
 cdef extern from "../src/GTAR.hpp" namespace "gtar":

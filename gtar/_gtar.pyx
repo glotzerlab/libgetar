@@ -175,6 +175,10 @@ cdef class Record:
         """Nullify the index field of this object"""
         return unpy3str(self.thisptr.nullifyIndex())
 
+    def getGroup(self):
+        """Returns the group field of this object"""
+        return unpy3str(self.thisptr.getGroup())
+
     def getName(self):
         """Returns the name field of this object"""
         return unpy3str(self.thisptr.getName())

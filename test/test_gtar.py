@@ -26,12 +26,16 @@ def test_readWritePath():
                 print('Failed on readWritePath(): {}'.format(path))
             success = success and equal
 
+    assert success
     return success
 
 def main():
     success = True
 
-    success = success and test_readWritePath()
+    try:
+        success = test_readWritePath() and success
+    except AssertionError:
+        success = False
 
     sys.exit(not success)
 

@@ -3,9 +3,13 @@
 
 #include "Record.hpp"
 
+#include <iostream>
+using namespace std;
+
 #include <sstream>
 
 namespace gtar{
+    using std::max;
     using std::string;
     using std::stringstream;
     using std::vector;
@@ -20,7 +24,21 @@ namespace gtar{
         m_group(), m_name(), m_index(), m_suffix(), m_behavior(Constant),
         m_format(UInt8), m_resolution(Text)
     {
-        process(path, 0);
+        vector<string> dirs;
+
+        for(size_t pos(0), nextpos(path.find('/', 0));
+            pos != string::npos;
+            pos = (nextpos == string::npos? nextpos: nextpos + 1), nextpos = path.find('/', pos))
+        {
+            if(nextpos == string::npos)
+                dirs.push_back(path.substr(pos));
+            else if(nextpos == path.size() - 1) // let bare directories have a trailing slash
+                dirs.push_back(path.substr(pos));
+            else if(nextpos != pos) // don't count "//" as a directory
+                dirs.push_back(path.substr(pos, nextpos - pos));
+        }
+
+        process(dirs);
     }
 
     Record::Record(const string &group, const string &name, const string &index,
@@ -162,6 +180,11 @@ namespace gtar{
         return result.str();
     }
 
+    string Record::getGroup() const
+    {
+        return m_group;
+    }
+
     string Record::getName() const
     {
         return m_name;
@@ -187,130 +210,140 @@ namespace gtar{
         m_index = index;
     }
 
-    void Record::process(const string &target, size_t start)
+    void Record::process(const vector<string> &dirs)
     {
-        if(start == target.size()) return;
-
-        const size_t firstSlash(target.find('/', start));
-
-        if(firstSlash != string::npos)
+        // All but the last 3 segments of the path definitely go into
+        // m_group
+        for(size_t i(3); i < dirs.size(); ++i)
         {
-            if(firstSlash - start == 6 &&
-               target.compare(start, 6, "frames") == 0)
-                processFrames(target, firstSlash + 1);
-            else if(firstSlash - start == 4 &&
-                    target.compare(start, 4, "vars") == 0)
-                processVars(target, firstSlash + 1);
-            else
+            if(m_group.size())
+                m_group += '/';
+            m_group += dirs[i - 3];
+        }
+
+        if(dirs.size() > 2)
+        {
+            if(dirs[dirs.size() - 3] == "frames")
             {
-                if(m_group.size())
-                    m_group += '/';
-                m_group += target.substr(start, firstSlash - start);
-                process(target, firstSlash + 1);
+                processFrameIndex(dirs[dirs.size() - 2]);
+                processName(dirs[dirs.size() - 1]);
+                return;
+            }
+            else if(dirs[dirs.size() - 3] == "vars")
+            {
+                processName(dirs[dirs.size() - 2]);
+                processVarIndex(dirs[dirs.size() - 1]);
+                return;
             }
         }
-        else
+
+        // We didn't find frames/ or vars/; add everything up to the
+        // last segment to m_group
+        for(size_t i(max(0, (int) dirs.size() - 3)); i + 1 < dirs.size(); ++i)
         {
-            processName(target, start);
+            if(m_group.size())
+                m_group += '/';
+            m_group += dirs[i];
         }
+
+        if(dirs.size())
+            processName(dirs[dirs.size() - 1]);
     }
 
-    void Record::processVars(const string &target, size_t start)
+    void Record::processVarIndex(const string &index)
     {
-        if(start == target.size()) return;
-
         m_behavior = Continuous;
-
-        const size_t firstSlash(target.find('/', start));
-
-        if(firstSlash != string::npos)
-        {
-            m_name = target.substr(start, firstSlash - start);
-            processVarIdx(target, firstSlash + 1);
-        }
+        m_index = index;
     }
 
-    void Record::processFrames(const string &target, size_t start)
+    void Record::processFrameIndex(const string &index)
     {
-        if(start == target.size()) return;
-
         m_behavior = Discrete;
-
-        const size_t firstSlash(target.find('/', start));
-
-        if(firstSlash != string::npos)
-        {
-            m_index = target.substr(start, firstSlash - start);
-            processName(target, firstSlash + 1);
-        }
+        m_index = index;
     }
 
-    void Record::processName(const string &target, size_t start)
+    void Record::processName(const string &name)
     {
-        if(start == target.size()) return;
+        vector<string> pieces;
 
-        const size_t lastComponent(target.rfind('.'));
-
-        if(lastComponent != string::npos && lastComponent > 0)
+        for(size_t pos(0), nextpos(name.find('.', 0));
+            pos != string::npos;
+            pos = (nextpos == string::npos? nextpos: nextpos + 1), nextpos = name.find('.', pos))
         {
-            const size_t interComponent(target.rfind('.', lastComponent - 1));
-            const size_t delta(lastComponent - interComponent);
+            if(nextpos == string::npos)
+                pieces.push_back(name.substr(pos));
+            else
+                pieces.push_back(name.substr(pos, nextpos - pos));
+        }
 
-            if(interComponent != string::npos && (delta == 4 || delta == 3))
+        // All but the last 3 pieces of the name definitely go into
+        // m_name
+        for(size_t i(3); i < pieces.size(); ++i)
+        {
+            m_name += pieces[i - 3];
+            m_name += '.';
+        }
+
+        if(pieces.size() > 2)
+        {
+            m_name += pieces[pieces.size() - 3];
+
+            if(pieces[pieces.size() - 1] == "ind" ||
+               pieces[pieces.size() - 1] == "uni")
             {
-                m_name += target.substr(start, interComponent - start);
+                // this will be overwritten if we fail to parse a
+                // proper format in the block below
+                if(pieces[pieces.size() - 1] == "ind")
+                    m_resolution = Individual;
+                else if(pieces[pieces.size() - 1] == "uni")
+                    m_resolution = Uniform;
 
-                if(target.compare(interComponent, 4, ".f32") == 0)
+                if(pieces[pieces.size() - 2] == "f32")
                     m_format = Float32;
-                else if(target.compare(interComponent, 4, ".f64") == 0)
+                else if(pieces[pieces.size() - 2] == "f64")
                     m_format = Float64;
-                else if(target.compare(interComponent, 4, ".i32") == 0)
+                else if(pieces[pieces.size() - 2] == "i32")
                     m_format = Int32;
-                else if(target.compare(interComponent, 4, ".i64") == 0)
+                else if(pieces[pieces.size() - 2] == "i64")
                     m_format = Int64;
-                else if(target.compare(interComponent, 3, ".u8") == 0)
+                else if(pieces[pieces.size() - 2] == "u8")
                     m_format = UInt8;
-                else if(target.compare(interComponent, 4, ".u32") == 0)
+                else if(pieces[pieces.size() - 2] == "u32")
                     m_format = UInt32;
-                else if(target.compare(interComponent, 4, ".u64") == 0)
+                else if(pieces[pieces.size() - 2] == "u64")
                     m_format = UInt64;
                 else
-                    m_name += target.substr(interComponent, delta);
+                {
+                    m_name += '.';
+                    m_name += pieces[pieces.size() - 2];
+                    m_name += '.';
+                    m_name += pieces[pieces.size() - 1];
 
-                if(target.compare(lastComponent, 4, ".ind") == 0)
-                    m_resolution = Individual;
-                else if(target.compare(lastComponent, 4, ".uni") == 0)
-                    m_resolution = Uniform;
-                else
-                    m_name += target.substr(lastComponent);
+                    m_format = UInt8;
+                    m_resolution = Text;
+                }
+
             }
             else
             {
-                m_name = target.substr(start);
+                m_name += '.';
+                m_name += pieces[pieces.size() - 2];
+                m_name += '.';
+                m_name += pieces[pieces.size() - 1];
+
                 m_format = UInt8;
                 m_resolution = Text;
             }
+
         }
         else
         {
-            m_name = target.substr(start);
-            m_format = UInt8;
-            m_resolution = Text;
+            for(size_t i(0); i < pieces.size(); ++i)
+            {
+                m_name += pieces[i];
+                if(i + 1 < pieces.size())
+                    m_name += '.';
+            }
         }
-    }
-
-    void Record::processVarIdx(const string &target, size_t start)
-    {
-        if(start == target.size()) return;
-
-        const size_t firstComponent(target.find('.', start));
-
-        if(firstComponent != string::npos)
-        {
-            m_index = target.substr(start, firstComponent - start);
-            m_suffix = target.substr(firstComponent);
-        }
-        else
-            m_suffix = target.substr(start);
     }
 }
