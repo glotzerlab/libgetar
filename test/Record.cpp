@@ -25,10 +25,10 @@ bool checkstr(const string &one, const string &two, bool shouldEqual, int line)
 }
 
 bool check(const Record &rec, const string group, const string name,
-           const string index, const string suffix, Behavior behavior,
-           Format format, Resolution resolution, bool shouldEqual, int line)
+           const string index, Behavior behavior, Format format,
+           Resolution resolution, bool shouldEqual, int line)
 {
-    const Record ref(group, name, index, suffix, behavior, format, resolution);
+    const Record ref(group, name, index, behavior, format, resolution);
     bool failure(shouldEqual ^ (ref == rec));
 
     if(failure)
@@ -44,49 +44,49 @@ int main()
     {
         string str("frames/100/log.txt");
         Record rec(str);
-        result |= check(rec, "", "log.txt", "100", "", Discrete, UInt8, Text, true, __LINE__);
+        result |= check(rec, "", "log.txt", "100", Discrete, UInt8, Text, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("frames/100/log.txt");
         Record rec(str);
-        result |= check(rec, "", "lo.txt", "100", "", Discrete, UInt8, Text, false, __LINE__);
+        result |= check(rec, "", "lo.txt", "100", Discrete, UInt8, Text, false, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("frames/100/position.f32.ind");
         Record rec(str);
-        result |= check(rec, "", "position", "100", "", Discrete, Float32, Individual, true, __LINE__);
+        result |= check(rec, "", "position", "100", Discrete, Float32, Individual, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("velocity.u64.uni");
         Record rec(str);
-        result |= check(rec, "", "velocity", "", "", Constant, UInt64, Uniform, true, __LINE__);
+        result |= check(rec, "", "velocity", "", Constant, UInt64, Uniform, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("/vars/stdout/12.txt");
         Record rec(str);
-        result |= check(rec, "", "stdout", "12", ".txt", Continuous, UInt8, Text, true, __LINE__);
+        result |= check(rec, "", "stdout", "12", Continuous, UInt8, Text, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("/rigid_body/frames/0/angular_momentum.f64.ind");
         Record rec(str);
-        result |= check(rec, "rigid_body", "angular_momentum", "0", "", Discrete, Float64, Individual, true, __LINE__);
+        result |= check(rec, "rigid_body", "angular_momentum", "0", Discrete, Float64, Individual, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
     {
         string str("frame/2000/position.f32.ind");
         Record rec(str);
-        result |= check(rec, "frame/2000", "position", "", "", Constant, Float32, Individual, true, __LINE__);
+        result |= check(rec, "frame/2000", "position", "", Constant, Float32, Individual, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
