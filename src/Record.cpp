@@ -34,7 +34,7 @@ namespace gtar{
                 dirs.push_back(path.substr(pos));
             else if(nextpos == path.size() - 1) // let bare directories have a trailing slash
                 dirs.push_back(path.substr(pos));
-            else if(nextpos != pos) // don't count "//" as a directory
+            else
                 dirs.push_back(path.substr(pos, nextpos - pos));
         }
 
