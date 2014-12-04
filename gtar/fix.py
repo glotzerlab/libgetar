@@ -5,17 +5,19 @@ import re
 import subprocess
 
 parser = argparse.ArgumentParser(
-    description='Command-line archive fixer')
+    description='Command-line zip archive fixer')
 parser.add_argument('input',
-                    help='Input file to read')
+                    help='Input zip file to read')
 parser.add_argument('-o', '--output', default='fixed.zip',
-                    help='Output location for fixed archive')
+                    help='Output location for fixed zip archive')
 
 def main(input, output):
+    nameHalves = os.path.splitext(output)
     tempName = output
 
     while os.path.exists(tempName):
-        tempName += '_'
+        nameHalves = (nameHalves[0] + '_', nameHalves[1])
+        tempName = nameHalves[0] + nameHalves[1]
 
     cmdLine = ['zip', '-FF', input, '--out', tempName]
 
