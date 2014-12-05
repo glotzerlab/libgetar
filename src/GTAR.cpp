@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <stdint.h>
+#include <sys/stat.h>
 
 namespace gtar{
 
@@ -25,13 +26,25 @@ namespace gtar{
     GTAR::GTAR(const string &filename, const OpenMode mode):
         m_archive(), m_records(), m_indexedRecords()
     {
+        OpenMode realMode(mode);
+
+        if(mode == Append)
+        {
+            bool fileExists(false);
+            struct stat fileStat;
+            fileExists = stat(filename.c_str(), &fileStat) == 0;
+
+            if(!fileExists)
+                realMode = Write;
+        }
+
         if(filename.rfind(".tar") == filename.length() - 4)
-            m_archive.reset(new TarArchive(filename, mode));
+            m_archive.reset(new TarArchive(filename, realMode));
         else
-            m_archive.reset(new ZipArchive(filename, mode));
+            m_archive.reset(new ZipArchive(filename, realMode));
 
         // Populate our record list
-        if(mode == Read)
+        if(realMode == Read)
         {
             const unsigned int size(m_archive->size());
             for(unsigned int index(0); index < size; ++index)
