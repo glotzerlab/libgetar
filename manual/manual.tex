@@ -80,7 +80,7 @@ For example, particle positions stored as 32-bit floating point numbers would be
 Arbitrary blobs of binary data could be stored as bytestrings as ``blob.u8.uni'' while a JSON-encoded parameters list could be stored simply as ``params.json.''
 
 Discretely varying data are stored in /frames/\{index\}/\{name\}.\{suffix\}, where the index is some meaningful string corresponding to the time of the data.
-Continuously varying data are stored in /var/\{name\}.\{suffix\}/\{index\}, where the index is the string representation of a natural number.
+Continuously varying data are stored in /vars/\{name\}.\{suffix\}/\{index\}, where the index is the string representation of a natural number.
 Continuously varying quantities must have indices which are sequentially ordered beginning at 0 and are intended to be concatenated for use by readers.
 Constant quantities are stored in /\{name\}.\{suffix\} .
 
