@@ -15,6 +15,9 @@ def main(input, output):
     nameHalves = os.path.splitext(output)
     tempName = output
 
+    if not os.path.exists(input):
+        raise RuntimeError('Can\'t find input file {}'.format(input))
+
     while os.path.exists(tempName):
         nameHalves = (nameHalves[0] + '_', nameHalves[1])
         tempName = nameHalves[0] + nameHalves[1]
