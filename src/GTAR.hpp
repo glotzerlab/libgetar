@@ -79,7 +79,7 @@ namespace gtar{
         template<typename T>
         SharedArray<T> readIndividual(const string &path);
         template<typename T>
-        T readUniform(const string &path);
+        auto_ptr<T> readUniform(const string &path);
         SharedArray<char> readBytes(const string &path);
 
         // Query all of the records in the archive. These will all
@@ -127,7 +127,7 @@ namespace gtar{
         vector<T> buffer(start, end);
 
         maybeSwapEndian<T>(&buffer[0], buffer.size()*sizeof(T));
-        writePtr(path, &buffer[0], buffer.size()*sizeof(T), mode);
+        writePtr(path, (void*) &buffer[0], buffer.size()*sizeof(T), mode);
     }
 
     template<typename T>
@@ -136,25 +136,36 @@ namespace gtar{
         T local(val);
 
         maybeSwapEndian<T>(&local, sizeof(T));
-        writePtr(path, &local, sizeof(T));
+        writePtr(path, (void*) &local, sizeof(T), NoCompress);
     }
 
     template<typename T>
     SharedArray<T> GTAR::readIndividual(const string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
-
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
-        return *((T*) bytes.get());
+
+        const size_t resultSize(bytes.size()/sizeof(T));
+
+        if(resultSize*sizeof(T) != bytes.size())
+            throw runtime_error("Trying to coerce the wrong number of bytes into an individual property");
+
+        SharedArray<T> result((T*) bytes.disown(), resultSize);
+
+        return result;
     }
 
     template<typename T>
-    T GTAR::readUniform(const string &path)
+    auto_ptr<T> GTAR::readUniform(const string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
-        return *((T*) bytes.get());
+
+        if(bytes.size())
+            return auto_ptr<T>((T*) bytes.disown());
+        else
+            return auto_ptr<T>();
     }
 
 }
