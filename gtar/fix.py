@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 
+from . import copy
+
 parser = argparse.ArgumentParser(
     description='Command-line zip archive fixer')
 parser.add_argument('input',
@@ -47,6 +49,17 @@ def main(input, output):
         res = pattern.match(line)
         if res:
             toDelete.append(res.group(1))
+
+    # Sometimes 'zip -FF' just directly copies improperly-closed
+    # archives instead of actually adding the central directory. If
+    # the file didn't change from running 'zip -FF', instead run
+    # gtar.copy which will write a central directory.
+    cmdLine = ['md5sum', input, tempName]
+    lines = subprocess.check_output(cmdLine).decode('utf8').split('\n')
+    checksums = [line.split()[0] for line in lines if line]
+
+    if checksums[0] == checksums[1]:
+        copy.main(tempName, tempName)
 
     if toDelete:
         print('Removing the following files: {}'.format(', '.join(toDelete)))
