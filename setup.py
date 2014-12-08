@@ -31,7 +31,7 @@ else:
                          include_dirs=[numpy.get_include()])]
 
 setup(name='gtar',
-      version='0.3.1',
+      version='0.3.2',
       description='GTAR format file wrapper',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
