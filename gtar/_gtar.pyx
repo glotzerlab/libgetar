@@ -344,8 +344,10 @@ cdef class GTAR:
         if rec.getResolution() == cpp.Text:
             if type(contents) == str:
                 self.writeStr(rec.getPath(), contents)
-            else:
+            elif type(contents) == bytes:
                 self.writeBytes(rec.getPath(), contents)
+            else:
+                raise RuntimeError('Not sure how to serialize the given argument!')
         else:
             self.writeArray(rec.getPath(), contents, dtype=dtypes[rec.getFormat()])
 
