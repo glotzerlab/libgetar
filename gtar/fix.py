@@ -5,6 +5,7 @@ import re
 import subprocess
 
 from . import copy
+from . import isZip64
 
 parser = argparse.ArgumentParser(
     description='Command-line zip archive fixer')
@@ -50,21 +51,15 @@ def main(input, output):
         if res:
             toDelete.append(res.group(1))
 
-    # Sometimes 'zip -FF' just directly copies improperly-closed
-    # archives instead of actually adding the central directory. If
-    # the file didn't change from running 'zip -FF', instead run
-    # gtar.copy which will write a central directory.
-    cmdLine = ['md5sum', input, tempName]
-    lines = subprocess.check_output(cmdLine).decode('utf8').split('\n')
-    checksums = [line.split()[0] for line in lines if line]
-
-    if checksums[0] == checksums[1]:
-        copy.main(tempName, tempName)
-
     if toDelete:
         print('Removing the following files: {}'.format(', '.join(toDelete)))
         cmdLine = ['zip', '-d', tempName] + toDelete
         subprocess.check_output(cmdLine)
+
+    # if 'zip -FF' gave us a 32bit zip file, copy it into a 64bit archive.
+    if not isZip64(tempName):
+        print('Copying from zip32 to zip64...')
+        copy.main(tempName, tempName)
 
     os.rename(tempName, output)
 

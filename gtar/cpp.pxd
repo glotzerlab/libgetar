@@ -100,3 +100,6 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
 
         vector[Record] getRecordTypes() const
         vector[string] queryFrames(const Record&) const
+
+cdef extern from "../src/ZipArchive.hpp" namespace "gtar":
+     bool isZip64(const string&) except +

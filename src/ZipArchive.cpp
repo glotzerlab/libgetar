@@ -171,4 +171,26 @@ namespace gtar{
         else
             return string();
     }
+
+    bool isZip64(const string &filename)
+    {
+        mz_zip_archive archive;
+        mz_zip_zero_struct(&archive);
+
+        bool success(mz_zip_reader_init_file(&archive, filename.c_str(),
+                                             MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
+
+        if(!success)
+        {
+            stringstream result;
+            result << "Error opening file to check zip64 formatting: ";
+            result << mz_zip_get_error_string(mz_zip_get_last_error(&archive));
+            throw runtime_error(result.str());
+        }
+
+        bool result(mz_zip_is_zip64(&archive));
+
+        mz_zip_reader_end(&archive);
+        return result;
+    }
 }

@@ -443,3 +443,8 @@ cdef class GTAR:
             return self.getRecord(rec)
         except IndexError:
             raise KeyError('Can\'t find a static record named {}'.format(name))
+
+def isZip64(filename):
+    """Internal helper function. Returns True if a file located at the
+    given path is in zip64 format."""
+    return cpp.isZip64(py3str(filename))

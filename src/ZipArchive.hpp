@@ -55,6 +55,10 @@ namespace gtar{
         mz_zip_archive m_archive;
     };
 
+    // Helper function to be accessed from python. Checks if a zip
+    // archive existing at the given name is in zip64 format.
+    bool isZip64(const string &filename);
+
 }
 
 #endif
