@@ -28,7 +28,11 @@ def main(input, output):
 
             for frame in frames:
                 rec.setIndex(frame)
-                outFile.writeRecord(rec, inpFile.getRecord(rec, frame))
+
+                data = inpFile.getRecord(rec, frame)
+
+                if data is not None:
+                    outFile.writeRecord(rec, data)
 
     os.rename(tempName, output)
 

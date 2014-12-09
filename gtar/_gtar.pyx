@@ -318,7 +318,11 @@ cdef class GTAR:
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
 
-        cdef cpp.SharedArray[char] inter = self.thisptr.readBytes(rec.thisptr.getPath())
+        cdef cpp.SharedArray[char] inter
+        try:
+            inter = self.thisptr.readBytes(rec.thisptr.getPath())
+        except RuntimeError:
+            return None
         result = SharedArray()
         result.copy(inter)
 
