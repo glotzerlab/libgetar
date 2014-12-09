@@ -48,7 +48,7 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
         }
-        else
+        else // Append
         {
             mz_bool success(
                 mz_zip_reader_init_file(&m_archive, filename.c_str(),
@@ -59,6 +59,16 @@ namespace gtar{
                 stringstream result;
                 result << "Error opening file for append (stage 1): ";
                 result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
+                throw runtime_error(result.str());
+            }
+
+            if(!mz_zip_is_zip64(&m_archive))
+            {
+                stringstream result;
+                result << "File " << filename << " is a standard zip archive, "
+                       << "but we will only append to zip64-format archives. "
+                       << "You can run the gtar.copy python module to create a "
+                       << "zip64 format archive.";
                 throw runtime_error(result.str());
             }
 
