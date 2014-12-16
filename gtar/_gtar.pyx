@@ -1,5 +1,6 @@
 # distutils: language = c++
 # distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp
+# cython: embedsignature=True
 
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -13,31 +14,51 @@ cimport cpp
 np.import_array()
 
 cdef class OpenMode:
-    """Enum for ways in which an archive file can be opened: Read,
-    Write, and Append"""
+    """
+    Enum for ways in which an archive file can be opened
+
+       .. data:: Read
+       .. data:: Write
+       .. data:: Append"""
     Read = cpp.Read
     Write = cpp.Write
     Append = cpp.Append
 
 cdef class CompressMode:
-    """Enum for ways in which files within an archive can be
-    compressed: NoCompress, FastCompress, MediumCompress, and
-    SlowCompress"""
+    """
+    Enum for ways in which files within an archive can be compressed
+
+       .. data:: NoCompress
+       .. data:: FastCompress
+       .. data:: MediumCompress
+       .. data:: SlowCompress"""
     NoCompress = cpp.NoCompress
     FastCompress = cpp.FastCompress
     MediumCompress = cpp.MediumCompress
     SlowCompress = cpp.SlowCompress
 
 cdef class Behavior:
-    """Enum for how properties can behave over time: Constant,
-    Discrete, and Continuous"""
+    """
+    Enum for how properties can behave over time
+
+       .. data:: Constant
+       .. data:: Discrete
+       .. data:: Continuous"""
     Constant = cpp.Constant
     Discrete = cpp.Discrete
     Continuous = cpp.Continuous
 
 cdef class Format:
-    """Formats in which binary properties can be stored: Float{32,
-    64}, Int{32, 64}, UInt{8, 32, 64}"""
+    """
+    Formats in which binary properties can be stored
+
+       .. data:: Float32
+       .. data:: Float64
+       .. data:: Int32
+       .. data:: Int64
+       .. data:: UInt8
+       .. data:: UInt32
+       .. data:: UInt64"""
     Float32 = cpp.Float32
     Float64 = cpp.Float64
     Int32 = cpp.Int32
@@ -47,8 +68,12 @@ cdef class Format:
     UInt64 = cpp.UInt64
 
 cdef class Resolution:
-    """Resolution at which properties can be recorded: Text, Uniform,
-    and Individual"""
+    """
+    Resolution at which properties can be recorded
+
+       .. data:: Text
+       .. data:: Uniform
+       .. data:: Individual"""
     Text = cpp.Text
     Uniform = cpp.Uniform
     Individual = cpp.Individual
@@ -145,8 +170,9 @@ cdef class Record:
     cdef cpp.Record *thisptr
 
     def __cinit__(self, *args):
-        """Initialize a record object in different ways depending on
-        the arguments:
+        """
+        Initialize a record object in different ways depending on the
+        arguments:
 
         - No arguments: default constructor
         - 1 argument: Parse the given path
@@ -180,15 +206,15 @@ cdef class Record:
         return unpy3str(self.thisptr.nullifyIndex())
 
     def getGroup(self):
-        """Returns the group field of this object"""
+        """Returns the `group` field of this object"""
         return unpy3str(self.thisptr.getGroup())
 
     def getName(self):
-        """Returns the name field of this object"""
+        """Returns the `name` field of this object"""
         return unpy3str(self.thisptr.getName())
 
     def getFormat(self):
-        """Returns the format field of this object"""
+        """Returns the `format` field of this object"""
         return self.thisptr.getFormat()
 
     def getPath(self):
@@ -196,21 +222,21 @@ cdef class Record:
         return unpy3str(self.thisptr.getPath())
 
     def getResolution(self):
-        """Returns the resolution field for this object"""
+        """Returns the `resolution` field for this object"""
         return self.thisptr.getResolution()
 
     def getIndex(self):
-        """Returns the index field for this object"""
+        """Returns the `index` field for this object"""
         return unpy3str(self.thisptr.getIndex())
 
     def setIndex(self, index):
-        """Sets the index field of this object"""
+        """Sets the `index` field of this object"""
         self.thisptr.setIndex(py3str(index))
 
 cdef class GTAR:
-    """Python wrapper for the GTAR c++ class. Provides basic access to
-    its methods and simple methods to read and write files within
-    archives."""
+    """Python wrapper for the :cpp:class:`GTAR` c++ class. Provides
+    basic access to its methods and simple methods to read and write
+    files within archives."""
     cdef cpp.GTAR *thisptr
     cdef _path
     cdef _mode
@@ -220,7 +246,7 @@ cdef class GTAR:
                  'a': cpp.Append}
 
     def __cinit__(self, path, mode):
-        """Initialize a GTAR object given an archive path and open mode"""
+        """Initialize a `GTAR` object given an archive path and open mode"""
         self._path = path
         self._mode = mode
         try:
@@ -231,7 +257,7 @@ cdef class GTAR:
             raise RuntimeError('{} for file {}'.format(e.args[0], path))
 
     def __dealloc__(self):
-        """Destroy the held GTAR object"""
+        """Destroy the held `GTAR` object"""
         del self.thisptr
 
     def __enter__(self):
@@ -257,7 +283,7 @@ cdef class GTAR:
 
     def readBytes(self, path):
         """Read the contents of the given location within the archive,
-        or return None if not found"""
+        or return ``None`` if not found"""
         result = SharedArray()
         result.copy(self.thisptr.readBytes(py3str(path)))
 
@@ -271,7 +297,7 @@ cdef class GTAR:
 
     def readStr(self, path):
         """Read the contents of the given path as a string or return
-        None if not found."""
+        ``None`` if not found."""
         result = self.readBytes(path)
         if result is not None:
             return result.decode('utf8')
@@ -282,14 +308,15 @@ cdef class GTAR:
         """Write the given string to the given path, optionally
         compressing with the given mode.
 
-        Example:
-        >> gtar.writeStr('params.json', json.dumps(params))
+        Example::
+
+            gtar.writeStr('params.json', json.dumps(params))
         """
         self.writeBytes(path, contents.encode('utf-8'), mode)
 
     def readPath(self, path):
         """Reads the contents of a record at the given path. Returns
-        None if not found."""
+        ``None`` if not found."""
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
@@ -305,8 +332,9 @@ cdef class GTAR:
         data into the given binary data type or the same binary format
         that the numpy array is using.
 
-        Example:
-        >> gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
+        Example::
+
+            gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
         """
         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
@@ -372,9 +400,9 @@ cdef class GTAR:
         return result
 
     def framesWithRecordsNamed(self, names):
-        """Returns ([record(val) for val in names], [frames]) given a
+        """Returns ``([record(val) for val in names], [frames])`` given a
         set of record names names. If only given a single name,
-        returns (record, [frames])."""
+        returns ``(record, [frames])``."""
         allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
         frames = None
         records = []
@@ -402,18 +430,22 @@ cdef class GTAR:
             return (records[0], sorted(frames, key=self._sortFrameKey))
 
     def recordsNamed(self, names):
-        """Returns (frame, [val[frame] for val in names]) for each
+        """Returns ``(frame, [val[frame] for val in names])`` for each
         frame which contains records matching each of the given
-        names. If only given a single name, returns (frame, val[frame]).
+        names. If only given a single name, returns ``(frame,
+        val[frame])`` for each found frame.
 
-        Example:
-        >> g = gtar.GTAR('dump.zip', 'r')
-        >> # grab single property
-        >> for (_, vel) in g.recordsNamed('velocity'):
-        >>     pass
-        >> # grab multiple properties
-        >> for (idx, (pos, quat)) in g.recordsNamed(['position', 'orientation']):
-        >>     pass
+        Example::
+
+            g = gtar.GTAR('dump.zip', 'r')
+
+            # grab single property
+            for (_, vel) in g.recordsNamed('velocity'):
+                pass
+
+            # grab multiple properties
+            for (idx, (pos, quat)) in g.recordsNamed(['position', 'orientation']):
+                pass
         """
         allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
         frames = None
@@ -451,6 +483,6 @@ cdef class GTAR:
             raise KeyError('Can\'t find a static record named {}'.format(name))
 
 def isZip64(filename):
-    """Internal helper function. Returns True if a file located at the
+    """Internal helper function. Returns ``True`` if a file located at the
     given path is in zip64 format."""
     return cpp.isZip64(py3str(filename))
