@@ -153,6 +153,7 @@ cdef class SharedArray:
                   'orientation': 4,
                   'image': 3,
                   'angular_momentum': 3,
+                  'angular_momentum_quat': 4,
                   'moment_inertia': 3,
                   'virial': 6}
 
