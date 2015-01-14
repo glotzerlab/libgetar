@@ -17,7 +17,7 @@ parser.add_argument('--ignore-empty', action='store_true', default=False,
                     help='Ignore empty files (has a chance to help particularly '
                     'broken archives)')
 
-def main(input, output, ignore_empty):
+def main(input, output, ignore_empty=False):
     nameHalves = os.path.splitext(output)
     tempName = output
 
