@@ -65,9 +65,10 @@ def main(input, output, ignore_empty=False):
             print('Copying from zip32 to zip64...')
             copy.main(tempName, tempName, ignore_empty)
 
-        os.rename(tempName, output)
+        if not os.path.samefile(tempName, output):
+            os.rename(tempName, output)
     finally:
-        if os.path.exists(tempName):
+        if os.path.exists(tempName) and not os.path.samefile(tempName, output):
             os.remove(tempName)
 
 if __name__ == '__main__': main(**vars(parser.parse_args()))
