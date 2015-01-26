@@ -70,9 +70,9 @@ int main()
     }
 
     {
-        string str("/vars/stdout/12.txt");
+        string str("/vars/stdout.txt/12");
         Record rec(str);
-        result |= check(rec, "", "stdout", "12", Continuous, UInt8, Text, true, __LINE__);
+        result |= check(rec, "", "stdout.txt", "12", Continuous, UInt8, Text, true, __LINE__);
         result |= checkstr(skipAbsolute(str), rec.getPath(), true, __LINE__);
     }
 
