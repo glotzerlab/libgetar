@@ -40,6 +40,14 @@ namespace gtar{
 
         if(filename.rfind(".tar") == filename.length() - 4)
             m_archive.reset(new TarArchive(filename, realMode));
+        else if(filename.rfind(".hdf5") == filename.length() - 5)
+        {
+#ifdef ENABLE_HDF5
+            m_archive.reset(new Hdf5Archive(filename, realMode));
+#else
+            throw runtime_error("This version of libgetar was not compiled with hdf5 support!");
+#endif
+        }
         else
             m_archive.reset(new ZipArchive(filename, realMode));
 

@@ -8,19 +8,17 @@
 using namespace gtar;
 using namespace std;
 
-int main()
+void runTests(int &result, string suffix)
 {
-    int result(0);
-
     for(size_t i(0); i < 5; ++i)
     {
-        GTAR arch("test.zip", Write);
+        GTAR arch("test" + suffix, Write);
         int randomUniform(rand());
 
         arch.writeUniform<int>("test.i64.uni", randomUniform);
         arch.close();
 
-        GTAR readArch("test.zip", Read);
+        GTAR readArch("test" + suffix, Read);
         auto_ptr<int> readUniform(readArch.readUniform<int>("test.i64.uni"));
 
         if(!readUniform.get())
@@ -46,7 +44,7 @@ int main()
 
     for(size_t i(0); i < 5; ++i)
     {
-        GTAR arch("test.zip", Write);
+        GTAR arch("test" + suffix, Write);
         int randomIndividual[5];
 
         for(size_t i(0); i < sizeof(randomIndividual)/sizeof(int); ++i)
@@ -57,7 +55,7 @@ int main()
                                         NoCompress);
         arch.close();
 
-        GTAR readArch("test.zip", Read);
+        GTAR readArch("test" + suffix, Read);
         SharedArray<int> readIndividual(readArch.readIndividual<int>("test.i64.uni"));
 
         if(!readIndividual.size())
@@ -87,6 +85,15 @@ int main()
         }
 
     }
+}
+
+int main()
+{
+    int result(0);
+
+    runTests(result, ".zip");
+    runTests(result, ".tar");
+    runTests(result, ".hdf5");
 
     return result;
 }

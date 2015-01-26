@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "Archive.hpp"
-#include "ZipArchive.hpp"
+#include "Hdf5Archive.hpp"
 #include "TarArchive.hpp"
+#include "ZipArchive.hpp"
 #include "SharedArray.hpp"
 #include "Record.hpp"
 

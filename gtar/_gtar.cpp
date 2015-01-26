@@ -13821,7 +13821,7 @@ PyMODINIT_FUNC PyInit__gtar(void)
 
   /* "gtar/_gtar.pyx":1
  * # distutils: language = c++             # <<<<<<<<<<<<<<
- * # distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp
+ * # distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp src/Hdf5Archive.cpp src/TarArchive.cpp src/ZipArchive.cpp
  * # cython: embedsignature=True
  */
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}

@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp
+# distutils: sources = src/Archive.cpp src/vogl_miniz.cpp src/vogl_miniz_zip.cpp src/GTAR.cpp src/Record.cpp src/Hdf5Archive.cpp src/TarArchive.cpp src/ZipArchive.cpp
 # cython: embedsignature=True
 
 from libcpp.string cimport string

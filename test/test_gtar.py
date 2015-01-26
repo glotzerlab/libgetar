@@ -2,7 +2,7 @@ import sys
 import gtar
 import numpy as np
 
-def test_readWritePath():
+def test_readWritePath(suffix):
     records = {'test.txt': 'test string foo\n',
                'blah.txt': '日本語',
                'frames/0/otherblah.f32.ind': np.random.rand(5),
@@ -13,12 +13,12 @@ def test_readWritePath():
                         np.array(records['frames/0/otherblah.f32.ind'],
                                  dtype=np.float32)}
 
-    with gtar.GTAR('test.zip', 'w') as arch:
+    with gtar.GTAR('test' + suffix, 'w') as arch:
         for path in records:
             arch.writePath(path, records[path])
 
     success = True
-    with gtar.GTAR('test.zip', 'r') as arch:
+    with gtar.GTAR('test' + suffix, 'r') as arch:
         for path in records:
             equal = np.all(
                 arch.readPath(path) == convertedRecords.get(path, records[path]))
@@ -32,10 +32,11 @@ def test_readWritePath():
 def main():
     success = True
 
-    try:
-        success = test_readWritePath() and success
-    except AssertionError:
-        success = False
+    for suffix in ['.zip', '.tar', '.hdf5']:
+        try:
+            success = test_readWritePath(suffix) and success
+        except AssertionError:
+            success = False
 
     sys.exit(not success)
 
