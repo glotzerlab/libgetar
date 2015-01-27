@@ -84,6 +84,15 @@ cdef string py3str(arg):
 cdef unpy3str(arg):
     return arg.decode('utf8')
 
+widths = {'position': 3,
+          'velocity': 3,
+          'orientation': 4,
+          'image': 3,
+          'angular_momentum': 3,
+          'angular_momentum_quat': 4,
+          'moment_inertia': 3,
+          'virial': 6}
+
 cdef class SharedArray:
     """Wrapper for the c++ SharedArray<char> class"""
     cdef cpp.SharedArray[char] *thisptr
@@ -136,8 +145,10 @@ cdef class SharedArray:
         Py_INCREF(self)
 
     def _arrayRecord(self, rec):
-        """Create a numpy array from this object given some metadata
-        in a Record object"""
+        """Create a numpy array from this object given some metadata in a Record
+        object. Uses the widths dictionary in the gtar namespace to
+        reshape the array into an Nxwidths[prop] array if the property's
+        name is present there."""
         buf = np.asarray(self)
 
         formats = {cpp.Float32: '<f4',
@@ -147,15 +158,6 @@ cdef class SharedArray:
                    cpp.UInt32: '<u4',
                    cpp.UInt64: '<u8',
                    cpp.UInt8: 'c'}
-
-        widths = {'position': 3,
-                  'velocity': 3,
-                  'orientation': 4,
-                  'image': 3,
-                  'angular_momentum': 3,
-                  'angular_momentum_quat': 4,
-                  'moment_inertia': 3,
-                  'virial': 6}
 
         result = np.frombuffer(buf, dtype=formats[rec.getFormat()])
 
@@ -316,8 +318,9 @@ cdef class GTAR:
         self.writeBytes(path, contents.encode('utf-8'), mode)
 
     def readPath(self, path):
-        """Reads the contents of a record at the given path. Returns
-        ``None`` if not found."""
+        """Reads the contents of a record at the given path. Returns ``None`` if
+        not found. If an array is found and the property is present in
+        ``gtar.widths``, reshape into an Nxwidths[prop] array."""
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
@@ -431,10 +434,11 @@ cdef class GTAR:
             return (records[0], sorted(frames, key=self._sortFrameKey))
 
     def recordsNamed(self, names):
-        """Returns ``(frame, [val[frame] for val in names])`` for each
-        frame which contains records matching each of the given
-        names. If only given a single name, returns ``(frame,
-        val[frame])`` for each found frame.
+        """Returns ``(frame, [val[frame] for val in names])`` for each frame which
+        contains records matching each of the given names. If only given
+        a single name, returns ``(frame, val[frame])`` for each found
+        frame. If a property is present in ``gtar.widths``, returns it
+        as an Nxwidths[prop] array.
 
         Example::
 
@@ -476,7 +480,8 @@ cdef class GTAR:
                 yield frame, self.getRecord(allRecords[names[0]], frame)
 
     def staticRecordNamed(self, name):
-        """Returns a static record with the given name."""
+        """Returns a static record with the given name. If the property is found in
+        ``gtar.widths``, returns it as an Nxwidths[prop] array."""
         try:
             rec = [rec for rec in self.getRecordTypes() if rec.getName() == name][0]
             return self.getRecord(rec)
