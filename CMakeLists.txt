@@ -10,9 +10,15 @@ IF(ENABLE_HDF5)
   add_definitions(-DENABLE_HDF5)
 ENDIF(ENABLE_HDF5)
 
-ADD_LIBRARY(getar
+set(GETAR_SRC
   src/Archive.cpp src/GTAR.cpp src/vogl_miniz_zip.cpp src/vogl_miniz.cpp
   src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp ${EXTRA_SRCS})
+
+if(SHARED)
+  ADD_LIBRARY(getar SHARED ${GETAR_SRC})
+else()
+  ADD_LIBRARY(getar ${GETAR_SRC})
+endif()
 
 target_link_libraries(getar ${LINK_LIBS})
 

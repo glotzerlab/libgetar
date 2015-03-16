@@ -69,7 +69,7 @@ def main(input, output, ignore_empty=False):
         with GTAR(input, 'r'):
             needsFix = False
             if os.path.samefile(input, output) and isZip64(output):
-                sys.exit(0)
+                return 0
     except Exception:
         pass
 
