@@ -91,7 +91,8 @@ widths = {'position': 3,
           'angular_momentum': 3,
           'angular_momentum_quat': 4,
           'moment_inertia': 3,
-          'virial': 6}
+          'virial': 6,
+          'center_of_mass': 3}
 
 cdef class SharedArray:
     """Wrapper for the c++ SharedArray<char> class"""
