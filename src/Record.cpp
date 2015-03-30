@@ -186,6 +186,11 @@ namespace gtar{
         return m_index;
     }
 
+    Behavior Record::getBehavior() const
+    {
+        return m_behavior;
+    }
+
     Format Record::getFormat() const
     {
         return m_format;

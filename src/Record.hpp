@@ -67,6 +67,7 @@ namespace gtar{
         string getGroup() const;
         string getName() const;
         string getIndex() const;
+        Behavior getBehavior() const;
         Format getFormat() const;
         Resolution getResolution() const;
         void setIndex(const string &index);
