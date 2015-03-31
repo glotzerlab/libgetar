@@ -365,7 +365,10 @@ cdef class GTAR:
         if rec.thisptr.getResolution() != cpp.Text:
             return result._arrayRecord(rec)
         else:
-            return str(result)
+            try:
+                return str(result)
+            except UnicodeDecodeError:
+                return bytes(result)
 
     def writeRecord(self, Record rec, contents):
         """Writes the given contents to the path specified by the given record"""
