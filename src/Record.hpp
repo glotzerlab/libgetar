@@ -45,9 +45,11 @@ namespace gtar{
         /// Assignment operator
         void operator=(const Record &rhs);
 
-        /// Comparison operators
+        /// Equality
         bool operator==(const Record &rhs) const;
+        /// Inequality
         bool operator!=(const Record &rhs) const;
+        /// Comparison
         bool operator<(const Record &rhs) const;
 
         /// Copy all fields from rhs into this object
@@ -63,13 +65,20 @@ namespace gtar{
         /// various fields
         string getPath() const;
 
-        /// Access fields of this object
+        /// Get the stored group field
         string getGroup() const;
+        /// Get the stored name field
         string getName() const;
+        /// Get the stored index field
         string getIndex() const;
+        /// Get the stored behavior field
         Behavior getBehavior() const;
+        /// Get the stored format field
         Format getFormat() const;
+        /// Get the stored resolution field
         Resolution getResolution() const;
+
+        /// Set the index field for this Record object
         void setIndex(const string &index);
 
     private:

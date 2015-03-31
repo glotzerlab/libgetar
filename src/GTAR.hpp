@@ -59,28 +59,33 @@ namespace gtar{
         /// itself upon destruction)
         void close();
 
-        /// Most generic functions. Toss some bytes into a location,
-        /// overloaded for different sources.
+        /// Write a string to the given location
         void writeString(const string &path, const string &contents, CompressMode mode);
+        /// Write a bytestring to the given location
         void writeBytes(const string &path, const vector<char> &contents, CompressMode mode);
+        /// Write the contents of a pointer to the given location
         void writePtr(const string &path, const void *contents,
                       const size_t byteLength, CompressMode mode);
 
-        /// Write individual and uniform binary properties to the specified
+        /// Write an individual binary property to the specified
         /// location, converting to little endian if necessary.
         template<typename iter, typename T>
         void writeIndividual(const string &path, const iter &start,
                              const iter &end, CompressMode mode);
+        /// Write a uniform binary property to the specified location,
+        /// converting to little endian if necessary.
         template<typename T>
         void writeUniform(const string &path, const T &val);
 
-        /// Read individual and uniform binary properties (or just a
-        /// stream of bytes) from the specified location, converting
-        /// from little endian if necessary.
+        /// Read an individual binary property to the specified
+        /// location, converting from little endian if necessary.
         template<typename T>
         SharedArray<T> readIndividual(const string &path);
+        /// Read a uniform binary property to the specified location,
+        /// converting from little endian if necessary.
         template<typename T>
         auto_ptr<T> readUniform(const string &path);
+        /// Read a bytestring from the specified location
         SharedArray<char> readBytes(const string &path);
 
         /// Query all of the records in the archive. These will all
