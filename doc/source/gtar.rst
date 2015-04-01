@@ -1,3 +1,4 @@
+==================================================
 The GETAR file format: GEneric Trajectory ARchives
 ==================================================
 
@@ -6,7 +7,7 @@ provide sufficient flexibility and power for our use cases while
 maintaining a simple design and ease of use.
 
 The GETAR Format
-----------------
+================
 
 The main idea behind GETAR (GEneric Trajectory ARchives; yes,
 pronounced like the instrument!) files is to simply use standard data
@@ -19,7 +20,7 @@ should be straightforward to change in the future if we find drawbacks
 to the zip format.
 
 GETAR Archives
---------------
+==============
 
 GETAR files are just normal zip files, the specification of which is
 available at http://www.pkware.com/documents/casestudies/APPNOTE.TXT .
@@ -29,7 +30,7 @@ than 4GB in size.  Data are stored in individual **records**,
 which are simply files in the archive with a particular naming scheme.
 
 Records
--------
+=======
 
 GETAR records consist of three primary pieces of information:
 
@@ -38,14 +39,14 @@ GETAR records consist of three primary pieces of information:
 - A **behavior**, which indicates how the data are stored over time
 
 Record Names
-~~~~~~~~~~~~
+************
 
 Record names have no restriction or meaning beyond the overlying
 schema (properties named "position" indicate the position of
 particles, etc.).
 
 Record Resolutions
-~~~~~~~~~~~~~~~~~~
+******************
 
 There are three values that resolutions can have, two for binary data
 and one for text-based data:
@@ -59,7 +60,7 @@ and one for text-based data:
 
 
 Record Behaviors
-~~~~~~~~~~~~~~~~
+****************
 
 Record behaviors indicate how data are stored over time.
 There are three defined behaviors for different use cases:
@@ -73,7 +74,7 @@ There are three defined behaviors for different use cases:
   simulation
 
 Archive Storage Paths
----------------------
+=====================
 
 Put briefly, the record behavior indicates the directory within the
 zip archive where the data are stored and the record name and
