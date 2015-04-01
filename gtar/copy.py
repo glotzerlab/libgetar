@@ -1,3 +1,20 @@
+"""
+Copy each record from one getar-formatted file to another.
+
+::
+
+   usage: python -m gtar.copy [-h] [--ignore-empty] input output
+
+   Command-line archive copier or translator
+
+   positional arguments:
+     input           Input file to read
+     output          File to write to
+
+   optional arguments:
+     -h, --help      show this help message and exit
+     --ignore-empty  Ignore empty files
+"""
 
 import argparse
 import os
@@ -14,6 +31,14 @@ parser.add_argument('--ignore-empty', action='store_true', default=False,
                     help='Ignore empty files')
 
 def main(input, output, ignore_empty=False):
+    """Copy each record from one getar-formatted file to another.
+
+    :param input: Input filename
+    :param output: Output filename (can be the same as input)
+    :param ignore_empty: if True, ignore empty records rather than copying them over
+
+    """
+
     nameHalves = os.path.splitext(output)
     tempName = output
 

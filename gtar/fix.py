@@ -1,4 +1,24 @@
 
+"""
+Fix a getar-formatted zip file.
+
+::
+
+   usage: python -m gtar.fix [-h] [-o OUTPUT] [--ignore-empty] input
+
+   Command-line zip archive fixer
+
+   positional arguments:
+     input                 Input zip file to read
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -o OUTPUT, --output OUTPUT
+   Output location for fixed zip archive
+     --ignore-empty        Potentially ignore empty files (has a chance to help
+                           particularly broken archives)
+"""
+
 import argparse
 import os
 import re
@@ -58,6 +78,13 @@ def deleteBadFrames(tempName, zipLog):
     return toDelete
 
 def main(input, output, ignore_empty=False):
+    """Fix a getar-formatted zip file.
+
+    :param input: Input filename
+    :param output: Output filename (can be the same as input)
+    :param ignore_empty: if True, ignore empty records rather than copying them over
+
+    """
 
     if input.endswith('.tar') or input.endswith('.hdf5'):
         raise RuntimeError('Can\'t fix non-zip archives')

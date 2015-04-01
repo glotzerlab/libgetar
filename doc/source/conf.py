@@ -280,3 +280,5 @@ def generateDoxygen(app):
 # sphinx setup function, run doxygen
 def setup(app):
     app.connect('builder-inited', generateDoxygen)
+
+autoclass_content = 'both'
