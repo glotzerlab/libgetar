@@ -51,7 +51,7 @@ void runTests(int &result, string suffix)
             randomIndividual[i] = rand();
 
         arch.writeIndividual<int*, int>("test.i64.uni", randomIndividual,
-                                        randomIndividual + sizeof(randomIndividual),
+                                        randomIndividual + sizeof(randomIndividual)/sizeof(int),
                                         NoCompress);
         arch.close();
 
