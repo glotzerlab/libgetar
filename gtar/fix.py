@@ -121,7 +121,7 @@ def main(input, output, ignore_empty=False):
             print('Copying from zip32 to zip64...')
             copy.main(fixed, tempName, ignore_empty)
 
-        if not os.path.samefile(tempName, output):
+        if needsFix and not os.path.samefile(tempName, output):
             os.rename(tempName, output)
     finally:
         if os.path.exists(tempName) and not os.path.samefile(tempName, output):
