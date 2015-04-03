@@ -169,7 +169,7 @@ namespace gtar{
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
 
         if(bytes.size())
-            return auto_ptr<T>((T*) bytes.disown());
+            return auto_ptr<T>(new T(*(T*) bytes.get()));
         else
             return auto_ptr<T>();
     }
