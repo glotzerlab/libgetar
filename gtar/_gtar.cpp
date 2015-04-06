@@ -5733,7 +5733,7 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
  *         """
  *         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)             # <<<<<<<<<<<<<<
  *         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
- *         if arr.nbytes:
+ *         if carr.nbytes:
  */
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 344; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -5793,8 +5793,8 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
  *         """
  *         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
  *         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)             # <<<<<<<<<<<<<<
- *         if arr.nbytes:
- *             self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
+ *         if carr.nbytes:
+ *             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
  */
   __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 345; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -5837,11 +5837,11 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
   /* "gtar/_gtar.pyx":346
  *         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
  *         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
- *         if arr.nbytes:             # <<<<<<<<<<<<<<
- *             self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
+ *         if carr.nbytes:             # <<<<<<<<<<<<<<
+ *             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
  *         else:
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arr, __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_carr), __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 346; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5849,10 +5849,10 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
 
     /* "gtar/_gtar.pyx":347
  *         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
- *         if arr.nbytes:
- *             self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)             # <<<<<<<<<<<<<<
+ *         if carr.nbytes:
+ *             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)             # <<<<<<<<<<<<<<
  *         else:
- *             self.thisptr.writePtr(py3str(path), <void*> 0, arr.nbytes, mode)
+ *             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
  */
     __pyx_t_8 = 0;
     __pyx_t_9 = -1;
@@ -5864,7 +5864,7 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
       __Pyx_RaiseBufferIndexError(__pyx_t_9);
       {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arr, __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_carr), __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_10 = __Pyx_PyInt_As_size_t(__pyx_t_3); if (unlikely((__pyx_t_10 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 347; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5880,13 +5880,13 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
   /*else*/ {
 
     /* "gtar/_gtar.pyx":349
- *             self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
+ *             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
  *         else:
- *             self.thisptr.writePtr(py3str(path), <void*> 0, arr.nbytes, mode)             # <<<<<<<<<<<<<<
+ *             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)             # <<<<<<<<<<<<<<
  * 
  *     def getRecord(self, Record query, index=""):
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_arr, __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 349; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_carr), __pyx_n_s_nbytes); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 349; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_10 = __Pyx_PyInt_As_size_t(__pyx_t_3); if (unlikely((__pyx_t_10 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 349; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -5935,7 +5935,7 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_26writeArray(struct __pyx_obj_4gtar
 }
 
 /* "gtar/_gtar.pyx":351
- *             self.thisptr.writePtr(py3str(path), <void*> 0, arr.nbytes, mode)
+ *             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
  * 
  *     def getRecord(self, Record query, index=""):             # <<<<<<<<<<<<<<
  *         """Returns the contents of the given base record and index."""
@@ -6353,7 +6353,7 @@ static PyObject *__pyx_pf_4gtar_5_gtar_4GTAR_28getRecord(struct __pyx_obj_4gtar_
   }
 
   /* "gtar/_gtar.pyx":351
- *             self.thisptr.writePtr(py3str(path), <void*> 0, arr.nbytes, mode)
+ *             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
  * 
  *     def getRecord(self, Record query, index=""):             # <<<<<<<<<<<<<<
  *         """Returns the contents of the given base record and index."""

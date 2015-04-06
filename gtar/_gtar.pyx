@@ -343,10 +343,10 @@ cdef class GTAR:
         """
         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
-        if arr.nbytes:
-            self.thisptr.writePtr(py3str(path), &carr[0], arr.nbytes, mode)
+        if carr.nbytes:
+            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
         else:
-            self.thisptr.writePtr(py3str(path), <void*> 0, arr.nbytes, mode)
+            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
 
     def getRecord(self, Record query, index=""):
         """Returns the contents of the given base record and index."""
