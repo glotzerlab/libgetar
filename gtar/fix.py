@@ -47,6 +47,9 @@ def rebuildZip(input, tempName):
     zipLog = zipLog.decode('utf8').split('\n')
     zipLog.pop()
 
+    if proc.returncode not in [0, 3]:
+        raise RuntimeError('Error {} running zip command'.format(proc.returncode))
+
     return zipLog
 
 def deleteBadFrames(tempName, zipLog):
