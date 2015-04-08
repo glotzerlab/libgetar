@@ -21,6 +21,17 @@ process). Example:
 
    python -m gtar.fix broken.zip -o fixed.zip
 
+Some very large (>8GB) zip files seem to be unable to be fixed, even
+with ``zip -FF``. In this case, to recover your data you can extract
+it all using the ``jar`` tool, which does not even look at the central
+directory when extracting:
+
+::
+
+   mkdir temp && cd temp
+   jar xvf ../broken.zip
+   zip -mr fixed.zip -xi ./*
+
 .. _Zip-vs-Zip64:
 
 Zip vs Zip64
