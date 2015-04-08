@@ -325,11 +325,11 @@ cdef class GTAR:
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
-    def writePath(self, path, contents):
+    def writePath(self, path, contents, mode=cpp.FastCompress):
         """Writes the given contents to the given path, converting as
         necessary"""
         rec = Record(path)
-        self.writeRecord(rec, contents)
+        self.writeRecord(rec, contents, mode)
 
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
@@ -370,7 +370,7 @@ cdef class GTAR:
             except UnicodeDecodeError:
                 return bytes(result)
 
-    def writeRecord(self, Record rec, contents):
+    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
         """Writes the given contents to the path specified by the given record"""
         dtypes = {cpp.Float32: np.float32,
                   cpp.Float64: np.float64,
@@ -382,13 +382,13 @@ cdef class GTAR:
 
         if rec.getResolution() == cpp.Text:
             if type(contents) == str:
-                self.writeStr(rec.getPath(), contents)
+                self.writeStr(rec.getPath(), contents, mode)
             elif type(contents) == bytes:
-                self.writeBytes(rec.getPath(), contents)
+                self.writeBytes(rec.getPath(), contents, mode)
             else:
                 raise RuntimeError('Not sure how to serialize the given argument!')
         else:
-            self.writeArray(rec.getPath(), contents, dtype=dtypes[rec.getFormat()])
+            self.writeArray(rec.getPath(), contents, mode, dtype=dtypes[rec.getFormat()])
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
