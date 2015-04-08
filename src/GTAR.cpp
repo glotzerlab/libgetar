@@ -48,6 +48,14 @@ namespace gtar{
             throw runtime_error("This version of libgetar was not compiled with hdf5 support!");
 #endif
         }
+        else if(filename.rfind(".sqlite") == filename.length() - 7)
+        {
+#ifdef ENABLE_SQLITE
+            m_archive.reset(new SqliteArchive(filename, realMode));
+#else
+            throw runtime_error("This version of libgetar was not compiled with sqlite support!");
+#endif
+        }
         else
             m_archive.reset(new ZipArchive(filename, realMode));
 

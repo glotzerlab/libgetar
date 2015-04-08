@@ -10,6 +10,7 @@
 
 #include "Archive.hpp"
 #include "Hdf5Archive.hpp"
+#include "SqliteArchive.hpp"
 #include "TarArchive.hpp"
 #include "ZipArchive.hpp"
 #include "SharedArray.hpp"
