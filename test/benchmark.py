@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 import timeit
 
 import numpy as np
@@ -147,8 +148,12 @@ def main(number, byte_counts, output, replicants, filenames, tests):
             for N in number:
                 data[filename].append([])
                 for filesize in byte_counts:
+                    print(filename, N, filesize, file=sys.stderr)
                     data[filename][-1].append(
                         [runTest(name, filename=filename, Nbytes=filesize, Nparticles=N) for name in tests])
+                    print('  ' +
+                          ''.join(len(data[filename][-1][-1])*[' {:>4.2e}']).
+                          format(*data[filename][-1][-1]), file=sys.stderr)
     except KeyboardInterrupt:
         print('Exiting due to interrupt')
     finally:
