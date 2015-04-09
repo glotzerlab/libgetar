@@ -222,7 +222,7 @@ namespace gtar{
         unsigned int rawCompression(0);
         vector<SharedArray<char> > compressedBytes;
 
-        if(mode == FastCompress || mode == MediumCompress || mode == SlowCompress)
+        if(mode == FastCompress || mode == MediumCompress)
         {
             for(size_t chunkidx(0); chunkidx*LZ4_CHUNK_SIZE < byteLength; ++chunkidx)
             {
@@ -232,6 +232,22 @@ namespace gtar{
                 compressedBytes.push_back(SharedArray<char>(new char[maxSize], maxSize));
                 rawTargets.push_back(compressedBytes.back().get());
                 rawSizes.push_back(LZ4_compress(
+                                       ((const char*) contents) + chunkidx*LZ4_CHUNK_SIZE,
+                                       compressedBytes.back().get(), sourceSize));
+                compressedSize += rawSizes.back();
+            }
+            rawCompression = 1;
+        }
+        else if(mode == SlowCompress)
+        {
+            for(size_t chunkidx(0); chunkidx*LZ4_CHUNK_SIZE < byteLength; ++chunkidx)
+            {
+                const int sourceSize(min((size_t) LZ4_CHUNK_SIZE, byteLength - chunkidx*LZ4_CHUNK_SIZE));
+                const int maxSize(LZ4_compressBound(sourceSize));
+
+                compressedBytes.push_back(SharedArray<char>(new char[maxSize], maxSize));
+                rawTargets.push_back(compressedBytes.back().get());
+                rawSizes.push_back(LZ4_compressHC(
                                        ((const char*) contents) + chunkidx*LZ4_CHUNK_SIZE,
                                        compressedBytes.back().get(), sourceSize));
                 compressedSize += rawSizes.back();
