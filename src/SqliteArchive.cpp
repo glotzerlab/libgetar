@@ -1,6 +1,7 @@
 // SqliteArchive.cpp
 // by Matthew Spellings <mspells@umich.edu>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -12,8 +13,11 @@
 #include "lz4/lz4hc.h"
 #include "SqliteArchive.hpp"
 
+#define LZ4_CHUNK_SIZE LZ4_MAX_INPUT_SIZE/2
+
 namespace gtar{
 
+    using std::min;
     using std::runtime_error;
     using std::string;
     using std::stringstream;
@@ -65,7 +69,8 @@ namespace gtar{
                                   "CREATE TABLE IF NOT EXISTS file_contents ("
                                   "path TEXT REFERENCES file_list (path) ON "
                                   "DELETE CASCADE ON UPDATE CASCADE,"
-                                  "contents BLOB);",
+                                  "contents BLOB,"
+                                  "chunk_idx INTEGER NOT NULL);",
                                   0, 0, &errmsg);
         if(execStatus != SQLITE_OK)
         {
@@ -127,7 +132,7 @@ namespace gtar{
 
         execStatus = sqlite3_prepare_v2(m_connection,
                                         "INSERT INTO file_contents VALUES "
-                                        "(?, ?);",
+                                        "(?, ?, ?);",
                                         -1, &m_insert_contents_stmt, 0);
         if(execStatus != SQLITE_OK)
         {
@@ -142,7 +147,8 @@ namespace gtar{
                                         "SELECT file_list.*, file_contents.contents "
                                         "FROM file_list INNER JOIN file_contents "
                                         "ON file_list.path = file_contents.path "
-                                        "WHERE file_list.path = ?;",
+                                        "WHERE file_list.path = ? "
+                                        "ORDER BY file_contents.chunk_idx;",
                                         -1, &m_select_contents_stmt, 0);
         if(execStatus != SQLITE_OK)
         {
@@ -210,32 +216,41 @@ namespace gtar{
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
 
-        char *rawTarget((char*) contents);
-        size_t rawSize(byteLength);
+        vector<char*> rawTargets;
+        vector<size_t> rawSizes;
+        size_t compressedSize(0);
         unsigned int rawCompression(0);
-        SharedArray<char> compressedBytes;
+        vector<SharedArray<char> > compressedBytes;
 
         if(mode == FastCompress || mode == MediumCompress || mode == SlowCompress)
         {
-            // TODO make this safe for very large inputs
-            // (LZ4_MAX_INPUT_SIZE = 2 113 929 216 bytes)
-            const int maxSize(LZ4_compressBound(byteLength));
+            for(size_t chunkidx(0); chunkidx*LZ4_CHUNK_SIZE < byteLength; ++chunkidx)
+            {
+                const int sourceSize(min((size_t) LZ4_CHUNK_SIZE, byteLength - chunkidx*LZ4_CHUNK_SIZE));
+                const int maxSize(LZ4_compressBound(sourceSize));
 
-            compressedBytes = SharedArray<char>(new char[maxSize], maxSize);
-            rawTarget = compressedBytes.get();
-            rawSize = LZ4_compress((const char*) contents,
-                                   compressedBytes.get(), byteLength);
+                compressedBytes.push_back(SharedArray<char>(new char[maxSize], maxSize));
+                rawTargets.push_back(compressedBytes.back().get());
+                rawSizes.push_back(LZ4_compress(
+                                       ((const char*) contents) + chunkidx*LZ4_CHUNK_SIZE,
+                                       compressedBytes.back().get(), sourceSize));
+                compressedSize += rawSizes.back();
+            }
             rawCompression = 1;
+        }
+        else
+        {
+            rawTargets.push_back((char*) contents);
+            rawSizes.push_back(byteLength);
+            compressedSize = byteLength;
         }
 
         sqlite3_bind_text(m_insert_filename_stmt, 1, path.c_str(), path.size(), 0);
         sqlite3_bind_int64(m_insert_filename_stmt, 2, byteLength);
-        sqlite3_bind_int64(m_insert_filename_stmt, 3, rawSize);
+        sqlite3_bind_int64(m_insert_filename_stmt, 3, compressedSize);
         sqlite3_bind_int(m_insert_filename_stmt, 4, rawCompression);
 
         sqlite3_bind_text(m_insert_contents_stmt, 1, path.c_str(), path.size(), 0);
-        sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTarget,
-                            rawSize, 0);
 
         int status(SQLITE_BUSY);
 
@@ -243,7 +258,15 @@ namespace gtar{
         {
             status = sqlite3_step(m_begin_stmt);
             status = sqlite3_step(m_insert_filename_stmt);
-            status = sqlite3_step(m_insert_contents_stmt);
+
+            for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
+            {
+                sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
+                                    rawSizes[chunkidx], 0);
+                sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
+                status = sqlite3_step(m_insert_contents_stmt);
+                sqlite3_reset(m_insert_contents_stmt);
+            }
             status = sqlite3_step(m_end_stmt);
         }
 
@@ -280,19 +303,39 @@ namespace gtar{
             const size_t compSize(sqlite3_column_int64(m_select_contents_stmt, 2));
             const size_t compLevel(sqlite3_column_int64(m_select_contents_stmt, 3));
 
-            SharedArray<char> rawBytes(new char[compSize], compSize);
-            memcpy(rawBytes.get(), sqlite3_column_blob(m_select_contents_stmt, 4), compSize);
+            vector<SharedArray<char> >chunks;
+            vector<size_t> chunkSizes;
+            do
+            {
+                chunkSizes.push_back(sqlite3_column_bytes(m_select_contents_stmt, 4));
+                chunks.push_back(SharedArray<char>(new char[chunkSizes.back()], chunkSizes.back()));
+                memcpy(chunks.back().get(), sqlite3_column_blob(m_select_contents_stmt, 4), chunkSizes.back());
+            }
+            while(sqlite3_step(m_select_contents_stmt) == SQLITE_ROW);
 
             switch(compLevel)
             {
             case 0:
-                result = rawBytes;
+                if(chunks.size() == 1)
+                    result = chunks.back();
+                else
+                {
+                    SharedArray<char> concat(new char[uncompSize], uncompSize);
+                    for(size_t chunkidx(0), totalBytes(0); chunkidx < chunks.size(); ++chunkidx)
+                        memcpy(concat.get() + totalBytes, chunks[chunkidx].get(), chunkSizes[chunkidx]);
+                    result = concat;
+                }
                 break;
             case 1: // LZ4
             {
                 SharedArray<char> uncompressed(new char[uncompSize], uncompSize);
-                LZ4_decompress_safe((const char*) rawBytes.get(),
-                                    uncompressed.get(), compSize, uncompSize);
+                for(size_t chunkidx(0), totalBytes(0); chunkidx < chunks.size(); ++chunkidx)
+                {
+                    totalBytes += LZ4_decompress_safe(
+                        (const char*) chunks[chunkidx].get(),
+                        uncompressed.get() + totalBytes, chunks[chunkidx].size(),
+                        uncompSize - totalBytes);
+                }
                 result = uncompressed;
             }
                 break;
