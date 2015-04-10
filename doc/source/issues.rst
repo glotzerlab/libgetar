@@ -2,6 +2,8 @@
 Known Issues and Solutions
 ============================
 
+.. _Zip-Central-Directories:
+
 Zip Central Directories
 =======================
 

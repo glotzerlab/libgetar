@@ -14,6 +14,7 @@ Contents:
 
    inst
    gtar
+   backends
    py/gtar
    cpp/gtar
    issues
