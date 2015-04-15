@@ -238,7 +238,15 @@ cdef class Record:
         self.thisptr.setIndex(py3str(index))
 
 cdef class BulkWriter:
-    """Class for efficiently writing multiple records at a time."""
+    """Class for efficiently writing multiple records at a time. Works
+    as a context manager.
+
+    Example::
+
+        with gtar.GTAR('traj.sqlite', 'w') as traj, traj.getBulkWriter() as writer:
+            writer.writeStr('notes.txt', 'example text')
+
+    """
     cdef GTAR_.BulkWriter *thisptr
 
     def __cinit__(self, GTAR arch):
@@ -287,7 +295,7 @@ cdef class BulkWriter:
 
         Example::
 
-            gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
+            writer.writeArray('diameter.f32.ind', numpy.ones((N,)))
         """
         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
@@ -429,7 +437,8 @@ cdef class GTAR:
             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
 
     def getBulkWriter(self):
-        """Get a :py:class:`BulkWriter` context object."""
+        """Get a :py:class:`gtar.BulkWriter` context object. These allow for more
+        efficient writes when writing many records at once."""
         return BulkWriter(self)
 
     def getRecord(self, Record query, index=""):

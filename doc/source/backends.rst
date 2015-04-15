@@ -57,23 +57,36 @@ Backend Summary
 In summary:
 
 - Zip
+
   - Pros
+
     - Reasonably fast at everything
     - "Good" compression ratio
+
   - Cons
+
     - Weak to process death
+
 - Tar
+
   - Pros
+
     - Fast reads and writes
     - Resilient
+
   - Cons
     - Slow to open for reading with many files in an archive
     - No compression
+
 - Sqlite
+
   - Pros
+
     - Fast for reading and opening
     - Resilient
     - Fast but less-powerful compression (LZ4)
+
   - Cons
+
     - No standard archive-type tools
     - Slow for many individual writes

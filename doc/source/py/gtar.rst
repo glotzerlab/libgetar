@@ -21,6 +21,12 @@ serialization and deserialization abilities.
 .. autoclass:: gtar.GTAR
    :members:
 
+When writing many small records at once, a :py:class:`gtar.BulkWriter`
+object can be used.
+
+.. autoclass:: gtar.BulkWriter
+   :members:
+
 Creation
 --------
 
