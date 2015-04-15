@@ -23,6 +23,35 @@ namespace gtar{
         return a.size() < b.size() || ((a.size() == b.size()) && a < b);
     }
 
+    GTAR::BulkWriter::BulkWriter(GTAR &archive):
+        m_archive(archive)
+    {
+        m_archive.beginBulkWrites();
+    }
+
+    GTAR::BulkWriter::~BulkWriter()
+    {
+        m_archive.endBulkWrites();
+    }
+
+    void GTAR::BulkWriter::writeString(const string &path, const string &contents,
+                                       CompressMode mode)
+    {
+        m_archive.writeString(path, contents, mode, false);
+    }
+
+    void GTAR::BulkWriter::writeBytes(const string &path, const vector<char> &contents,
+                                      CompressMode mode)
+    {
+        m_archive.writeBytes(path, contents, mode, false);
+    }
+
+    void GTAR::BulkWriter::writePtr(const string &path, const void *contents,
+                                    const size_t byteLength, CompressMode mode)
+    {
+        m_archive.writePtr(path, contents, byteLength, mode, false);
+    }
+
     GTAR::GTAR(const string &filename, const OpenMode mode):
         m_archive(), m_records(), m_indexedRecords()
     {
@@ -71,6 +100,24 @@ namespace gtar{
     void GTAR::close()
     {
         m_archive.reset();
+    }
+
+    void GTAR::writeString(const string &path, const string &contents,
+                           CompressMode mode)
+    {
+        writeString(path, contents, mode, true);
+    }
+
+    void GTAR::writeBytes(const string &path, const vector<char> &contents,
+                          CompressMode mode)
+    {
+        writeBytes(path, contents, mode, true);
+    }
+
+    void GTAR::writePtr(const string &path, const void *contents,
+                        const size_t byteLength, CompressMode mode)
+    {
+        writePtr(path, contents, byteLength, mode, true);
     }
 
     void GTAR::writeString(const string &path, const string &contents,

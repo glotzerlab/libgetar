@@ -52,6 +52,41 @@ namespace gtar{
     public:
         typedef set<string, IndexCompare> indexSet;
 
+        class BulkWriter
+        {
+        public:
+            /// Create a new BulkWriter on an archive. Only one should
+            /// exist for any archive at a time.
+            BulkWriter(GTAR &archive);
+
+            /// Clean up the BulkWriter data. Causes all writes to be
+            /// performed.
+            ~BulkWriter();
+
+            /// Write a string to the given location
+            void writeString(const string &path, const string &contents,
+                             CompressMode mode);
+            /// Write a bytestring to the given location
+            void writeBytes(const string &path, const vector<char> &contents,
+                            CompressMode mode);
+            /// Write the contents of a pointer to the given location
+            void writePtr(const string &path, const void *contents,
+                          const size_t byteLength, CompressMode mode);
+
+            /// Write an individual binary property to the specified
+            /// location, converting to little endian if necessary.
+            template<typename iter, typename T>
+            void writeIndividual(const string &path, const iter &start,
+                                 const iter &end, CompressMode mode);
+            /// Write a uniform binary property to the specified location,
+            /// converting to little endian if necessary.
+            template<typename T>
+            void writeUniform(const string &path, const T &val);
+
+        private:
+            GTAR &m_archive;
+        };
+
         /// Constructor. Opens the zip file at filename in the given
         /// mode.
         GTAR(const string &filename, const OpenMode mode);
@@ -62,32 +97,23 @@ namespace gtar{
 
         /// Write a string to the given location
         void writeString(const string &path, const string &contents,
-                         CompressMode mode, bool immediate=false);
+                         CompressMode mode);
         /// Write a bytestring to the given location
         void writeBytes(const string &path, const vector<char> &contents,
-                        CompressMode mode, bool immediate=false);
+                        CompressMode mode);
         /// Write the contents of a pointer to the given location
         void writePtr(const string &path, const void *contents,
-                      const size_t byteLength, CompressMode mode,
-                      bool immediate=false);
+                      const size_t byteLength, CompressMode mode);
 
         /// Write an individual binary property to the specified
         /// location, converting to little endian if necessary.
         template<typename iter, typename T>
         void writeIndividual(const string &path, const iter &start,
-                             const iter &end, CompressMode mode,
-                             bool immediate=false);
+                             const iter &end, CompressMode mode);
         /// Write a uniform binary property to the specified location,
         /// converting to little endian if necessary.
         template<typename T>
-        void writeUniform(const string &path, const T &val,
-                          bool immediate=false);
-
-        /// Optimize the archive writes for multiple records at once;
-        /// must be accompanied by a call to endBulkWrites()
-        void beginBulkWrites();
-        /// Flush writes out of temporary buffers
-        void endBulkWrites();
+        void writeUniform(const string &path, const T &val);
 
         /// Read an individual binary property to the specified
         /// location, converting from little endian if necessary.
@@ -108,6 +134,33 @@ namespace gtar{
         vector<string> queryFrames(const Record &target) const;
 
     private:
+        /// Write a string to the given location
+        void writeString(const string &path, const string &contents,
+                         CompressMode mode, bool immediate);
+        /// Write a bytestring to the given location
+        void writeBytes(const string &path, const vector<char> &contents,
+                        CompressMode mode, bool immediate);
+        /// Write the contents of a pointer to the given location
+        void writePtr(const string &path, const void *contents,
+                      const size_t byteLength, CompressMode mode,
+                      bool immediate);
+
+        /// Write an individual binary property to the specified
+        /// location, converting to little endian if necessary.
+        template<typename iter, typename T>
+        void writeIndividual(const string &path, const iter &start,
+                             const iter &end, CompressMode mode, bool immediate);
+        /// Write a uniform binary property to the specified location,
+        /// converting to little endian if necessary.
+        template<typename T>
+        void writeUniform(const string &path, const T &val, bool immediate);
+
+        /// Optimize the archive writes for multiple records at once;
+        /// must be accompanied by a call to endBulkWrites()
+        void beginBulkWrites();
+        /// Flush writes out of temporary buffers
+        void endBulkWrites();
+
         /// Insert a record into the set of cached records
         void insertRecord(const string &path);
 
@@ -136,6 +189,32 @@ namespace gtar{
                     swap(recast[i*sizeof(T) + j], recast[(i + 1)*sizeof(T) - j - 1]);
             }
         }
+    }
+
+    template<typename iter, typename T>
+    void GTAR::BulkWriter::writeIndividual(const string &path, const iter &start,
+                               const iter &end, CompressMode mode)
+    {
+        m_archive.writeIndividual<iter, T>(path, start, end, mode, false);
+    }
+
+    template<typename T>
+    void GTAR::BulkWriter::writeUniform(const string &path, const T &val)
+    {
+        m_archive.writeUniform<T>(path, val, false);
+    }
+
+    template<typename iter, typename T>
+    void GTAR::writeIndividual(const string &path, const iter &start,
+                               const iter &end, CompressMode mode)
+    {
+        writeIndividual<iter, T>(path, start, end, mode, true);
+    }
+
+    template<typename T>
+    void GTAR::writeUniform(const string &path, const T &val)
+    {
+        writeUniform<T>(path, val, true);
     }
 
     template<typename iter, typename T>

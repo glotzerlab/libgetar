@@ -9,6 +9,7 @@ cimport numpy as np
 from cpython cimport PyObject, Py_INCREF
 
 cimport cpp
+from cpp cimport GTAR as GTAR_
 
 np.import_array()
 
@@ -236,6 +237,86 @@ cdef class Record:
         """Sets the `index` field of this object"""
         self.thisptr.setIndex(py3str(index))
 
+cdef class BulkWriter:
+    """Class for efficiently writing multiple records at a time."""
+    cdef GTAR_.BulkWriter *thisptr
+
+    def __cinit__(self, GTAR arch):
+        self.thisptr = new GTAR_.BulkWriter(deref(arch.thisptr))
+
+    cdef _dealloc(self):
+        del self.thisptr
+        self.thisptr = <GTAR_.BulkWriter*> 0
+
+    def __dealloc__(self):
+        self._dealloc()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self._dealloc()
+
+    def writeBytes(self, path, contents, mode=cpp.FastCompress):
+        """Write the given contents to the location within the
+        archive, using the given compression mode.
+        """
+        self.thisptr.writeString(py3str(path), contents, mode)
+
+    def writeStr(self, path, contents, mode=cpp.FastCompress):
+        """Write the given string to the given path, optionally
+        compressing with the given mode.
+
+        Example::
+
+            writer.writeStr('params.json', json.dumps(params))
+        """
+        self.writeBytes(path, contents.encode('utf-8'), mode)
+
+    def writePath(self, path, contents, mode=cpp.FastCompress):
+        """Writes the given contents to the given path, converting as
+        necessary"""
+        rec = Record(path)
+        self.writeRecord(rec, contents, mode)
+
+    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
+        """Write the given numpy array to the location within the
+        archive, using the given compression mode. This serializes the
+        data into the given binary data type or the same binary format
+        that the numpy array is using.
+
+        Example::
+
+            gtar.writeArray('diameter.f32.ind', numpy.ones((N,)))
+        """
+        arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
+        cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
+        if carr.nbytes:
+            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
+        else:
+            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
+
+    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
+        """Writes the given contents to the path specified by the given record"""
+        dtypes = {cpp.Float32: np.float32,
+                  cpp.Float64: np.float64,
+                  cpp.Int32: np.int32,
+                  cpp.Int64: np.int64,
+                  cpp.UInt8: np.uint8,
+                  cpp.UInt32: np.uint32,
+                  cpp.UInt64: np.uint64}
+
+        if rec.getResolution() == cpp.Text:
+            if type(contents) == str:
+                self.writeStr(rec.getPath(), contents, mode)
+            elif type(contents) == bytes:
+                self.writeBytes(rec.getPath(), contents, mode)
+            else:
+                raise RuntimeError('Not sure how to serialize the given argument!')
+        else:
+            self.writeArray(rec.getPath(), contents, mode,
+                            dtype=dtypes[rec.getFormat()])
+
 cdef class GTAR:
     """Python wrapper for the :cpp:class:`GTAR` c++ class. Provides
     basic access to its methods and simple methods to read and write
@@ -292,11 +373,11 @@ cdef class GTAR:
 
         return (bytes(result) if len(result) else None)
 
-    def writeBytes(self, path, contents, mode=cpp.FastCompress, immediate=False):
+    def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
         archive, using the given compression mode.
         """
-        self.thisptr.writeString(py3str(path), contents, mode, immediate)
+        self.thisptr.writeString(py3str(path), contents, mode)
 
     def readStr(self, path):
         """Read the contents of the given path as a string or return
@@ -307,7 +388,7 @@ cdef class GTAR:
         else:
             return result
 
-    def writeStr(self, path, contents, mode=cpp.FastCompress, immediate=False):
+    def writeStr(self, path, contents, mode=cpp.FastCompress):
         """Write the given string to the given path, optionally
         compressing with the given mode.
 
@@ -315,7 +396,7 @@ cdef class GTAR:
 
             gtar.writeStr('params.json', json.dumps(params))
         """
-        self.writeBytes(path, contents.encode('utf-8'), mode, immediate)
+        self.writeBytes(path, contents.encode('utf-8'), mode)
 
     def readPath(self, path):
         """Reads the contents of a record at the given path. Returns ``None`` if
@@ -324,13 +405,13 @@ cdef class GTAR:
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
-    def writePath(self, path, contents, mode=cpp.FastCompress, immediate=False):
+    def writePath(self, path, contents, mode=cpp.FastCompress):
         """Writes the given contents to the given path, converting as
         necessary"""
         rec = Record(path)
-        self.writeRecord(rec, contents, mode, immediate)
+        self.writeRecord(rec, contents, mode)
 
-    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None, immediate=False):
+    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
         archive, using the given compression mode. This serializes the
         data into the given binary data type or the same binary format
@@ -343,17 +424,13 @@ cdef class GTAR:
         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
         if carr.nbytes:
-            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode, immediate)
+            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
         else:
-            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode, immediate)
+            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
 
-    def beginBulkWrites(self):
-        """Begin bulk-writing mode."""
-        self.thisptr.beginBulkWrites()
-
-    def endBulkWrites(self):
-        """End bulk-writing mode."""
-        self.thisptr.endBulkWrites()
+    def getBulkWriter(self):
+        """Get a :py:class:`BulkWriter` context object."""
+        return BulkWriter(self)
 
     def getRecord(self, Record query, index=""):
         """Returns the contents of the given base record and index."""
@@ -377,7 +454,7 @@ cdef class GTAR:
             except UnicodeDecodeError:
                 return bytes(result)
 
-    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress, immediate=False):
+    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
         """Writes the given contents to the path specified by the given record"""
         dtypes = {cpp.Float32: np.float32,
                   cpp.Float64: np.float64,
@@ -389,14 +466,14 @@ cdef class GTAR:
 
         if rec.getResolution() == cpp.Text:
             if type(contents) == str:
-                self.writeStr(rec.getPath(), contents, mode, immediate)
+                self.writeStr(rec.getPath(), contents, mode)
             elif type(contents) == bytes:
-                self.writeBytes(rec.getPath(), contents, mode, immediate)
+                self.writeBytes(rec.getPath(), contents, mode)
             else:
                 raise RuntimeError('Not sure how to serialize the given argument!')
         else:
             self.writeArray(rec.getPath(), contents, mode,
-                            dtype=dtypes[rec.getFormat()], immediate=immediate)
+                            dtype=dtypes[rec.getFormat()])
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without

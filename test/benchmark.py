@@ -19,12 +19,10 @@ orientation = np.random.uniform(-1, 1, size=({Nframes:}, {N:}, 4)).astype(np.flo
 """
 
 testWrite = """
-with gtar.GTAR('{filename:}', 'w') as traj:
-    traj.beginBulkWrites()
+with gtar.GTAR('{filename:}', 'w') as traj, traj.getBulkWriter() as writer:
     for i, (pos, quat) in enumerate(zip(position, orientation)):
-        traj.writePath('frames/{{}}/position.f32.ind'.format(i), pos)
-        traj.writePath('frames/{{}}/orientation.f32.ind'.format(i), quat)
-    traj.endBulkWrites()
+        writer.writePath('frames/{{}}/position.f32.ind'.format(i), pos)
+        writer.writePath('frames/{{}}/orientation.f32.ind'.format(i), quat)
 """
 
 clearCache = """
