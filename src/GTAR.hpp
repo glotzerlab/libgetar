@@ -78,6 +78,9 @@ namespace gtar{
         template<typename T>
         void writeUniform(const string &path, const T &val);
 
+        /// Write everything that has been queued
+        void flush();
+
         /// Read an individual binary property to the specified
         /// location, converting from little endian if necessary.
         template<typename T>

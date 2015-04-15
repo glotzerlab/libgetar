@@ -95,6 +95,8 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         void writeBytes(const string&, const vector[char]&, CompressMode) except +
         void writePtr(const string&, const void*, const size_t, CompressMode) except +
 
+        void flush() except +
+
         # SharedArray[T] readIndividual[T](const string&)
         SharedArray[char] readBytes(const string&) except +
 

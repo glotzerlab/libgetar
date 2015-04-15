@@ -41,7 +41,10 @@ namespace gtar{
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
         virtual void writePtr(const string &path, const void *contents,
-                              const size_t byteLength, CompressMode mode);
+                              const size_t byteLength, CompressMode mode,
+                              bool flushImmediately=true);
+
+        virtual void flush();
 
         // Read the contents of the given location within the archive
         virtual SharedArray<char> read(const string &path);

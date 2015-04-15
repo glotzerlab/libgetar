@@ -211,7 +211,8 @@ namespace gtar{
     }
 
     void SqliteArchive::writePtr(const string &path, const void *contents,
-                              const size_t byteLength, CompressMode mode)
+                                 const size_t byteLength, CompressMode mode,
+                                 bool flushImmediately)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
@@ -272,7 +273,9 @@ namespace gtar{
 
         while(status == SQLITE_BUSY)
         {
-            status = sqlite3_step(m_begin_stmt);
+            if(flushImmediately)
+                status = sqlite3_step(m_begin_stmt);
+
             status = sqlite3_step(m_insert_filename_stmt);
 
             for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
@@ -283,7 +286,9 @@ namespace gtar{
                 status = sqlite3_step(m_insert_contents_stmt);
                 sqlite3_reset(m_insert_contents_stmt);
             }
-            status = sqlite3_step(m_end_stmt);
+
+            if(flushImmediately)
+                status = sqlite3_step(m_end_stmt);
         }
 
         sqlite3_clear_bindings(m_insert_filename_stmt);
@@ -300,6 +305,12 @@ namespace gtar{
             result << sqlite3_errmsg(m_connection);
             throw runtime_error(result.str());
         }
+    }
+
+    void SqliteArchive::flush()
+    {
+        sqlite3_step(m_end_stmt);
+        sqlite3_reset(m_end_stmt);
     }
 
     SharedArray<char> SqliteArchive::read(const std::string &path)

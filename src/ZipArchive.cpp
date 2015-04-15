@@ -102,7 +102,8 @@ namespace gtar{
     }
 
     void ZipArchive::writePtr(const string &path, const void *contents,
-                           const size_t byteLength, CompressMode mode)
+                              const size_t byteLength, CompressMode mode,
+                              bool flushImmediately)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
@@ -136,6 +137,10 @@ namespace gtar{
             result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
             throw runtime_error(result.str());
         }
+    }
+
+    void ZipArchive::flush()
+    {
     }
 
     SharedArray<char> ZipArchive::read(const string &path)

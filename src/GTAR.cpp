@@ -70,6 +70,8 @@ namespace gtar{
 
     void GTAR::close()
     {
+        if(m_archive.get())
+            m_archive->flush();
         m_archive.reset();
     }
 
@@ -96,6 +98,14 @@ namespace gtar{
             m_archive->writePtr(path, contents, byteLength, mode);
         else
             throw runtime_error("Calling writePtr() with a closed GTAR object");
+    }
+
+    void GTAR::flush()
+    {
+        if(m_archive.get())
+            m_archive->flush();
+        else
+            throw runtime_error("Calling flush() with a closed GTAR object");
     }
 
     SharedArray<char> GTAR::readBytes(const string &path)

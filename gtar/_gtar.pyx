@@ -347,6 +347,10 @@ cdef class GTAR:
         else:
             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
 
+    def flush(self):
+        """Flush this object's to-write queue."""
+        self.thisptr.flush()
+
     def getRecord(self, Record query, index=""):
         """Returns the contents of the given base record and index."""
         rec = Record()
