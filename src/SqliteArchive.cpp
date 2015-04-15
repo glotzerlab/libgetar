@@ -212,7 +212,7 @@ namespace gtar{
 
     void SqliteArchive::writePtr(const string &path, const void *contents,
                                  const size_t byteLength, CompressMode mode,
-                                 bool flushImmediately)
+                                 bool immediate)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
@@ -271,24 +271,38 @@ namespace gtar{
 
         int status(SQLITE_BUSY);
 
-        while(status == SQLITE_BUSY)
+        if(immediate)
         {
-            if(flushImmediately)
+            while(status == SQLITE_BUSY)
+            {
                 status = sqlite3_step(m_begin_stmt);
 
-            status = sqlite3_step(m_insert_filename_stmt);
+                status = sqlite3_step(m_insert_filename_stmt);
+
+                for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
+                {
+                    sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
+                                        rawSizes[chunkidx], 0);
+                    sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
+                    status = sqlite3_step(m_insert_contents_stmt);
+                    sqlite3_reset(m_insert_contents_stmt);
+                }
+
+                status = sqlite3_step(m_end_stmt);
+            }
+        }
+        else
+        {
+            do {status = sqlite3_step(m_insert_filename_stmt);} while(status == SQLITE_BUSY);
 
             for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
             {
                 sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
                                     rawSizes[chunkidx], 0);
                 sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
-                status = sqlite3_step(m_insert_contents_stmt);
+                do {status = sqlite3_step(m_insert_contents_stmt);} while(status == SQLITE_BUSY);
                 sqlite3_reset(m_insert_contents_stmt);
             }
-
-            if(flushImmediately)
-                status = sqlite3_step(m_end_stmt);
         }
 
         sqlite3_clear_bindings(m_insert_filename_stmt);
@@ -307,9 +321,17 @@ namespace gtar{
         }
     }
 
-    void SqliteArchive::flush()
+    void SqliteArchive::beginBulkWrites()
     {
-        sqlite3_step(m_end_stmt);
+        int status;
+        do {status = sqlite3_step(m_begin_stmt);} while(status == SQLITE_BUSY);
+        sqlite3_reset(m_begin_stmt);
+    }
+
+    void SqliteArchive::endBulkWrites()
+    {
+        int status;
+        do {status = sqlite3_step(m_end_stmt);} while(status == SQLITE_BUSY);
         sqlite3_reset(m_end_stmt);
     }
 

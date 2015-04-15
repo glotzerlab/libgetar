@@ -292,11 +292,11 @@ cdef class GTAR:
 
         return (bytes(result) if len(result) else None)
 
-    def writeBytes(self, path, contents, mode=cpp.FastCompress):
+    def writeBytes(self, path, contents, mode=cpp.FastCompress, immediate=False):
         """Write the given contents to the location within the
         archive, using the given compression mode.
         """
-        self.thisptr.writeString(py3str(path), contents, mode)
+        self.thisptr.writeString(py3str(path), contents, mode, immediate)
 
     def readStr(self, path):
         """Read the contents of the given path as a string or return
@@ -307,7 +307,7 @@ cdef class GTAR:
         else:
             return result
 
-    def writeStr(self, path, contents, mode=cpp.FastCompress):
+    def writeStr(self, path, contents, mode=cpp.FastCompress, immediate=False):
         """Write the given string to the given path, optionally
         compressing with the given mode.
 
@@ -315,7 +315,7 @@ cdef class GTAR:
 
             gtar.writeStr('params.json', json.dumps(params))
         """
-        self.writeBytes(path, contents.encode('utf-8'), mode)
+        self.writeBytes(path, contents.encode('utf-8'), mode, immediate)
 
     def readPath(self, path):
         """Reads the contents of a record at the given path. Returns ``None`` if
@@ -324,13 +324,13 @@ cdef class GTAR:
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
-    def writePath(self, path, contents, mode=cpp.FastCompress):
+    def writePath(self, path, contents, mode=cpp.FastCompress, immediate=False):
         """Writes the given contents to the given path, converting as
         necessary"""
         rec = Record(path)
-        self.writeRecord(rec, contents, mode)
+        self.writeRecord(rec, contents, mode, immediate)
 
-    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
+    def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None, immediate=False):
         """Write the given numpy array to the location within the
         archive, using the given compression mode. This serializes the
         data into the given binary data type or the same binary format
@@ -343,13 +343,17 @@ cdef class GTAR:
         arr = np.ascontiguousarray(np.asarray(arr).flat, dtype=dtype)
         cdef np.ndarray[char, ndim=1, mode="c"] carr = np.frombuffer(arr, dtype=np.uint8)
         if carr.nbytes:
-            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
+            self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode, immediate)
         else:
-            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
+            self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode, immediate)
 
-    def flush(self):
-        """Flush this object's to-write queue."""
-        self.thisptr.flush()
+    def beginBulkWrites(self):
+        """Begin bulk-writing mode."""
+        self.thisptr.beginBulkWrites()
+
+    def endBulkWrites(self):
+        """End bulk-writing mode."""
+        self.thisptr.endBulkWrites()
 
     def getRecord(self, Record query, index=""):
         """Returns the contents of the given base record and index."""
@@ -373,7 +377,7 @@ cdef class GTAR:
             except UnicodeDecodeError:
                 return bytes(result)
 
-    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
+    def writeRecord(self, Record rec, contents, mode=cpp.FastCompress, immediate=False):
         """Writes the given contents to the path specified by the given record"""
         dtypes = {cpp.Float32: np.float32,
                   cpp.Float64: np.float64,
@@ -385,13 +389,14 @@ cdef class GTAR:
 
         if rec.getResolution() == cpp.Text:
             if type(contents) == str:
-                self.writeStr(rec.getPath(), contents, mode)
+                self.writeStr(rec.getPath(), contents, mode, immediate)
             elif type(contents) == bytes:
-                self.writeBytes(rec.getPath(), contents, mode)
+                self.writeBytes(rec.getPath(), contents, mode, immediate)
             else:
                 raise RuntimeError('Not sure how to serialize the given argument!')
         else:
-            self.writeArray(rec.getPath(), contents, mode, dtype=dtypes[rec.getFormat()])
+            self.writeArray(rec.getPath(), contents, mode,
+                            dtype=dtypes[rec.getFormat()], immediate=immediate)
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without

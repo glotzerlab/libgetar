@@ -103,7 +103,7 @@ namespace gtar{
 
     void ZipArchive::writePtr(const string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
-                              bool flushImmediately)
+                              bool immediate)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
@@ -139,7 +139,11 @@ namespace gtar{
         }
     }
 
-    void ZipArchive::flush()
+    void ZipArchive::beginBulkWrites()
+    {
+    }
+
+    void ZipArchive::endBulkWrites()
     {
     }
 

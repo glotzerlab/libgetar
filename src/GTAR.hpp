@@ -61,25 +61,33 @@ namespace gtar{
         void close();
 
         /// Write a string to the given location
-        void writeString(const string &path, const string &contents, CompressMode mode);
+        void writeString(const string &path, const string &contents,
+                         CompressMode mode, bool immediate=false);
         /// Write a bytestring to the given location
-        void writeBytes(const string &path, const vector<char> &contents, CompressMode mode);
+        void writeBytes(const string &path, const vector<char> &contents,
+                        CompressMode mode, bool immediate=false);
         /// Write the contents of a pointer to the given location
         void writePtr(const string &path, const void *contents,
-                      const size_t byteLength, CompressMode mode);
+                      const size_t byteLength, CompressMode mode,
+                      bool immediate=false);
 
         /// Write an individual binary property to the specified
         /// location, converting to little endian if necessary.
         template<typename iter, typename T>
         void writeIndividual(const string &path, const iter &start,
-                             const iter &end, CompressMode mode);
+                             const iter &end, CompressMode mode,
+                             bool immediate=false);
         /// Write a uniform binary property to the specified location,
         /// converting to little endian if necessary.
         template<typename T>
-        void writeUniform(const string &path, const T &val);
+        void writeUniform(const string &path, const T &val,
+                          bool immediate=false);
 
-        /// Write everything that has been queued
-        void flush();
+        /// Optimize the archive writes for multiple records at once;
+        /// must be accompanied by a call to endBulkWrites()
+        void beginBulkWrites();
+        /// Flush writes out of temporary buffers
+        void endBulkWrites();
 
         /// Read an individual binary property to the specified
         /// location, converting from little endian if necessary.
@@ -132,21 +140,21 @@ namespace gtar{
 
     template<typename iter, typename T>
     void GTAR::writeIndividual(const string &path, const iter &start,
-                               const iter &end, CompressMode mode)
+                               const iter &end, CompressMode mode, bool immediate)
     {
         vector<T> buffer(start, end);
 
         maybeSwapEndian<T>(&buffer[0], buffer.size()*sizeof(T));
-        writePtr(path, (void*) &buffer[0], buffer.size()*sizeof(T), mode);
+        writePtr(path, (void*) &buffer[0], buffer.size()*sizeof(T), mode, immediate);
     }
 
     template<typename T>
-    void GTAR::writeUniform(const string &path, const T &val)
+    void GTAR::writeUniform(const string &path, const T &val, bool immediate)
     {
         T local(val);
 
         maybeSwapEndian<T>(&local, sizeof(T));
-        writePtr(path, (void*) &local, sizeof(T), NoCompress);
+        writePtr(path, (void*) &local, sizeof(T), NoCompress, immediate);
     }
 
     template<typename T>

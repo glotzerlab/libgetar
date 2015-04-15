@@ -11,8 +11,8 @@ namespace gtar{
     Archive::~Archive() {}
 
     void Archive::writeVec(const string &path, const vector<char> &contents,
-                           CompressMode mode)
+                           CompressMode mode, bool immediate)
     {
-        writePtr(path, (void*) &contents[0], contents.size(), mode);
+        writePtr(path, (void*) &contents[0], contents.size(), mode, immediate);
     }
 }

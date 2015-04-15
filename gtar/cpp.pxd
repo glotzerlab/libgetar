@@ -91,11 +91,12 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         GTAR(const string&, OpenMode) except +
 
         void close()
-        void writeString(const string&, const string&, CompressMode) except +
-        void writeBytes(const string&, const vector[char]&, CompressMode) except +
-        void writePtr(const string&, const void*, const size_t, CompressMode) except +
+        void writeString(const string&, const string&, CompressMode, bool) except +
+        void writeBytes(const string&, const vector[char]&, CompressMode, bool) except +
+        void writePtr(const string&, const void*, const size_t, CompressMode, bool) except +
 
-        void flush() except +
+        void beginBulkWrites() except +
+        void endBulkWrites() except +
 
         # SharedArray[T] readIndividual[T](const string&)
         SharedArray[char] readBytes(const string&) except +

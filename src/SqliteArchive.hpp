@@ -34,9 +34,10 @@ namespace gtar{
         // the archive with the given compress mode
         virtual void writePtr(const string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
-                              bool flushImmediately=true);
+                              bool immediate=false);
 
-        virtual void flush();
+        virtual void beginBulkWrites();
+        virtual void endBulkWrites();
 
         // Read the contents of the given location within the archive
         virtual SharedArray<char> read(const string &path);

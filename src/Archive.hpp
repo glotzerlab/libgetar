@@ -38,15 +38,16 @@ namespace gtar{
         // Write a char vector of bytes to the given path within the
         // archive with the given compress mode
         virtual void writeVec(const string &path, const vector<char> &contents,
-                              CompressMode mode);
+                              CompressMode mode, bool immedate=false);
 
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
         virtual void writePtr(const string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
-                              bool flushImmediately=true) = 0;
+                              bool immediate=false) = 0;
 
-        virtual void flush() = 0;
+        virtual void beginBulkWrites() = 0;
+        virtual void endBulkWrites() = 0;
 
         // Read the contents of the given location within the archive
         virtual SharedArray<char> read(const string &path) = 0;

@@ -142,7 +142,7 @@ namespace gtar{
 
     void TarArchive::writePtr(const string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
-                              bool flushImmediately)
+                              bool immediate)
     {
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
@@ -224,9 +224,16 @@ namespace gtar{
         if(byteLength % 512)
             for(size_t i(byteLength % 512); i < 512; ++i)
                 m_file.put('\0');
+
+        if(immediate)
+            endBulkWrites();
     }
 
-    void TarArchive::flush()
+    void TarArchive::beginBulkWrites()
+    {
+    }
+
+    void TarArchive::endBulkWrites()
     {
         m_file.flush();
     }

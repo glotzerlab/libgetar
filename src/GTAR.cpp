@@ -70,42 +70,50 @@ namespace gtar{
 
     void GTAR::close()
     {
-        if(m_archive.get())
-            m_archive->flush();
         m_archive.reset();
     }
 
-    void GTAR::writeString(const string &path, const string &contents, CompressMode mode)
+    void GTAR::writeString(const string &path, const string &contents,
+                           CompressMode mode, bool immediate)
     {
         if(m_archive.get())
-            m_archive->writePtr(path, contents.data(), contents.size(), mode);
+            m_archive->writePtr(path, contents.data(), contents.size(), mode, immediate);
         else
             throw runtime_error("Calling writeString() with a closed GTAR object");
     }
 
-    void GTAR::writeBytes(const string &path, const vector<char> &contents, CompressMode mode)
+    void GTAR::writeBytes(const string &path, const vector<char> &contents,
+                          CompressMode mode, bool immediate)
     {
         if(m_archive.get())
-            m_archive->writeVec(path, contents, mode);
+            m_archive->writeVec(path, contents, mode, immediate);
         else
             throw runtime_error("Calling writeBytes() with a closed GTAR object");
     }
 
     void GTAR::writePtr(const string &path, const void *contents,
-                        const size_t byteLength, CompressMode mode)
+                        const size_t byteLength, CompressMode mode, bool immediate)
     {
         if(m_archive.get())
-            m_archive->writePtr(path, contents, byteLength, mode);
+            m_archive->writePtr(path, contents, byteLength, mode, immediate);
         else
             throw runtime_error("Calling writePtr() with a closed GTAR object");
     }
 
-    void GTAR::flush()
+    void GTAR::beginBulkWrites()
     {
         if(m_archive.get())
-            m_archive->flush();
+            m_archive->beginBulkWrites();
         else
-            throw runtime_error("Calling flush() with a closed GTAR object");
+            throw runtime_error("Calling beginBulkWrites() with a closed GTAR object");
+    }
+
+    void GTAR::endBulkWrites()
+    {
+        if(m_archive.get())
+            m_archive->endBulkWrites();
+        else
+            throw runtime_error("Calling endBulkWrites() with a closed GTAR object");
     }
 
     SharedArray<char> GTAR::readBytes(const string &path)
