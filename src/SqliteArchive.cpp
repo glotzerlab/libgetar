@@ -49,130 +49,126 @@ namespace gtar{
         }
 
         char *errmsg(0);
-        int execStatus(sqlite3_exec(m_connection,
-                                    "CREATE TABLE IF NOT EXISTS file_list ("
-                                    "path TEXT PRIMARY KEY ON CONFLICT REPLACE NOT NULL,"
-                                    "uncompressed_size INTEGER NOT NULL,"
-                                    "compressed_size INTEGER NOT NULL,"
-                                    "compress_level INTEGER NOT NULL"
-                                    ");", 0, 0, &errmsg));
-        if(execStatus != SQLITE_OK)
+        int execStatus(0);
+        if(mode != Read)
         {
-            stringstream result;
-            result << "Couldn't create file_list table in sqlite database: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_exec(m_connection,
+                                      "CREATE TABLE IF NOT EXISTS file_list ("
+                                      "path TEXT PRIMARY KEY ON CONFLICT REPLACE NOT NULL,"
+                                      "uncompressed_size INTEGER NOT NULL,"
+                                      "compressed_size INTEGER NOT NULL,"
+                                      "compress_level INTEGER NOT NULL"
+                                      ");", 0, 0, &errmsg);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't create file_list table in sqlite database: ";
+                result << errmsg;
+                sqlite3_free(errmsg);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_exec(m_connection,
-                                  "CREATE TABLE IF NOT EXISTS file_contents ("
-                                  "path TEXT REFERENCES file_list (path) ON "
-                                  "DELETE CASCADE ON UPDATE CASCADE,"
-                                  "contents BLOB,"
-                                  "chunk_idx INTEGER NOT NULL);",
-                                  0, 0, &errmsg);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't create file_contents table in sqlite database: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_exec(m_connection,
+                                      "CREATE TABLE IF NOT EXISTS file_contents ("
+                                      "path TEXT REFERENCES file_list (path) ON "
+                                      "DELETE CASCADE ON UPDATE CASCADE,"
+                                      "contents BLOB,"
+                                      "chunk_idx INTEGER NOT NULL);",
+                                      0, 0, &errmsg);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't create file_contents table in sqlite database: ";
+                result << errmsg;
+                sqlite3_free(errmsg);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "BEGIN TRANSACTION;",
-                                        -1, &m_begin_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile begin statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "BEGIN TRANSACTION;",
+                                            -1, &m_begin_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile begin statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "COMMIT;",
-                                        -1, &m_end_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile end statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "COMMIT;",
+                                            -1, &m_end_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile end statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "ROLLBACK;",
-                                        -1, &m_rollback_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile rollback statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "ROLLBACK;",
+                                            -1, &m_rollback_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile rollback statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "INSERT INTO file_list VALUES "
-                                        "(?, ?, ?, ?);",
-                                        -1, &m_insert_filename_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile file_list insert statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "INSERT INTO file_list VALUES "
+                                            "(?, ?, ?, ?);",
+                                            -1, &m_insert_filename_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile file_list insert statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "INSERT INTO file_contents VALUES "
-                                        "(?, ?, ?);",
-                                        -1, &m_insert_contents_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile file_contents insert statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "INSERT INTO file_contents VALUES "
+                                            "(?, ?, ?);",
+                                            -1, &m_insert_contents_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile file_contents insert statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
         }
-
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "SELECT file_list.*, file_contents.contents "
-                                        "FROM file_list INNER JOIN file_contents "
-                                        "ON file_list.path = file_contents.path "
-                                        "WHERE file_list.path = ? "
-                                        "ORDER BY file_contents.chunk_idx;",
-                                        -1, &m_select_contents_stmt, 0);
-        if(execStatus != SQLITE_OK)
+        else
         {
-            stringstream result;
-            result << "Couldn't compile select_contents statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "SELECT file_list.*, file_contents.contents "
+                                            "FROM file_list INNER JOIN file_contents "
+                                            "ON file_list.path = file_contents.path "
+                                            "WHERE file_list.path = ? "
+                                            "ORDER BY file_contents.chunk_idx;",
+                                            -1, &m_select_contents_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile select_contents statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        execStatus = sqlite3_prepare_v2(m_connection,
-                                        "SELECT path FROM file_list;",
-                                        -1, &m_list_files_stmt, 0);
-        if(execStatus != SQLITE_OK)
-        {
-            stringstream result;
-            result << "Couldn't compile list_files statement: ";
-            result << errmsg;
-            sqlite3_free(errmsg);
-            throw runtime_error(result.str());
-        }
+            execStatus = sqlite3_prepare_v2(m_connection,
+                                            "SELECT path FROM file_list;",
+                                            -1, &m_list_files_stmt, 0);
+            if(execStatus != SQLITE_OK)
+            {
+                stringstream result;
+                result << "Couldn't compile list_files statement: ";
+                result << sqlite3_errmsg(m_connection);
+                throw runtime_error(result.str());
+            }
 
-        if(mode == Read)
-        {
             while(sqlite3_step(m_list_files_stmt) == SQLITE_ROW)
             {
                 const size_t bytes(sqlite3_column_bytes(m_list_files_stmt, 0));
