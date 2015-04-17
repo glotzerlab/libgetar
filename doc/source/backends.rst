@@ -75,6 +75,7 @@ In summary:
     - Resilient
 
   - Cons
+
     - Slow to open for reading with many files in an archive
     - No compression
 
