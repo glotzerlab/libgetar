@@ -14,6 +14,7 @@
 #include "SqliteArchive.hpp"
 
 #define LZ4_CHUNK_SIZE LZ4_MAX_INPUT_SIZE/2
+#define RAW_CHUNK_SIZE 0x0F000000
 
 namespace gtar{
 
@@ -213,7 +214,7 @@ namespace gtar{
         if(m_mode == Read)
             throw runtime_error("Can't write to an archive opened for reading");
 
-        vector<char*> rawTargets;
+        vector<const char*> rawTargets;
         vector<size_t> rawSizes;
         size_t compressedSize(0);
         unsigned int rawCompression(0);
@@ -253,8 +254,12 @@ namespace gtar{
         }
         else
         {
-            rawTargets.push_back((char*) contents);
-            rawSizes.push_back(byteLength);
+            for(size_t chunkidx(0); chunkidx*RAW_CHUNK_SIZE < byteLength; ++chunkidx)
+            {
+                const int sourceSize(min((size_t) RAW_CHUNK_SIZE, byteLength - chunkidx*RAW_CHUNK_SIZE));
+                rawTargets.push_back(((const char*) contents) + chunkidx*RAW_CHUNK_SIZE);
+                rawSizes.push_back(sourceSize);
+            }
             compressedSize = byteLength;
         }
 
@@ -277,7 +282,7 @@ namespace gtar{
 
                 for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
                 {
-                    sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
+                    sqlite3_bind_blob(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
                                         rawSizes[chunkidx], 0);
                     sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
                     status = sqlite3_step(m_insert_contents_stmt);
@@ -293,7 +298,7 @@ namespace gtar{
 
             for(size_t chunkidx(0); chunkidx < rawTargets.size(); ++chunkidx)
             {
-                sqlite3_bind_blob64(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
+                sqlite3_bind_blob(m_insert_contents_stmt, 2, (const void*) rawTargets[chunkidx],
                                     rawSizes[chunkidx], 0);
                 sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
                 do {status = sqlite3_step(m_insert_contents_stmt);} while(status == SQLITE_BUSY);
