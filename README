@@ -4,6 +4,7 @@ at https://bitbucket.org/glotzer/hoomd-plugin-zip/downloads .
 
 Changelog:
 
+- v0.4.0: sqlite backend, small API changes
 - v0.3.0: GTAR.writeRecord(), gtar.Record.__repr__(), gtar.copy, GTAR.close()
 - v0.2.0: GTAR.{read,write}Path(), archive name schema change, build fixes
 - v0.1.0: Basic functionality
