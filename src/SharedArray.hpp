@@ -96,7 +96,7 @@ public:
     /// Returns true if m_shim is null or m_shim's target is null
     bool isNull()
     {
-        return m_shim == NULL || m_shim->target == NULL;
+        return m_shim == NULL || m_shim->m_target == NULL;
     }
 
     /// Assignment operator: make this object point to the same thing
