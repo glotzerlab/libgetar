@@ -87,8 +87,8 @@ using std::string;
 #include <vector>
 using std::vector;
 
-%template(VectorRecords) vector<Record>;
-%template(VectorStrings) vector<string>;
+%template(VectorRecords) std::vector<Record>;
+%template(VectorStrings) std::vector<string>;
 
 /// Accessor interface for a trajectory archive
 class GTAR
@@ -109,10 +109,10 @@ public:
 
     /// Query all of the records in the archive. These will all
     /// have empty indices.
-    vector<Record> getRecordTypes() const;
+    std::vector<Record> getRecordTypes() const;
     /// Query the indices associated with a given record. The
     /// record is not required to have a null index.
-    vector<string> queryFrames(const Record &target) const;
+    std::vector<string> queryFrames(const Record &target) const;
 };
 
 /// Time behavior of properties

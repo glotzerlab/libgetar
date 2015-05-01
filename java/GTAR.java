@@ -47,12 +47,12 @@ public class GTAR {
     return libgetar_wrapJNI.GTAR_readBytes(swigCPtr, this, path);
 }
 
-  public SWIGTYPE_p_vectorT_Record_t getRecordTypes() {
-    return new SWIGTYPE_p_vectorT_Record_t(libgetar_wrapJNI.GTAR_getRecordTypes(swigCPtr, this), true);
+  public VectorRecords getRecordTypes() {
+    return new VectorRecords(libgetar_wrapJNI.GTAR_getRecordTypes(swigCPtr, this), true);
   }
 
-  public SWIGTYPE_p_vectorT_std__string_t queryFrames(Record target) {
-    return new SWIGTYPE_p_vectorT_std__string_t(libgetar_wrapJNI.GTAR_queryFrames(swigCPtr, this, Record.getCPtr(target), target), true);
+  public VectorStrings queryFrames(Record target) {
+    return new VectorStrings(libgetar_wrapJNI.GTAR_queryFrames(swigCPtr, this, Record.getCPtr(target), target), true);
   }
 
 }

@@ -856,14 +856,14 @@ SWIGEXPORT jbyteArray JNICALL Java_libgetar_1wrap_libgetar_1wrapJNI_GTAR_1readBy
 SWIGEXPORT jlong JNICALL Java_libgetar_1wrap_libgetar_1wrapJNI_GTAR_1getRecordTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   GTAR *arg1 = (GTAR *) 0 ;
-  SwigValueWrapper< vector< Record > > result;
+  std::vector< Record > result;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(GTAR **)&jarg1; 
   result = ((GTAR const *)arg1)->getRecordTypes();
-  *(vector< Record > **)&jresult = new vector< Record >((const vector< Record > &)result); 
+  *(std::vector< Record > **)&jresult = new std::vector< Record >((const std::vector< Record > &)result); 
   return jresult;
 }
 
@@ -872,7 +872,7 @@ SWIGEXPORT jlong JNICALL Java_libgetar_1wrap_libgetar_1wrapJNI_GTAR_1queryFrames
   jlong jresult = 0 ;
   GTAR *arg1 = (GTAR *) 0 ;
   Record *arg2 = 0 ;
-  SwigValueWrapper< vector< std::string > > result;
+  std::vector< std::string > result;
   
   (void)jenv;
   (void)jcls;
@@ -885,7 +885,7 @@ SWIGEXPORT jlong JNICALL Java_libgetar_1wrap_libgetar_1wrapJNI_GTAR_1queryFrames
     return 0;
   } 
   result = ((GTAR const *)arg1)->queryFrames((Record const &)*arg2);
-  *(vector< string > **)&jresult = new vector< string >((const vector< string > &)result); 
+  *(std::vector< std::string > **)&jresult = new std::vector< std::string >((const std::vector< std::string > &)result); 
   return jresult;
 }
 
