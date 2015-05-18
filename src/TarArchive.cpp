@@ -83,11 +83,14 @@ namespace gtar{
 
                     done |= allZero;
                 }
-                else if(strcmp("ustar", recordHeader.magic))
+                else if(strncmp("ustar", recordHeader.magic, 5))
                 {
                     stringstream message;
                     message << "Error reading tar record at position " <<
-                        offset << ": magic mismatch";
+                        offset << ": magic mismatch, bytes \"";
+                    for(unsigned int i(0); i < sizeof(TarHeader::magic); ++i)
+                        message << recordHeader.magic[i];
+                    message << '"';
                     throw runtime_error(message.str());
                 }
                 else
