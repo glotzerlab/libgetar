@@ -88,7 +88,7 @@ namespace gtar{
                     stringstream message;
                     message << "Error reading tar record at position " <<
                         offset << ": magic mismatch, bytes \"";
-                    for(unsigned int i(0); i < sizeof(TarHeader::magic); ++i)
+                    for(unsigned int i(0); i < sizeof(recordHeader.magic); ++i)
                         message << recordHeader.magic[i];
                     message << '"';
                     throw runtime_error(message.str());
