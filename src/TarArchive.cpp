@@ -91,7 +91,18 @@ namespace gtar{
                     for(unsigned int i(0); i < sizeof(recordHeader.magic); ++i)
                         message << recordHeader.magic[i];
                     message << '"';
-                    throw runtime_error(message.str());
+
+                    // If this fails at offset 0, we must not have
+                    // been given an actual tar archive; otherwise,
+                    // finish reading immediately with whatever we've
+                    // found so far
+                    if(!offset)
+                        throw runtime_error(message.str());
+                    else
+                    {
+                        std::cerr << message.str() << std::endl;
+                        done = true;
+                    }
                 }
                 else
                 {
