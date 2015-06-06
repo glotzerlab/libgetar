@@ -4,7 +4,7 @@ Fix a getar-formatted zip file.
 
 ::
 
-   usage: python -m gtar.fix [-h] [-o OUTPUT] [--ignore-empty] input
+   usage: python -m gtar.fix [-h] [-o OUTPUT] input
 
    Command-line zip archive fixer
 
@@ -15,8 +15,6 @@ Fix a getar-formatted zip file.
      -h, --help            show this help message and exit
      -o OUTPUT, --output OUTPUT
    Output location for fixed zip archive
-     --ignore-empty        Potentially ignore empty files (has a chance to help
-                           particularly broken archives)
 """
 
 import argparse
@@ -35,9 +33,6 @@ parser.add_argument('input',
                     help='Input zip file to read')
 parser.add_argument('-o', '--output', default='fixed.zip',
                     help='Output location for fixed zip archive')
-parser.add_argument('--ignore-empty', action='store_true', default=False,
-                    help='Potentially ignore empty files (has a chance to help '
-                    'particularly broken archives)')
 
 def rebuildZip(input, tempName):
     cmdLine = ['zip', '-FF', input, '--out', tempName]
@@ -80,12 +75,11 @@ def deleteBadFrames(tempName, zipLog):
 
     return toDelete
 
-def main(input, output, ignore_empty=False):
+def main(input, output):
     """Fix a getar-formatted zip file.
 
     :param input: Input filename
     :param output: Output filename (can be the same as input)
-    :param ignore_empty: if True, ignore empty records rather than copying them over
 
     """
 
@@ -122,7 +116,7 @@ def main(input, output, ignore_empty=False):
         fixed = tempName if needsFix else input
         if not isZip64(fixed):
             print('Copying from zip32 to zip64...')
-            copy.main(fixed, tempName, ignore_empty)
+            copy.main(fixed, tempName)
 
         if os.path.exists(tempName) and not os.path.samefile(tempName, output):
             os.rename(tempName, output)
