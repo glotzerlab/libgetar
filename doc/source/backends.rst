@@ -48,8 +48,9 @@ portable outside of libgetar. Because transactions are atomic, sqlite
 databases are robust to process death.
 
 The sqlite backend should be expected to have moderately fast open
-speeds, slow write speeds (for large numbers of independent writes),
-and fast read speeds.
+speeds, slow write speeds (for large numbers of independent writes;
+use a C++ :cpp:class:`BulkWriter` object to write multiple records
+within a single transaction), and fast read speeds.
 
 Backend Summary
 ===============
@@ -90,4 +91,4 @@ In summary:
   - Cons
 
     - No standard archive-type tools
-    - Slow for many individual writes
+    - Slow for many individual writes (use :cpp:class:`BulkWriter` for bulk writes)
