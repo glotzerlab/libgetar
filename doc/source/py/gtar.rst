@@ -163,9 +163,17 @@ Tools
 
 .. automodule:: gtar.fix
 
+**gtar.cat**
+
+.. automodule:: gtar.cat
+
 **gtar.copy**
 
 .. automodule:: gtar.copy
+
+**gtar.read**
+
+.. automodule:: gtar.read
 
 Enums: OpenMode, CompressMode, Behavior, Format, Resolution
 ===========================================================

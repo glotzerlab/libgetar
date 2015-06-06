@@ -7,7 +7,7 @@ input file take precedence.
 
    usage: cat.py [-h] [-o OUTPUT] ...
 
-   Command-line archive copier or translator
+   Command-line archive concatenation
 
    positional arguments:
      inputs                Input files to read
@@ -25,7 +25,7 @@ import os
 import gtar
 
 parser = argparse.ArgumentParser(
-    description='Command-line archive copier or translator')
+    description='Command-line archive concatenation')
 parser.add_argument('inputs', nargs=argparse.REMAINDER,
                     help='Input files to read')
 parser.add_argument('-o', '--output', required=True,
