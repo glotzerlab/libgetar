@@ -79,6 +79,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
 
         string getPath() const
 
+        Behavior getBehavior() const
         string getGroup() const
         string getName() const
         string getIndex() const

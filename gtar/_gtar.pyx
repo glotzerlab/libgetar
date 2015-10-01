@@ -209,6 +209,10 @@ cdef class Record:
         """Nullify the index field of this object"""
         return unpy3str(self.thisptr.nullifyIndex())
 
+    def getBehavior(self):
+        """Returns the `behavior` field of this object"""
+        return self.thisptr.getBehavior()
+
     def getGroup(self):
         """Returns the `group` field of this object"""
         return unpy3str(self.thisptr.getGroup())
