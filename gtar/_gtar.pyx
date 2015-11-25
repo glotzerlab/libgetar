@@ -169,19 +169,18 @@ cdef class SharedArray:
         return result
 
 cdef class Record:
-    """Python wrapper for the c++ Record class. Provides basic access
-    to Record methods."""
+    """Python wrapper for the c++ Record class. Provides basic access to
+    Record methods. Initializes in different ways depending on the
+    number of given parameters.
+
+    - No arguments: default constructor
+    - 1 argument: Parse the given path
+    - 6 arguments: Fill each field of the Record object; see `:cpp:class:Record`
+    """
+
     cdef cpp.Record *thisptr
 
     def __cinit__(self, *args):
-        """
-        Initialize a record object in different ways depending on the
-        arguments:
-
-        - No arguments: default constructor
-        - 1 argument: Parse the given path
-        - 6 arguments: Fill each field of the Record object
-        """
         if len(args) == 0:
             self.thisptr = new cpp.Record()
         elif len(args) == 1:
@@ -245,6 +244,8 @@ cdef class BulkWriter:
     """Class for efficiently writing multiple records at a time. Works
     as a context manager.
 
+    :param arch: :py:class:`gtar.GTAR` archive object to write within
+
     Example::
 
         with gtar.GTAR('traj.sqlite', 'w') as traj, traj.getBulkWriter() as writer:
@@ -272,12 +273,20 @@ cdef class BulkWriter:
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
         archive, using the given compression mode.
+
+        :param path: Path within the archive to write
+        :param contents: Bytestring to write
+        :param mode: Optional compression mode (defaults to fast compression)
         """
         self.thisptr.writeString(py3str(path), contents, mode)
 
     def writeStr(self, path, contents, mode=cpp.FastCompress):
         """Write the given string to the given path, optionally
         compressing with the given mode.
+
+        :param path: Path within the archive to write
+        :param contents: String to write
+        :param mode: Optional compression mode (defaults to fast compression)
 
         Example::
 
@@ -287,7 +296,12 @@ cdef class BulkWriter:
 
     def writePath(self, path, contents, mode=cpp.FastCompress):
         """Writes the given contents to the given path, converting as
-        necessary"""
+        necessary.
+
+        :param path: Path within the archive to write
+        :param contents: Object which can be converted into array or string form, based on the given path
+        :param mode: Optional compression mode (defaults to fast compression)
+        """
         rec = Record(path)
         self.writeRecord(rec, contents, mode)
 
@@ -296,6 +310,11 @@ cdef class BulkWriter:
         archive, using the given compression mode. This serializes the
         data into the given binary data type or the same binary format
         that the numpy array is using.
+
+        :param path: Path within the archive to write
+        :param arr: Array-like object
+        :param mode: Optional compression mode (defaults to fast compression)
+        :param dtype: Optional numpy dtype to force conversion to
 
         Example::
 
@@ -309,7 +328,12 @@ cdef class BulkWriter:
             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
 
     def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
-        """Writes the given contents to the path specified by the given record"""
+        """Writes the given contents to the path specified by the given record.
+
+        :param rec: :py:class:`gtar.Record` object specifying the record
+        :param contents: [byte]string or array-like object to write
+        :param mode: Optional compression mode (defaults to fast compression)
+        """
         dtypes = {cpp.Float32: np.float32,
                   cpp.Float64: np.float64,
                   cpp.Int32: np.int32,
@@ -332,7 +356,22 @@ cdef class BulkWriter:
 cdef class GTAR:
     """Python wrapper for the :cpp:class:`GTAR` c++ class. Provides
     basic access to its methods and simple methods to read and write
-    files within archives."""
+    files within archives.
+
+    The backend is automatically selected based on the suffix of the
+    given path: if the name ends in '.tar', a tar-format archive will
+    be created, if it ends in '.sqlite' a sqlite-format archive will
+    be created, otherwise a zip-format archive will be created.
+
+    The open mode controls how the file will be opened.
+
+    - read: The file will be opened in read-only mode
+    - write: A new file will be opened for writing, potentially overwriting an existing file of the same name
+    - append: A file will be opened for writing, adding to the end of a file if it already exists with the same name
+
+    :param path: Path to the file to open
+    :param mode: Open mode: one of 'r', 'w', 'a'
+    """
     cdef cpp.GTAR *thisptr
     cdef _path
     cdef _mode
@@ -379,7 +418,10 @@ cdef class GTAR:
 
     def readBytes(self, path):
         """Read the contents of the given location within the archive,
-        or return ``None`` if not found"""
+        or return ``None`` if not found
+
+        :param path: Path within the archive to write
+        """
         result = SharedArray()
         result.copy(self.thisptr.readBytes(py3str(path)))
 
@@ -388,12 +430,19 @@ cdef class GTAR:
     def writeBytes(self, path, contents, mode=cpp.FastCompress):
         """Write the given contents to the location within the
         archive, using the given compression mode.
+
+        :param path: Path within the archive to write
+        :param contents: Bytestring to write
+        :param mode: Optional compression mode (defaults to fast compression)
         """
         self.thisptr.writeString(py3str(path), contents, mode)
 
     def readStr(self, path):
         """Read the contents of the given path as a string or return
-        ``None`` if not found."""
+        ``None`` if not found.
+
+        :param path: Path within the archive to write
+        """
         result = self.readBytes(path)
         if result is not None:
             return result.decode('utf8')
@@ -404,6 +453,10 @@ cdef class GTAR:
         """Write the given string to the given path, optionally
         compressing with the given mode.
 
+        :param path: Path within the archive to write
+        :param contents: String to write
+        :param mode: Optional compression mode (defaults to fast compression)
+
         Example::
 
             gtar.writeStr('params.json', json.dumps(params))
@@ -413,13 +466,21 @@ cdef class GTAR:
     def readPath(self, path):
         """Reads the contents of a record at the given path. Returns ``None`` if
         not found. If an array is found and the property is present in
-        ``gtar.widths``, reshape into an Nxwidths[prop] array."""
+        ``gtar.widths``, reshape into an Nxwidths[prop] array.
+
+        :param path: Path within the archive to write
+        """
         rec = Record(path)
         return self.getRecord(rec, rec.getIndex())
 
     def writePath(self, path, contents, mode=cpp.FastCompress):
         """Writes the given contents to the given path, converting as
-        necessary"""
+        necessary.
+
+        :param path: Path within the archive to write
+        :param contents: Object which can be converted into array or string form, based on the given path
+        :param mode: Optional compression mode (defaults to fast compression)
+        """
         rec = Record(path)
         self.writeRecord(rec, contents, mode)
 
@@ -428,6 +489,11 @@ cdef class GTAR:
         archive, using the given compression mode. This serializes the
         data into the given binary data type or the same binary format
         that the numpy array is using.
+
+        :param path: Path within the archive to write
+        :param arr: Array-like object
+        :param mode: Optional compression mode (defaults to fast compression)
+        :param dtype: Optional numpy dtype to force conversion to
 
         Example::
 
@@ -446,7 +512,14 @@ cdef class GTAR:
         return BulkWriter(self)
 
     def getRecord(self, Record query, index=""):
-        """Returns the contents of the given base record and index."""
+        """Returns the contents of the given base record and index.
+
+        :param query: Prototypical :py:class:`gtar.Record` object describing the record to fetch
+        :param index: Index which will be used to fetch the record
+
+        .. note:: The index embedded in the given record is not used;
+        instead, the index passed into this function is used.
+        """
         rec = Record()
         rec.copy(deref(query.thisptr))
         rec.setIndex(index)
@@ -468,7 +541,12 @@ cdef class GTAR:
                 return bytes(result)
 
     def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
-        """Writes the given contents to the path specified by the given record"""
+        """Writes the given contents to the path specified by the given record.
+
+        :param rec: :py:class:`gtar.Record` object specifying the record
+        :param contents: [byte]string or array-like object to write
+        :param mode: Optional compression mode (defaults to fast compression)
+        """
         dtypes = {cpp.Float32: np.float32,
                   cpp.Float64: np.float64,
                   cpp.Int32: np.int32,
@@ -501,7 +579,10 @@ cdef class GTAR:
 
     def queryFrames(self, Record target):
         """Returns a python list of all indices associated with a
-        given record available in this archive"""
+        given record available in this archive
+
+        :param target: Prototypical :py:class:`gtar.Record` object (the index of which is unused)
+        """
         result = []
         frames = self.thisptr.queryFrames(deref(target.thisptr))
         for f in frames:
@@ -511,7 +592,10 @@ cdef class GTAR:
     def framesWithRecordsNamed(self, names):
         """Returns ``([record(val) for val in names], [frames])`` given a
         set of record names names. If only given a single name,
-        returns ``(record, [frames])``."""
+        returns ``(record, [frames])``.
+
+        :param names: Iterable object yielding a set of property names
+        """
         allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
         frames = None
         records = []
@@ -544,6 +628,8 @@ cdef class GTAR:
         a single name, returns ``(frame, val[frame])`` for each found
         frame. If a property is present in ``gtar.widths``, returns it
         as an Nxwidths[prop] array.
+
+        :param names: Iterable object yielding a set of property names
 
         Example::
 
@@ -586,7 +672,10 @@ cdef class GTAR:
 
     def staticRecordNamed(self, name):
         """Returns a static record with the given name. If the property is found in
-        ``gtar.widths``, returns it as an Nxwidths[prop] array."""
+        ``gtar.widths``, returns it as an Nxwidths[prop] array.
+
+        :param name: Name of the property to find
+        """
         try:
             rec = [rec for rec in self.getRecordTypes() if rec.getName() == name][0]
             return self.getRecord(rec)
