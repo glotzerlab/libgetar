@@ -517,8 +517,10 @@ cdef class GTAR:
         :param query: Prototypical :py:class:`gtar.Record` object describing the record to fetch
         :param index: Index which will be used to fetch the record
 
-        .. note:: The index embedded in the given record is not used;
-        instead, the index passed into this function is used.
+        .. note::
+
+           The index embedded in the given record is not used; instead, the index passed into this function is used.
+
         """
         rec = Record()
         rec.copy(deref(query.thisptr))
