@@ -2,18 +2,12 @@
 Installation and Basic Usage
 ============================
 
-Introduction
-============
-
-libgetar is a library to read and write GEneric Trajectory ARchives, a
-binary data format designed for extensibility.
-
 Installation
 ============
 
 On nyx, you can just use the libgetar module.
 
-Installing the libgetar python module (``gtar``) itself is
+Elsewhere, installing the libgetar python module (``gtar``) is
 straightforward. From the root directory of the project:
 
 ::
@@ -40,6 +34,7 @@ package manager), you can install it easily with pip:
 
    pip install breathe --user
 
-I also plan to keep a PDF version of the documentation available at
-`the bitbucket download page
-<https://bitbucket.org/glotzer/libgetar/downloads>`_.
+The latest version of the documentation is available `online
+<http://glotzerlab.engin.umich.edu/libgetar/>`_. I also plan to keep a
+PDF version of the documentation available at `the bitbucket download
+page <https://bitbucket.org/glotzer/libgetar/downloads>`_.

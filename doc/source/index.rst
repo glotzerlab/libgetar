@@ -7,6 +7,13 @@
 Welcome to libgetar's documentation!
 ====================================
 
+Introduction
+============
+
+libgetar is a library to read and write GEneric Trajectory ARchives, a
+binary data format designed for efficient, extensible storage of
+trajectory data.
+
 Contents:
 
 .. toctree::
