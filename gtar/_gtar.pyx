@@ -196,6 +196,9 @@ cdef class Record:
         """Clean up the record allocated for this object"""
         del self.thisptr
 
+    def __reduce__(self):
+        return (self.__class__, (self.getPath(),))
+
     def __repr__(self):
         """Returns a string representation of this object"""
         return 'Record("{}")'.format(self.getPath())
