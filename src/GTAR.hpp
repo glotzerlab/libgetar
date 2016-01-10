@@ -19,10 +19,6 @@
 #ifndef __GTAR_HPP_
 #define __GTAR_HPP_
 
-// TODO find a proper compile-time way to determine endianness
-// #define IS_BIG_ENDIAN (1 != *(unsigned char *)&(const int){1})
-#define IS_BIG_ENDIAN false
-
 namespace gtar{
 
     using std::auto_ptr;
@@ -32,6 +28,9 @@ namespace gtar{
     using std::string;
     using std::swap;
     using std::vector;
+
+    bool littleEndian();
+    const static bool IS_BIG_ENDIAN = !littleEndian();
 
     /// Swap the endianness of all elements, if necessary on this
     /// architecture

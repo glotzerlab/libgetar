@@ -18,6 +18,12 @@ namespace gtar{
     using std::swap;
     using std::vector;
 
+    bool littleEndian()
+    {
+        int x(1);
+        return *(char*)&x;
+    }
+
     bool IndexCompare::operator()(const string &a, const string &b)
     {
         return a.size() < b.size() || ((a.size() == b.size()) && a < b);
