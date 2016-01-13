@@ -87,8 +87,9 @@ namespace gtar{
             GTAR &m_archive;
         };
 
-        /// Constructor. Opens the zip file at filename in the given
-        /// mode.
+        /// Constructor. Opens the file at filename in the given
+        /// mode. The format of the file depends on the extension of
+        /// filename.
         GTAR(const string &filename, const OpenMode mode);
 
         /// Manually close the opened archive (it automatically closes

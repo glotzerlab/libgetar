@@ -52,6 +52,14 @@ speeds, slow write speeds (for large numbers of independent writes;
 use a C++ :cpp:class:`BulkWriter` object to write multiple records
 within a single transaction), and fast read speeds.
 
+Directory
+=========
+
+The directory backend stores data directly on the
+filesystem. Currently, data are only stored uncompressed. Because each
+file access occurs in the filesystem, this backend is extremely robust
+to process death.
+
 Backend Summary
 ===============
 
@@ -92,3 +100,15 @@ In summary:
 
     - No standard archive-type tools
     - Slow for many individual writes (use :cpp:class:`BulkWriter` for bulk writes)
+
+- Directory
+
+  - Pros
+
+    - Native writing speed
+    - Extremely resilient
+
+  - Cons
+
+    - No compression
+    - Could stress filesystem with many entries

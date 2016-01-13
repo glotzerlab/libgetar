@@ -364,7 +364,9 @@ cdef class GTAR:
     The backend is automatically selected based on the suffix of the
     given path: if the name ends in '.tar', a tar-format archive will
     be created, if it ends in '.sqlite' a sqlite-format archive will
-    be created, otherwise a zip-format archive will be created.
+    be created, if it ends in '/' a directory structure (filesystem)
+    "archive" will be created, otherwise a zip-format archive will be
+    created.
 
     The open mode controls how the file will be opened.
 
