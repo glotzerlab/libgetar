@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Archive.hpp"
+#include "DirArchive.hpp"
 #include "Hdf5Archive.hpp"
 #include "SqliteArchive.hpp"
 #include "TarArchive.hpp"

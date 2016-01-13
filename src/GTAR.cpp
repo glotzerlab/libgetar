@@ -75,6 +75,8 @@ namespace gtar{
 
         if(filename.length() >= 4 && filename.rfind(".tar") == filename.length() - 4)
             m_archive.reset(new TarArchive(filename, realMode));
+        else if(filename.length() >= 1 && filename.rfind("/") == filename.length() - 1)
+            m_archive.reset(new DirArchive(filename, realMode));
         else if(filename.length() >= 5 && filename.rfind(".hdf5") == filename.length() - 5)
         {
 #ifdef ENABLE_HDF5

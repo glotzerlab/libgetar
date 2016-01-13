@@ -9,7 +9,7 @@ macros = []
 extra_args = []
 sources = ['src/Archive.cpp', 'src/vogl_miniz.cpp',
         'src/TarArchive.cpp', 'src/ZipArchive.cpp', 'src/vogl_miniz_zip.cpp',
-        'src/GTAR.cpp', 'src/Record.cpp']
+        'src/GTAR.cpp', 'src/Record.cpp', 'src/DirArchive.cpp']
 
 if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))

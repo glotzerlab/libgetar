@@ -32,7 +32,7 @@ def test_readWritePath(suffix):
 def main():
     success = True
 
-    for suffix in ['.zip', '.tar', '.sqlite']:
+    for suffix in ['.zip', '.tar', '.sqlite', '/']:
         try:
             success = test_readWritePath(suffix) and success
         except AssertionError:
