@@ -59,6 +59,20 @@ def test_readAndWrite(suffix):
     assert success
     return success
 
+def test_readAndWriteRecords(suffix):
+    success = True
+
+    with gtar.GTAR('test' + suffix, 'w') as arch:
+        reclen = len(arch.getRecordTypes())
+        for idx in range(10):
+            arch.writeStr(str(idx), '{}_contents'.format(idx))
+
+            success = success and (reclen + 1 == len(arch.getRecordTypes()))
+            reclen = len(arch.getRecordTypes())
+
+    assert success
+    return success
+
 def main():
     success = True
 
@@ -66,6 +80,7 @@ def main():
         try:
             success = test_readThenWrite(suffix) and success
             success = test_readAndWrite(suffix) and success
+            success = test_readAndWriteRecords(suffix) and success
         except AssertionError:
             success = False
 

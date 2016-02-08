@@ -152,6 +152,7 @@ namespace gtar{
     {
         if(m_file.is_open())
         {
+            m_file.seekp(m_maxPosition);
             // pad the end of file with two 512B blocks
             for(size_t i(0); i < 1024; ++i)
                 m_file.put('\0');

@@ -132,7 +132,10 @@ namespace gtar{
                            CompressMode mode, bool immediate)
     {
         if(m_archive.get())
+        {
             m_archive->writePtr(path, contents.data(), contents.size(), mode, immediate);
+            insertRecord(path);
+        }
         else
             throw runtime_error("Calling writeString() with a closed GTAR object");
     }
@@ -141,7 +144,10 @@ namespace gtar{
                           CompressMode mode, bool immediate)
     {
         if(m_archive.get())
+        {
             m_archive->writeVec(path, contents, mode, immediate);
+            insertRecord(path);
+        }
         else
             throw runtime_error("Calling writeBytes() with a closed GTAR object");
     }
@@ -150,7 +156,10 @@ namespace gtar{
                         const size_t byteLength, CompressMode mode, bool immediate)
     {
         if(m_archive.get())
+        {
             m_archive->writePtr(path, contents, byteLength, mode, immediate);
+            insertRecord(path);
+        }
         else
             throw runtime_error("Calling writePtr() with a closed GTAR object");
     }
