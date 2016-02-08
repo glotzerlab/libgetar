@@ -142,7 +142,10 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
         }
-        else
+
+        // Unconditionally populate the file list. Shouldn't take long
+        // so it shouldn't have much of an effect even in write-only
+        // mode.
         {
             execStatus = sqlite3_prepare_v2(m_connection,
                                             "SELECT file_list.*, file_contents.contents "
@@ -320,6 +323,8 @@ namespace gtar{
             result << sqlite3_errmsg(m_connection);
             throw runtime_error(result.str());
         }
+
+        m_fileNames.push_back(path);
     }
 
     void SqliteArchive::beginBulkWrites()
@@ -338,9 +343,6 @@ namespace gtar{
 
     SharedArray<char> SqliteArchive::read(const std::string &path)
     {
-        if(m_mode != Read)
-            throw runtime_error("Can't read from a file not opened for reading");
-
         SharedArray<char> result;
 
         sqlite3_bind_text(m_select_contents_stmt, 1, path.c_str(), path.size(), 0);

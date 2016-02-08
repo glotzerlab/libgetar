@@ -27,19 +27,31 @@ namespace gtar{
     DirArchive::DirArchive(const string &filename, const OpenMode mode):
         m_filename(filename), m_mode(mode), m_createdDirectories()
     {
-        // populate the list of found file names
-        if(m_mode == Read)
-            searchDirectory(m_filename);
         // make sure that the base directory exists
-        else
+        if(m_mode != Read)
         {
             struct stat dirStat;
             const int result(stat(filename.c_str(), &dirStat));
-            if(result != ENOENT && !(dirStat.st_mode & S_IFDIR))
-                throw runtime_error("Error opening directory for write (not a directory)");
+            if(result == 0) // found that name
+            {
+                // not a directory
+                if(!(dirStat.st_mode & S_IFDIR))
+                {
+                    stringstream msg;
+                    msg << "Error opening directory for write (file already exists)";
+                    throw runtime_error(msg.str());
+                }
+            }
             else
                 mkdir(m_filename.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
         }
+
+        // populate the list of found file names. first, strip all
+        // trailing slashes; this will never return npos because the
+        // directory always has at least one slash
+        const size_t stripLength(m_filename.find_last_not_of('/') + 1);
+        const string stripped(m_filename.substr(0, stripLength));
+        searchDirectory(stripped);
     }
 
     DirArchive::~DirArchive()
@@ -78,6 +90,8 @@ namespace gtar{
 
         file.write((const char*) contents, byteLength);
         file.close();
+
+        m_fileNames.push_back(path);
     }
 
     void DirArchive::beginBulkWrites()
@@ -90,9 +104,6 @@ namespace gtar{
 
     SharedArray<char> DirArchive::read(const std::string &path)
     {
-        if(m_mode != Read)
-            throw runtime_error("Can't read from a file not opened for reading");
-
         fstream file((m_filename + path).c_str(), ios_base::in);
 
         if(!file.good())
@@ -129,6 +140,7 @@ namespace gtar{
         {
             stringstream msg;
             msg << "Error opening directory " << path;
+            msg << ": " << strerror(errno);
             throw runtime_error(msg.str());
         }
 
@@ -141,7 +153,7 @@ namespace gtar{
             if(strcmp(curEnt->d_name, ".") && strcmp(curEnt->d_name, ".."))
             {
                 stringstream fname;
-                fname << path << curEnt->d_name;
+                fname << path << '/' << curEnt->d_name;
                 const string entName(fname.str());
                 stat(entName.c_str(), &curStat);
                 // is a directory

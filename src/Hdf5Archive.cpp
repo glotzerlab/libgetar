@@ -52,6 +52,8 @@ namespace gtar{
         {
             m_archive = H5File(m_filename.c_str(), H5F_ACC_RDWR);
         }
+        else
+            throw runtime_error("Unsupported open mode");
 
         H5::FileIException::dontPrint();
         H5::GroupIException::dontPrint();

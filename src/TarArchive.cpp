@@ -21,9 +21,9 @@ namespace gtar{
     using std::vector;
 
     TarArchive::TarArchive(const string &filename, const OpenMode mode):
-        m_filename(filename), m_mode(mode), m_file()
+        m_filename(filename), m_mode(mode), m_file(), m_filePosition(0), m_maxPosition(0)
     {
-        ios_base::openmode fileMode(ios_base::binary);
+        ios_base::openmode fileMode(ios_base::binary | ios_base::in);
 
         switch(mode)
         {
@@ -31,10 +31,11 @@ namespace gtar{
             fileMode |= (ios_base::out | ios_base::trunc);
             break;
         case Append:
-            fileMode |= (ios_base::in | ios_base::out | ios_base::ate);
+            fileMode |= (ios_base::out);
             break;
+        case Read:
         default:
-            fileMode |= ios_base::in;
+            break;
         }
 
         m_file.open(filename.c_str(), fileMode);
@@ -61,7 +62,6 @@ namespace gtar{
         }
 
         // populate the file location maps
-        if(m_mode == Read)
         {
             bool done(false);
             size_t offset(0);
@@ -128,13 +128,17 @@ namespace gtar{
             m_file.clear();
             m_file.seekg(0);
         }
-        else if(m_mode == Append)
-        {
-            // Overwrite the two 512B blocks at the end of file if appending
-            const size_t fileSize(m_file.tellp());
-            const int offset(fileSize >= 1024? -1024: 0);
 
-            m_file.seekp(offset, ios_base::end);
+        if(m_fileNames.size())
+        {
+            const string lastName = m_fileNames[m_fileNames.size() - 1];
+            m_maxPosition = m_fileOffsets[lastName] + (m_fileSizes[lastName] + 511)/512*512;
+        }
+
+        if(m_mode == Append)
+        {
+            m_file.seekp(m_maxPosition);
+            m_filePosition = m_maxPosition;
         }
 
     }
@@ -159,10 +163,26 @@ namespace gtar{
                               const size_t byteLength, CompressMode mode,
                               bool immediate)
     {
-        if(m_mode == Read)
+        switch(m_mode)
+        {
+        case Read:
             throw runtime_error("Can't write to an archive opened for reading");
+            break;
+        case Append:
+        case Write:
+        default:
+            // seek to end if we aren't already there
+            if(m_filePosition != m_maxPosition)
+            {
+                m_file.seekp(m_maxPosition);
+                m_filePosition = m_maxPosition;
+            }
+            break;
+        }
 
         string prefix, name(path);
+
+        const size_t savedOffset(m_maxPosition + sizeof(TarHeader));
 
         TarHeader recordHeader;
         memset(&recordHeader, 0, sizeof(TarHeader));
@@ -242,6 +262,14 @@ namespace gtar{
 
         if(immediate)
             endBulkWrites();
+
+        const size_t deltaSize = sizeof(TarHeader) + (byteLength + 511)/512*512;
+        m_filePosition += deltaSize;
+        m_maxPosition += deltaSize;
+
+        m_fileNames.push_back(path);
+        m_fileOffsets[path] = savedOffset;
+        m_fileSizes[path] = byteLength;
     }
 
     void TarArchive::beginBulkWrites()
@@ -255,9 +283,6 @@ namespace gtar{
 
     SharedArray<char> TarArchive::read(const std::string &path)
     {
-        if(m_mode != Read)
-            throw runtime_error("Can't read from a file not opened for reading");
-
         if(m_fileOffsets.find(path) == m_fileOffsets.end())
             return SharedArray<char>();
 
@@ -267,6 +292,8 @@ namespace gtar{
         SharedArray<char> result(new char[size], size);
 
         m_file.read(result.get(), size);
+
+        m_filePosition = m_fileOffsets[path] + size;
 
         return result;
     }

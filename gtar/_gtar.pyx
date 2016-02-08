@@ -19,7 +19,8 @@ cdef class OpenMode:
 
        .. data:: Read
        .. data:: Write
-       .. data:: Append"""
+       .. data:: Append
+    """
     Read = cpp.Read
     Write = cpp.Write
     Append = cpp.Append
@@ -390,9 +391,9 @@ cdef class GTAR:
         self._path = path
         self._mode = mode
         try:
-            self.thisptr = new cpp.GTAR(py3str(path), self.openModes[mode])
+            self.thisptr = new cpp.GTAR(py3str(path), self.openModes[self._mode])
         except KeyError:
-            raise RuntimeError('Unknown open mode: {}'.format(mode))
+            raise RuntimeError('Unknown open mode: {}'.format(self._mode))
         except RuntimeError as e:
             raise RuntimeError('{} for file {}'.format(e.args[0], path))
 

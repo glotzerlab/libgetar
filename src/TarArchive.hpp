@@ -62,6 +62,10 @@ namespace gtar{
         const OpenMode m_mode;
         // Handle to the file we're accessing
         fstream m_file;
+        // Current position in the file
+        std::streampos m_filePosition;
+        // Maximum position in the file
+        std::streampos m_maxPosition;
 
         // All the file names present in the file, in file order
         vector<string> m_fileNames;

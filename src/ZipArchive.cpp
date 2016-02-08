@@ -24,7 +24,8 @@ namespace gtar{
         if(m_mode == Write)
         {
             mz_bool success(
-                mz_zip_writer_init_file(&m_archive, filename.c_str(), 0, MZ_ZIP_FLAG_WRITE_ZIP64));
+                mz_zip_writer_init_file(&m_archive, filename.c_str(), 0,
+                                        MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING));
 
             if(!success)
             {
@@ -48,7 +49,7 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
         }
-        else // Append
+        else //(m_mode == Append)
         {
             mz_bool success(
                 mz_zip_reader_init_file(&m_archive, filename.c_str(),
@@ -72,7 +73,8 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
 
-            success = mz_zip_writer_init_from_reader(&m_archive, filename.c_str(), MZ_ZIP_FLAG_WRITE_ZIP64);
+            success = mz_zip_writer_init_from_reader(&m_archive, filename.c_str(),
+                                                     MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING);
 
             if(!success)
             {
@@ -149,9 +151,6 @@ namespace gtar{
 
     SharedArray<char> ZipArchive::read(const string &path)
     {
-        if(m_mode != Read)
-            throw runtime_error("Can't read from a file not opened for reading");
-
         mz_uint32 fileIndex(0);
         bool success(mz_zip_locate_file(&m_archive, path.c_str(), NULL, MZ_ZIP_FLAG_CASE_SENSITIVE, &fileIndex));
         mz_zip_archive_file_stat stat;
