@@ -94,12 +94,6 @@ int main()
     runTests(result, ".zip");
     runTests(result, ".tar");
 
-#ifdef ENABLE_HDF5
-    runTests(result, ".hdf5");
-#else
-    cerr << "Not compiled with HDF5 support, skipping .hdf5 test..." << endl;
-#endif
-
 #ifdef ENABLE_SQLITE
     runTests(result, ".sqlite");
 #else

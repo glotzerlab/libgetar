@@ -83,7 +83,7 @@ def main(input, output):
 
     """
 
-    if input.endswith('.tar') or input.endswith('.hdf5'):
+    if input.endswith('.tar') or input.endswith('.sqlite'):
         raise RuntimeError('Can\'t fix non-zip archives')
 
     needsFix = True

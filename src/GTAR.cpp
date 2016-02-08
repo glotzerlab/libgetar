@@ -77,14 +77,6 @@ namespace gtar{
             m_archive.reset(new TarArchive(filename, realMode));
         else if(filename.length() >= 1 && filename.rfind("/") == filename.length() - 1)
             m_archive.reset(new DirArchive(filename, realMode));
-        else if(filename.length() >= 5 && filename.rfind(".hdf5") == filename.length() - 5)
-        {
-#ifdef ENABLE_HDF5
-            m_archive.reset(new Hdf5Archive(filename, realMode));
-#else
-            throw runtime_error("This version of libgetar was not compiled with hdf5 support!");
-#endif
-        }
         else if(filename.length() >= 7 && filename.rfind(".sqlite") == filename.length() - 7)
         {
 #ifdef ENABLE_SQLITE

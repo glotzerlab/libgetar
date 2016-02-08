@@ -85,7 +85,7 @@ In summary:
 
   - Cons
 
-    - Slow to open for reading with many files in an archive
+    - Slow to open with many files in an archive
     - No compression
 
 - Sqlite

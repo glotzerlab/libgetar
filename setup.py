@@ -22,13 +22,6 @@ else:
     sources.extend(['src/lz4/lz4.c', 'src/lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
     extra_args.append('-lsqlite3')
 
-if '--hdf5' in sys.argv:
-    sys.argv.remove('--hdf5')
-    macros.append(('ENABLE_HDF5', True))
-    sources.append('src/Hdf5Archive.cpp')
-    extra_args = subprocess.check_output(['h5c++', '-shlib', '-show'])
-    extra_args = extra_args.decode('utf-8').strip().split()[1:]
-
 if '--cython' in sys.argv:
     from Cython.Build import cythonize
     sys.argv.remove('--cython')
