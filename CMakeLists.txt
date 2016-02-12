@@ -16,7 +16,7 @@ ENDIF(SQLITE3_FOUND)
 
 set(GETAR_SRC
   src/Archive.cpp src/GTAR.cpp src/vogl_miniz_zip.cpp src/vogl_miniz.cpp
-  src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp ${EXTRA_SRCS})
+  src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp src/DirArchive.cpp ${EXTRA_SRCS})
 
 if(LIBGETAR_SHARED)
   ADD_LIBRARY(getar SHARED ${GETAR_SRC})
