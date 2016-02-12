@@ -20,6 +20,7 @@ namespace gtar{
     using std::oct;
     using std::right;
     using std::runtime_error;
+    using std::fstream;
     using std::string;
     using std::stringstream;
     using std::vector;

@@ -10,9 +10,6 @@
 
 namespace gtar{
 
-    using std::string;
-    using std::vector;
-
     /// Time behavior of properties
     enum Behavior {Constant, Discrete, Continuous};
 
@@ -33,10 +30,10 @@ namespace gtar{
 
         /// Create a record from a path (inside the archive), parsing
         /// the path into the various fields
-        Record(const string &path);
+        Record(const std::string &path);
 
         /// Create a record directly from the full set of elements
-        Record(const string &group, const string &name, const string &index,
+        Record(const std::string &group, const std::string &name, const std::string &index,
                Behavior behavior, Format format, Resolution resolution);
 
         /// Copy constructor
@@ -56,21 +53,21 @@ namespace gtar{
         void copy(const Record &rhs);
 
         /// Set our index to the empty string
-        string nullifyIndex();
+        std::string nullifyIndex();
         /// Return a copy of this object, but with an empty string for
         /// its index
         Record withNullifiedIndex() const;
 
         /// Construct a path (for inside an archive) from this object's
         /// various fields
-        string getPath() const;
+        std::string getPath() const;
 
         /// Get the stored group field
-        string getGroup() const;
+        std::string getGroup() const;
         /// Get the stored name field
-        string getName() const;
+        std::string getName() const;
         /// Get the stored index field
-        string getIndex() const;
+        std::string getIndex() const;
         /// Get the stored behavior field
         Behavior getBehavior() const;
         /// Get the stored format field
@@ -79,19 +76,19 @@ namespace gtar{
         Resolution getResolution() const;
 
         /// Set the index field for this Record object
-        void setIndex(const string &index);
+        void setIndex(const std::string &index);
 
     private:
         /// Parse the given target path inside an archive in various
         /// stages
-        void process(const vector<string> &dirs);
-        void processVarIndex(const string &index);
-        void processFrameIndex(const string &index);
-        void processName(const string &name);
+        void process(const std::vector<std::string> &dirs);
+        void processVarIndex(const std::string &index);
+        void processFrameIndex(const std::string &index);
+        void processName(const std::string &name);
 
-        string m_group;
-        string m_name;
-        string m_index;
+        std::string m_group;
+        std::string m_name;
+        std::string m_index;
         Behavior m_behavior;
         Format m_format;
         Resolution m_resolution;

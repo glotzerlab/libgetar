@@ -16,21 +16,13 @@
 
 namespace gtar{
 
-    using std::auto_ptr;
-    using std::fstream;
-    using std::map;
-    using std::set;
-    using std::string;
-    using std::pair;
-    using std::vector;
-
     // Simple interface for dir files
     class DirArchive: public Archive
     {
     public:
         // Constructor: Open or create an archive object with the
         // given filename and access mode
-        DirArchive(const string &filename, const OpenMode mode);
+        DirArchive(const std::string &filename, const OpenMode mode);
 
         // Destructor: Clean up memory used
         virtual ~DirArchive();
@@ -40,7 +32,7 @@ namespace gtar{
 
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
-        virtual void writePtr(const string &path, const void *contents,
+        virtual void writePtr(const std::string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
                               bool immediate=false);
 
@@ -48,26 +40,26 @@ namespace gtar{
         virtual void endBulkWrites();
 
         // Read the contents of the given location within the archive
-        virtual SharedArray<char> read(const string &path);
+        virtual SharedArray<char> read(const std::string &path);
 
         // Return the number of files stored in the archive
         virtual unsigned int size();
         // Return the name of the file with the given numerical index
-        virtual string getItemName(unsigned int index);
+        virtual std::string getItemName(unsigned int index);
 
     private:
         // Helper function to recursively search through a directory
-        void searchDirectory(const string &path);
+        void searchDirectory(const std::string &path);
 
         // Name of the archive file we're accessing
-        const string m_filename;
+        const std::string m_filename;
         // How we're accessing the archive
         const OpenMode m_mode;
 
         // All the directories which have been created
-        set<string> m_createdDirectories;
+        std::set<std::string> m_createdDirectories;
         // All the file names we found in the file, in file order
-        vector<string> m_fileNames;
+        std::vector<std::string> m_fileNames;
     };
 }
 

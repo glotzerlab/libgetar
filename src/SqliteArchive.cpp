@@ -22,6 +22,7 @@ namespace gtar{
     using std::runtime_error;
     using std::string;
     using std::stringstream;
+    using std::vector;
 
     SqliteArchive::SqliteArchive(const string &filename, const OpenMode mode):
         m_filename(filename), m_mode(mode), m_fileNames(), m_connection(0),

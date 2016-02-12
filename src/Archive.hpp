@@ -13,11 +13,6 @@
 
 namespace gtar{
 
-    using std::auto_ptr;
-    using std::string;
-    using std::pair;
-    using std::vector;
-
     // Modes in which we can open a file
     enum OpenMode {Read, Write, Append};
 
@@ -37,12 +32,12 @@ namespace gtar{
 
         // Write a char vector of bytes to the given path within the
         // archive with the given compress mode
-        virtual void writeVec(const string &path, const vector<char> &contents,
+        virtual void writeVec(const std::string &path, const std::vector<char> &contents,
                               CompressMode mode, bool immedate=false);
 
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
-        virtual void writePtr(const string &path, const void *contents,
+        virtual void writePtr(const std::string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
                               bool immediate=false) = 0;
 
@@ -50,12 +45,12 @@ namespace gtar{
         virtual void endBulkWrites() = 0;
 
         // Read the contents of the given location within the archive
-        virtual SharedArray<char> read(const string &path) = 0;
+        virtual SharedArray<char> read(const std::string &path) = 0;
 
         // Return the number of files stored in the archive
         virtual unsigned int size() = 0;
         // Return the name of the file with the given numerical index
-        virtual string getItemName(unsigned int index) = 0;
+        virtual std::string getItemName(unsigned int index) = 0;
     };
 
 }

@@ -17,20 +17,13 @@
 
 namespace gtar{
 
-    using std::auto_ptr;
-    using std::fstream;
-    using std::map;
-    using std::string;
-    using std::pair;
-    using std::vector;
-
     // Simple interface for tar files
     class TarArchive: public Archive
     {
     public:
         // Constructor: Open or create an archive object with the
         // given filename and access mode
-        TarArchive(const string &filename, const OpenMode mode);
+        TarArchive(const std::string &filename, const OpenMode mode);
 
         // Destructor: Clean up memory used
         virtual ~TarArchive();
@@ -40,7 +33,7 @@ namespace gtar{
 
         // Write the contents of a pointer to the given path within
         // the archive with the given compress mode
-        virtual void writePtr(const string &path, const void *contents,
+        virtual void writePtr(const std::string &path, const void *contents,
                               const size_t byteLength, CompressMode mode,
                               bool immediate=false);
 
@@ -48,31 +41,31 @@ namespace gtar{
         virtual void endBulkWrites();
 
         // Read the contents of the given location within the archive
-        virtual SharedArray<char> read(const string &path);
+        virtual SharedArray<char> read(const std::string &path);
 
         // Return the number of files stored in the archive
         virtual unsigned int size();
         // Return the name of the file with the given numerical index
-        virtual string getItemName(unsigned int index);
+        virtual std::string getItemName(unsigned int index);
 
     private:
         // Name of the archive file we're accessing
-        const string m_filename;
+        const std::string m_filename;
         // How we're accessing the archive
         const OpenMode m_mode;
         // Handle to the file we're accessing
-        fstream m_file;
+        std::fstream m_file;
         // Current position in the file
         std::streampos m_filePosition;
         // Maximum position in the file
         std::streampos m_maxPosition;
 
         // All the file names present in the file, in file order
-        vector<string> m_fileNames;
+        std::vector<std::string> m_fileNames;
         // Map from filenames to offsets within the file
-        map<string, size_t> m_fileOffsets;
+        std::map<std::string, size_t> m_fileOffsets;
         // Map from filenames to file sizes
-        map<string, size_t> m_fileSizes;
+        std::map<std::string, size_t> m_fileSizes;
     };
 
     struct TarHeader

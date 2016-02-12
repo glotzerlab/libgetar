@@ -10,7 +10,6 @@
 
 #include "Archive.hpp"
 #include "DirArchive.hpp"
-#include "Hdf5Archive.hpp"
 #include "SqliteArchive.hpp"
 #include "TarArchive.hpp"
 #include "ZipArchive.hpp"
@@ -21,14 +20,6 @@
 #define __GTAR_HPP_
 
 namespace gtar{
-
-    using std::auto_ptr;
-    using std::map;
-    using std::runtime_error;
-    using std::set;
-    using std::string;
-    using std::swap;
-    using std::vector;
 
     bool littleEndian();
     const static bool IS_BIG_ENDIAN = !littleEndian();
@@ -43,14 +34,14 @@ namespace gtar{
     class IndexCompare
     {
     public:
-        bool operator()(const string &a, const string &b);
+        bool operator()(const std::string &a, const std::string &b);
     };
 
     /// Accessor interface for a trajectory archive
     class GTAR
     {
     public:
-        typedef set<string, IndexCompare> indexSet;
+        typedef std::set<std::string, IndexCompare> indexSet;
 
         class BulkWriter
         {
@@ -64,24 +55,24 @@ namespace gtar{
             ~BulkWriter();
 
             /// Write a string to the given location
-            void writeString(const string &path, const string &contents,
+            void writeString(const std::string &path, const std::string &contents,
                              CompressMode mode);
             /// Write a bytestring to the given location
-            void writeBytes(const string &path, const vector<char> &contents,
+            void writeBytes(const std::string &path, const std::vector<char> &contents,
                             CompressMode mode);
             /// Write the contents of a pointer to the given location
-            void writePtr(const string &path, const void *contents,
+            void writePtr(const std::string &path, const void *contents,
                           const size_t byteLength, CompressMode mode);
 
             /// Write an individual binary property to the specified
             /// location, converting to little endian if necessary.
             template<typename iter, typename T>
-            void writeIndividual(const string &path, const iter &start,
+            void writeIndividual(const std::string &path, const iter &start,
                                  const iter &end, CompressMode mode);
             /// Write a uniform binary property to the specified location,
             /// converting to little endian if necessary.
             template<typename T>
-            void writeUniform(const string &path, const T &val);
+            void writeUniform(const std::string &path, const T &val);
 
         private:
             GTAR &m_archive;
@@ -90,71 +81,71 @@ namespace gtar{
         /// Constructor. Opens the file at filename in the given
         /// mode. The format of the file depends on the extension of
         /// filename.
-        GTAR(const string &filename, const OpenMode mode);
+        GTAR(const std::string &filename, const OpenMode mode);
 
         /// Manually close the opened archive (it automatically closes
         /// itself upon destruction)
         void close();
 
         /// Write a string to the given location
-        void writeString(const string &path, const string &contents,
+        void writeString(const std::string &path, const std::string &contents,
                          CompressMode mode);
         /// Write a bytestring to the given location
-        void writeBytes(const string &path, const vector<char> &contents,
+        void writeBytes(const std::string &path, const std::vector<char> &contents,
                         CompressMode mode);
         /// Write the contents of a pointer to the given location
-        void writePtr(const string &path, const void *contents,
+        void writePtr(const std::string &path, const void *contents,
                       const size_t byteLength, CompressMode mode);
 
         /// Write an individual binary property to the specified
         /// location, converting to little endian if necessary.
         template<typename iter, typename T>
-        void writeIndividual(const string &path, const iter &start,
+        void writeIndividual(const std::string &path, const iter &start,
                              const iter &end, CompressMode mode);
         /// Write a uniform binary property to the specified location,
         /// converting to little endian if necessary.
         template<typename T>
-        void writeUniform(const string &path, const T &val);
+        void writeUniform(const std::string &path, const T &val);
 
         /// Read an individual binary property to the specified
         /// location, converting from little endian if necessary.
         template<typename T>
-        SharedArray<T> readIndividual(const string &path);
+        SharedArray<T> readIndividual(const std::string &path);
         /// Read a uniform binary property to the specified location,
         /// converting from little endian if necessary.
         template<typename T>
-        auto_ptr<T> readUniform(const string &path);
+        std::auto_ptr<T> readUniform(const std::string &path);
         /// Read a bytestring from the specified location
-        SharedArray<char> readBytes(const string &path);
+        SharedArray<char> readBytes(const std::string &path);
 
         /// Query all of the records in the archive. These will all
         /// have empty indices.
-        vector<Record> getRecordTypes() const;
+        std::vector<Record> getRecordTypes() const;
         /// Query the indices associated with a given record. The
         /// record is not required to have a null index.
-        vector<string> queryFrames(const Record &target) const;
+        std::vector<std::string> queryFrames(const Record &target) const;
 
     private:
         /// Write a string to the given location
-        void writeString(const string &path, const string &contents,
+        void writeString(const std::string &path, const std::string &contents,
                          CompressMode mode, bool immediate);
         /// Write a bytestring to the given location
-        void writeBytes(const string &path, const vector<char> &contents,
+        void writeBytes(const std::string &path, const std::vector<char> &contents,
                         CompressMode mode, bool immediate);
         /// Write the contents of a pointer to the given location
-        void writePtr(const string &path, const void *contents,
+        void writePtr(const std::string &path, const void *contents,
                       const size_t byteLength, CompressMode mode,
                       bool immediate);
 
         /// Write an individual binary property to the specified
         /// location, converting to little endian if necessary.
         template<typename iter, typename T>
-        void writeIndividual(const string &path, const iter &start,
+        void writeIndividual(const std::string &path, const iter &start,
                              const iter &end, CompressMode mode, bool immediate);
         /// Write a uniform binary property to the specified location,
         /// converting to little endian if necessary.
         template<typename T>
-        void writeUniform(const string &path, const T &val, bool immediate);
+        void writeUniform(const std::string &path, const T &val, bool immediate);
 
         /// Optimize the archive writes for multiple records at once;
         /// must be accompanied by a call to endBulkWrites()
@@ -163,14 +154,14 @@ namespace gtar{
         void endBulkWrites();
 
         /// Insert a record into the set of cached records
-        void insertRecord(const string &path);
+        void insertRecord(const std::string &path);
 
         /// The archive abstraction object we'll use
-        auto_ptr<Archive> m_archive;
+        std::auto_ptr<Archive> m_archive;
 
         /// Cached record objects
-        map<Record, indexSet> m_records;
-        map<Record, vector<string> > m_indexedRecords;
+        std::map<Record, indexSet> m_records;
+        std::map<Record, std::vector<std::string> > m_indexedRecords;
     };
 
     /// Swap the bytes of a series of characters if this is a big-endian machine
@@ -180,56 +171,56 @@ namespace gtar{
         char *recast((char*) target);
 
         if(byteLength % sizeof(T) != 0)
-            throw runtime_error("Trying to convert an incorrect number of bytes to little-endian");
+            throw std::runtime_error("Trying to convert an incorrect number of bytes to little-endian");
 
         if(IS_BIG_ENDIAN)
         {
             for(size_t i(0); i < byteLength/sizeof(T); ++i)
             {
                 for(size_t j(0); j < sizeof(T)/2; ++j)
-                    swap(recast[i*sizeof(T) + j], recast[(i + 1)*sizeof(T) - j - 1]);
+                    std::swap(recast[i*sizeof(T) + j], recast[(i + 1)*sizeof(T) - j - 1]);
             }
         }
     }
 
     template<typename iter, typename T>
-    void GTAR::BulkWriter::writeIndividual(const string &path, const iter &start,
+    void GTAR::BulkWriter::writeIndividual(const std::string &path, const iter &start,
                                const iter &end, CompressMode mode)
     {
         m_archive.writeIndividual<iter, T>(path, start, end, mode, false);
     }
 
     template<typename T>
-    void GTAR::BulkWriter::writeUniform(const string &path, const T &val)
+    void GTAR::BulkWriter::writeUniform(const std::string &path, const T &val)
     {
         m_archive.writeUniform<T>(path, val, false);
     }
 
     template<typename iter, typename T>
-    void GTAR::writeIndividual(const string &path, const iter &start,
+    void GTAR::writeIndividual(const std::string &path, const iter &start,
                                const iter &end, CompressMode mode)
     {
         writeIndividual<iter, T>(path, start, end, mode, true);
     }
 
     template<typename T>
-    void GTAR::writeUniform(const string &path, const T &val)
+    void GTAR::writeUniform(const std::string &path, const T &val)
     {
         writeUniform<T>(path, val, true);
     }
 
     template<typename iter, typename T>
-    void GTAR::writeIndividual(const string &path, const iter &start,
+    void GTAR::writeIndividual(const std::string &path, const iter &start,
                                const iter &end, CompressMode mode, bool immediate)
     {
-        vector<T> buffer(start, end);
+        std::vector<T> buffer(start, end);
 
         maybeSwapEndian<T>(&buffer[0], buffer.size()*sizeof(T));
         writePtr(path, (void*) &buffer[0], buffer.size()*sizeof(T), mode, immediate);
     }
 
     template<typename T>
-    void GTAR::writeUniform(const string &path, const T &val, bool immediate)
+    void GTAR::writeUniform(const std::string &path, const T &val, bool immediate)
     {
         T local(val);
 
@@ -238,7 +229,7 @@ namespace gtar{
     }
 
     template<typename T>
-    SharedArray<T> GTAR::readIndividual(const string &path)
+    SharedArray<T> GTAR::readIndividual(const std::string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
@@ -246,7 +237,7 @@ namespace gtar{
         const size_t resultSize(bytes.size()/sizeof(T));
 
         if(resultSize*sizeof(T) != bytes.size())
-            throw runtime_error("Trying to coerce the wrong number of bytes into an individual property");
+            throw std::runtime_error("Trying to coerce the wrong number of bytes into an individual property");
 
         SharedArray<T> result((T*) bytes.disown(), resultSize);
 
@@ -254,16 +245,16 @@ namespace gtar{
     }
 
     template<typename T>
-    auto_ptr<T> GTAR::readUniform(const string &path)
+    std::auto_ptr<T> GTAR::readUniform(const std::string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
 
         if(bytes.size())
-            return auto_ptr<T>(new T(*(T*) bytes.get()));
+            return std::auto_ptr<T>(new T(*(T*) bytes.get()));
         else
-            return auto_ptr<T>();
+            return std::auto_ptr<T>();
     }
 
 }
