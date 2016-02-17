@@ -13,6 +13,12 @@ straightforward. From the root directory of the project:
 ::
 
    python setup.py install --user
+   # test installation
+   cd
+   python -c 'import gtar'
+
+Note that trying to run scripts from the libgetar source directory
+will not work!
 
 Documentation
 =============
