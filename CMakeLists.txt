@@ -10,12 +10,12 @@ ENDIF(NOT DISABLE_SQLITE)
 IF(SQLITE3_FOUND)
   INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
   SET(LINK_LIBS ${LINK_LIBS} ${SQLITE3_LIBRARIES})
-  set(EXTRA_SRCS ${EXTRA_SRCS} src/SqliteArchive.cpp src/lz4/lz4.c src/lz4/lz4hc.c)
+  set(EXTRA_SRCS ${EXTRA_SRCS} src/SqliteArchive.cpp lz4/lz4.c lz4/lz4hc.c)
   add_definitions(-DENABLE_SQLITE)
 ENDIF(SQLITE3_FOUND)
 
 set(GETAR_SRC
-  src/Archive.cpp src/GTAR.cpp src/vogl_miniz_zip.cpp src/vogl_miniz.cpp
+  src/Archive.cpp src/GTAR.cpp vogl_miniz/vogl_miniz_zip.cpp vogl_miniz/vogl_miniz.cpp
   src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp src/DirArchive.cpp ${EXTRA_SRCS})
 
 if(LIBGETAR_SHARED)

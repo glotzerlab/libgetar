@@ -9,8 +9,8 @@
 
 #ifdef ENABLE_SQLITE
 
-#include "lz4/lz4.h"
-#include "lz4/lz4hc.h"
+#include "../lz4/lz4.h"
+#include "../lz4/lz4hc.h"
 #include "SqliteArchive.hpp"
 
 #define LZ4_CHUNK_SIZE LZ4_MAX_INPUT_SIZE/2

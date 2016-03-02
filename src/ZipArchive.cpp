@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "ZipArchive.hpp"
-#include "vogl_miniz_zip.h"
+#include "../vogl_miniz/vogl_miniz_zip.h"
 #include "SharedArray.hpp"
 
 namespace gtar{

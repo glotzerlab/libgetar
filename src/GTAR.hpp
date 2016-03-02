@@ -22,7 +22,8 @@
 namespace gtar{
 
     bool littleEndian();
-    const static bool IS_BIG_ENDIAN = !littleEndian();
+    // const static bool IS_BIG_ENDIAN = !littleEndian();
+    const static bool IS_BIG_ENDIAN = false;
 
     /// Swap the endianness of all elements, if necessary on this
     /// architecture

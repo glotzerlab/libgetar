@@ -7,8 +7,8 @@ import numpy
 
 macros = []
 extra_args = []
-sources = ['src/Archive.cpp', 'src/vogl_miniz.cpp',
-        'src/TarArchive.cpp', 'src/ZipArchive.cpp', 'src/vogl_miniz_zip.cpp',
+sources = ['src/Archive.cpp', 'vogl_miniz/vogl_miniz.cpp',
+        'src/TarArchive.cpp', 'src/ZipArchive.cpp', 'vogl_miniz/vogl_miniz_zip.cpp',
         'src/GTAR.cpp', 'src/Record.cpp', 'src/DirArchive.cpp']
 
 if '--disable-read-check' in sys.argv:
@@ -19,7 +19,7 @@ if '--disable-sqlite' in sys.argv:
     sys.argv.remove('--disable-sqlite')
 else:
     macros.append(('ENABLE_SQLITE', True))
-    sources.extend(['src/lz4/lz4.c', 'src/lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
+    sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
     extra_args.append('-lsqlite3')
 
 if '--cython' in sys.argv:

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "Archive.hpp"
-#include "vogl_miniz_zip.h"
+#include "../vogl_miniz/vogl_miniz_zip.h"
 
 #ifndef __ZIP_ARCHIVE_HPP_
 #define __ZIP_ARCHIVE_HPP_
