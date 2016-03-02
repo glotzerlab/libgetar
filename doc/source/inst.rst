@@ -41,6 +41,4 @@ package manager), you can install it easily with pip:
    pip install breathe --user
 
 The latest version of the documentation is available `online
-<http://glotzerlab.engin.umich.edu/libgetar/>`_. I also plan to keep a
-PDF version of the documentation available at `the bitbucket download
-page <https://bitbucket.org/glotzer/libgetar/downloads>`_.
+<http://glotzerlab.engin.umich.edu/libgetar/>`_.
