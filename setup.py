@@ -45,7 +45,7 @@ else:
                          extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
 
 setup(name='gtar',
-      version='0.4',
+      version='0.5',
       description='GTAR format file wrapper',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
