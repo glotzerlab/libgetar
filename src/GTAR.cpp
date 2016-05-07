@@ -88,13 +88,10 @@ namespace gtar{
         else
             m_archive.reset(new ZipArchive(filename, realMode));
 
-        // Populate our record list
-        if(realMode == Read)
-        {
-            const unsigned int size(m_archive->size());
-            for(unsigned int index(0); index < size; ++index)
-                insertRecord(m_archive->getItemName(index));
-        }
+        // Populate our record list unconditionally
+        const unsigned int size(m_archive->size());
+        for(unsigned int index(0); index < size; ++index)
+            insertRecord(m_archive->getItemName(index));
     }
 
     void GTAR::close()
