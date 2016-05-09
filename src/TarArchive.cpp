@@ -183,7 +183,7 @@ namespace gtar{
 
         string prefix, name(path);
 
-        const size_t savedOffset(m_maxPosition + sizeof(TarHeader));
+        const size_t savedOffset(m_maxPosition + (std::streampos) sizeof(TarHeader));
 
         TarHeader recordHeader;
         memset(&recordHeader, 0, sizeof(TarHeader));
