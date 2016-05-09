@@ -75,7 +75,9 @@ namespace gtar{
                                       "path TEXT REFERENCES file_list (path) ON "
                                       "DELETE CASCADE ON UPDATE CASCADE,"
                                       "contents BLOB,"
-                                      "chunk_idx INTEGER NOT NULL);",
+                                      "chunk_idx INTEGER NOT NULL, "
+                                      "CONSTRAINT constrain_path_chunk UNIQUE (path, chunk_idx) "
+                                      "ON CONFLICT REPLACE);",
                                       0, 0, &errmsg);
             if(execStatus != SQLITE_OK)
             {
