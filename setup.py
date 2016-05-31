@@ -15,7 +15,8 @@ if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')
 
-if '--disable-sqlite' in sys.argv:
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if '--disable-sqlite' in sys.argv or on_rtd:
     sys.argv.remove('--disable-sqlite')
 else:
     macros.append(('ENABLE_SQLITE', True))
