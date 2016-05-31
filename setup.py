@@ -16,8 +16,10 @@ if '--disable-read-check' in sys.argv:
     sys.argv.remove('--disable-read-check')
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-if '--disable-sqlite' in sys.argv or on_rtd:
+if '--disable-sqlite' in sys.argv:
     sys.argv.remove('--disable-sqlite')
+elif on_rtd:
+    pass
 else:
     macros.append(('ENABLE_SQLITE', True))
     sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
