@@ -148,6 +148,9 @@ namespace gtar{
         case Individual:
             fullName << ".ind";
             break;
+        case Text:
+            // not handled
+            break;
         }
 
         stringstream result;

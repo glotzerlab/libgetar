@@ -355,7 +355,7 @@ namespace gtar{
         if(selectResult == SQLITE_ROW)
         {
             const size_t uncompSize(sqlite3_column_int64(m_select_contents_stmt, 1));
-            const size_t compSize(sqlite3_column_int64(m_select_contents_stmt, 2));
+            // const size_t compSize(sqlite3_column_int64(m_select_contents_stmt, 2));
             const size_t compLevel(sqlite3_column_int64(m_select_contents_stmt, 3));
 
             vector<SharedArray<char> >chunks;
