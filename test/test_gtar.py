@@ -73,6 +73,21 @@ def test_readAndWriteRecords(suffix):
     assert success
     return success
 
+def test_overwrite(suffix):
+    success = True
+
+    with gtar.GTAR('test' + suffix, 'w') as arch:
+        arch.writeStr('test.txt', 'bad')
+        arch.writeStr('test.txt', 'good')
+
+        success = success and arch.readStr('test.txt') == 'good'
+
+    with gtar.GTAR('test' + suffix, 'r') as arch:
+        success = success and arch.readStr('test.txt') == 'good'
+
+    assert success
+    return success
+
 def main():
     success = True
 
@@ -81,6 +96,7 @@ def main():
             success = test_readThenWrite(suffix) and success
             success = test_readAndWrite(suffix) and success
             success = test_readAndWriteRecords(suffix) and success
+            success = test_overwrite(suffix) and success
         except AssertionError:
             success = False
 

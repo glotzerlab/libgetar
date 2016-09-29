@@ -17,7 +17,7 @@ namespace gtar{
     using std::vector;
 
     ZipArchive::ZipArchive(const string &filename, const OpenMode mode):
-        m_filename(filename), m_mode(mode), m_archive()
+        m_filename(filename), m_mode(mode), m_archive(), m_path_map()
     {
         mz_zip_zero_struct(&m_archive);
 
@@ -84,6 +84,8 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
         }
+
+        fillPathMap();
     }
 
     ZipArchive::~ZipArchive()
@@ -139,6 +141,8 @@ namespace gtar{
             result << mz_zip_get_error_string(mz_zip_get_last_error(&m_archive));
             throw runtime_error(result.str());
         }
+
+        m_path_map[path] = size() - 1;
     }
 
     void ZipArchive::beginBulkWrites()
@@ -149,15 +153,24 @@ namespace gtar{
     {
     }
 
+    void ZipArchive::fillPathMap()
+    {
+        for(size_t i(0); i < size(); ++i)
+            m_path_map[getItemName(i)] = i;
+    }
+
     SharedArray<char> ZipArchive::read(const string &path)
     {
-        mz_uint32 fileIndex(0);
-        bool success(mz_zip_locate_file(&m_archive, path.c_str(), NULL, MZ_ZIP_FLAG_CASE_SENSITIVE, &fileIndex));
-        mz_zip_archive_file_stat stat;
+        std::map<std::string, size_t>::iterator iter(m_path_map.find(path));
+        size_t fileIndex(0);
 
-        if(!success)
+        if(iter == m_path_map.end())
             return SharedArray<char>();
+        else
+            fileIndex = iter->second;
 
+        bool success;
+        mz_zip_archive_file_stat stat;
         mz_zip_file_stat(&m_archive, fileIndex, &stat);
 
         SharedArray<char> result(new char[stat.m_uncomp_size], stat.m_uncomp_size);

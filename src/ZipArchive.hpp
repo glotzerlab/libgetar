@@ -1,6 +1,7 @@
 // ZipArchive.hpp
 // by Matthew Spellings <mspells@umich.edu>
 
+#include <map>
 #include <memory>
 #include <vector>
 #include <string>
@@ -47,12 +48,17 @@ namespace gtar{
         virtual std::string getItemName(unsigned int index);
 
     private:
+        // fill m_path_map
+        void fillPathMap();
+
         // Name of the archive file we're accessing
         const std::string m_filename;
         // How we're accessing the archive
         const OpenMode m_mode;
         // Stored miniz archive object
         mz_zip_archive m_archive;
+        // Stored map of path -> last archive index that contains the path
+        std::map<std::string, size_t> m_path_map;
     };
 
     // Helper function to be accessed from python. Checks if a zip
