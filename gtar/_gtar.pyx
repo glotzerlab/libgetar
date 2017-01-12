@@ -5,6 +5,8 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cython.operator cimport dereference as deref
 import numpy as np
+import json
+import sqlite3
 cimport numpy as np
 from cpython cimport PyObject, Py_INCREF
 
@@ -357,6 +359,25 @@ cdef class BulkWriter:
             self.writeArray(rec.getPath(), contents, mode,
                             dtype=dtypes[rec.getFormat()])
 
+def _sql_record_converter(path):
+    """Constructs a Record object from a stored sqlite fake record
+    field"""
+    return Record(path.decode())
+
+sqlite3.register_converter('GTAR_RECORD', _sql_record_converter)
+
+# references to all sql-enabled trajectories for sql DB API
+_sql_open_trajectories = {}
+
+def _sql_array_converter(field):
+    """Constructs a numpy array object (equivalent of GTAR.readPath(path))
+    from a stored sqlite fake data field"""
+    (trajectoryKey, path) = json.loads(field.decode())
+
+    return _sql_open_trajectories[trajectoryKey].readPath(path)
+
+sqlite3.register_converter('GTAR_DATA', _sql_array_converter)
+
 cdef class GTAR:
     """Python wrapper for the :cpp:class:`GTAR` c++ class. Provides
     basic access to its methods and simple methods to read and write
@@ -381,6 +402,7 @@ cdef class GTAR:
     cdef cpp.GTAR *thisptr
     cdef _path
     cdef _mode
+    cdef _sqldb
 
     openModes = {'r': cpp.Read,
                  'w': cpp.Write,
@@ -390,6 +412,8 @@ cdef class GTAR:
         """Initialize a `GTAR` object given an archive path and open mode"""
         self._path = path
         self._mode = mode
+        self._sqldb = None
+
         try:
             self.thisptr = new cpp.GTAR(py3str(path), self.openModes[self._mode])
         except KeyError:
@@ -415,6 +439,34 @@ cdef class GTAR:
     def _sortFrameKey(self, v):
         """Key function for sorting frame indices"""
         return (len(v), v)
+
+    def _requireSqlDatabase(self):
+        """Makes sure that the in-memory sqlite database for records available
+        in this archive has been filled."""
+        if self._sqldb is not None:
+            return
+
+        key = hash(self)
+        _sql_open_trajectories[key] = self
+
+        self._sqldb = sqlite3.Connection(':memory:', detect_types=sqlite3.PARSE_DECLTYPES)
+
+        with self._sqldb:
+            self._sqldb.execute('CREATE TABLE records (behavior INTEGER, '
+                'grp TEXT, name TEXT, format INTEGER, path TEXT, '
+                'resolution INTEGER, idx TEXT, record GTAR_RECORD, data GTAR_DATA)')
+
+            for rec in self.getRecordTypes():
+                for index in self.queryFrames(rec):
+                    rec.setIndex(index)
+                    path = rec.getPath()
+                    data = json.dumps([key, path])
+
+                    values = [rec.getBehavior(), rec.getGroup(), rec.getName(),
+                              rec.getFormat(), path, rec.getResolution(),
+                              index, path.encode(), data.encode()]
+                    self._sqldb.execute('INSERT INTO records values ('
+                                        '?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
 
     def close(self):
         """Close the file this object is writing to. It is safe to
@@ -597,7 +649,28 @@ cdef class GTAR:
             result.append(unpy3str(f))
         return result
 
+    def querySql(self, *args, **kwargs):
+        """Evaluates an SQL query and returns the results. The arguments are
+        exactly the same as
+        :py:fun:`sqlite3.Connection.execute`. There is a table
+        "records" which contains the following data:
+
+        - behavior: int (use `gtar.Behavior`)
+        - grp: str (corresponds to the group of the record)
+        - name: str
+        - format: int (use `gtar.Format`)
+        - path: str
+        - resolution: int (use `gtar.Resolution`)
+        - idx: str
+        - record: `gtar.Record` (read-only)
+        - data: `gtar.Record` (read-only)
+
+        """
+        self._requireSqlDatabase()
+        return self._sqldb.execute(*args, **kwargs)
+
     def framesWithRecordsNamed(self, names):
+
         """Returns ``([record(val) for val in names], [frames])`` given a
         set of record names names. If only given a single name,
         returns ``(record, [frames])``.
