@@ -262,6 +262,7 @@ cdef class BulkWriter:
 
     def __cinit__(self, GTAR arch):
         self.thisptr = new GTAR_.BulkWriter(deref(arch.thisptr))
+        self.target = arch
 
     cdef _dealloc(self):
         del self.thisptr
@@ -454,19 +455,25 @@ cdef class GTAR:
         with self._sqldb:
             self._sqldb.execute('CREATE TABLE records (behavior INTEGER, '
                 'grp TEXT, name TEXT, format INTEGER, path TEXT, '
-                'resolution INTEGER, idx TEXT, record GTAR_RECORD, data GTAR_DATA)')
+                'resolution INTEGER, idx TEXT, record GTAR_RECORD, data GTAR_DATA '
+                'CONSTRAINT unique_path UNIQUE (path) ON CONFLICT REPLACE)')
 
             for rec in self.getRecordTypes():
                 for index in self.queryFrames(rec):
                     rec.setIndex(index)
-                    path = rec.getPath()
-                    data = json.dumps([key, path])
+                    self._insertSqlRecord(rec)
 
-                    values = [rec.getBehavior(), rec.getGroup(), rec.getName(),
-                              rec.getFormat(), path, rec.getResolution(),
-                              index, path.encode(), data.encode()]
-                    self._sqldb.execute('INSERT INTO records values ('
-                                        '?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
+    def _insertSqlRecord(self, rec):
+        """Internal helper function to insert a record into the SQL
+        database"""
+        path = rec.getPath()
+        data = json.dumps([hash(self), path])
+
+        values = [rec.getBehavior(), rec.getGroup(), rec.getName(),
+                  rec.getFormat(), path, rec.getResolution(),
+                  rec.getIndex, path.encode(), data.encode()]
+        self._sqldb.execute('INSERT INTO records values ('
+                            '?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
 
     def close(self):
         """Close the file this object is writing to. It is safe to
