@@ -1,105 +1,123 @@
 import sys
+import unittest
 import gtar
 import numpy as np
 
-def test_readThenWrite(suffix):
-    records = {'test.txt': 'test string foo\n',
-               'blah.txt': '日本語',
-               'frames/0/otherblah.f32.ind': np.random.rand(5),
-               'frames/0/anotherblah.f64.ind': np.random.rand(7),
-               'frames/0/number.i32.uni': 14}
+def CaseFactory(suffix):
+    class TestCases(unittest.TestCase):
+        def __init__(self, methodName):
+            super(TestCases, self).__init__(methodName)
+            self.suffix = suffix
 
-    convertedRecords = {'frames/0/otherblah.f32.ind':
-                        np.array(records['frames/0/otherblah.f32.ind'],
-                                 dtype=np.float32)}
+        # @staticmethod
+        # def specialize(cls, suffix='.tar'):
+        #     testloader = unittest.TestLoader()
+        #     testnames = testloader.getTestCaseNames(testcase_klass)
+        #     suite = unittest.TestSuite()
+        #     for name in testnames:
+        #         suite.addTest(cls(name, suffix=suffix))
+        #     return suite
 
-    with gtar.GTAR('test' + suffix, 'w') as arch:
-        for path in records:
-            arch.writePath(path, records[path])
+        def test_readThenWrite(self):
+            records = {'test.txt': 'test string foo\n',
+                       'blah.txt': '日本語',
+                       'frames/0/otherblah.f32.ind': np.random.rand(5),
+                       'frames/0/anotherblah.f64.ind': np.random.rand(7),
+                       'frames/0/number.i32.uni': 14}
 
-    success = True
-    for mode in ['r', 'a']:
-        with gtar.GTAR('test' + suffix, mode) as arch:
-            for path in records:
-                equal = np.all(
-                    arch.readPath(path) == convertedRecords.get(path, records[path]))
-                if not equal:
-                    print('Failed on readThenWrite() with {} ({} mode): {}'.format(
-                        suffix, mode, path))
-                success = success and equal
+            convertedRecords = {'frames/0/otherblah.f32.ind':
+                                np.array(records['frames/0/otherblah.f32.ind'],
+                                         dtype=np.float32)}
 
-    assert success
-    return success
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                for path in records:
+                    arch.writePath(path, records[path])
 
-def test_readAndWrite(suffix):
-    records = {'test.txt': 'test string foo\n',
-               'blah.txt': '日本語',
-               'frames/0/otherblah.f32.ind': np.random.rand(5),
-               'frames/0/anotherblah.f64.ind': np.random.rand(7),
-               'frames/0/number.i32.uni': 14}
+            for mode in ['r', 'a']:
+                with gtar.GTAR('test' + self.suffix, mode) as arch:
+                    for path in records:
+                        equal = np.all(
+                            arch.readPath(path) == convertedRecords.get(path, records[path]))
+                        if not equal:
+                            print('Failed on readThenWrite() with {} ({} mode): {}'.format(
+                                self.suffix, mode, path))
+                        self.assertTrue(equal)
 
-    convertedRecords = {'frames/0/otherblah.f32.ind':
-                        np.array(records['frames/0/otherblah.f32.ind'],
-                                 dtype=np.float32)}
+        def test_readAndWrite(self):
+            records = {'test.txt': 'test string foo\n',
+                       'blah.txt': '日本語',
+                       'frames/0/otherblah.f32.ind': np.random.rand(5),
+                       'frames/0/anotherblah.f64.ind': np.random.rand(7),
+                       'frames/0/number.i32.uni': 14}
 
-    success = True
-    written = []
-    with gtar.GTAR('test' + suffix, 'w') as arch:
-        for path in records:
-            arch.writePath(path, records[path])
-            written.append(path)
+            convertedRecords = {'frames/0/otherblah.f32.ind':
+                                np.array(records['frames/0/otherblah.f32.ind'],
+                                         dtype=np.float32)}
 
-            for readpath in sorted(written):
-                equal = np.all(
-                    arch.readPath(readpath) == convertedRecords.get(readpath, records[readpath]))
-                if not equal:
-                    print('Failed on readAndWrite() with {}: {}'.format(suffix, readpath))
-                success = success and equal
+            written = []
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                for path in records:
+                    arch.writePath(path, records[path])
+                    written.append(path)
 
-    assert success
-    return success
+                    for readpath in sorted(written):
+                        equal = np.all(
+                            arch.readPath(readpath) == convertedRecords.get(readpath, records[readpath]))
+                        if not equal:
+                            print('Failed on readAndWrite() with {}: {}'.format(self.suffix, readpath))
+                        self.assertTrue(equal)
 
-def test_readAndWriteRecords(suffix):
-    success = True
+        def test_readAndWriteRecords(self):
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                reclen = len(arch.getRecordTypes())
+                for idx in range(10):
+                    arch.writeStr(str(idx), '{}_contents'.format(idx))
 
-    with gtar.GTAR('test' + suffix, 'w') as arch:
-        reclen = len(arch.getRecordTypes())
-        for idx in range(10):
-            arch.writeStr(str(idx), '{}_contents'.format(idx))
+                    self.assertEqual(reclen + 1, len(arch.getRecordTypes()))
+                    reclen = len(arch.getRecordTypes())
 
-            success = success and (reclen + 1 == len(arch.getRecordTypes()))
-            reclen = len(arch.getRecordTypes())
+        def test_overwrite(self):
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                arch.writeStr('test.txt', 'bad')
+                arch.writeStr('test.txt', 'good')
 
-    assert success
-    return success
+                self.assertEqual(arch.readStr('test.txt'), 'good')
 
-def test_overwrite(suffix):
-    success = True
+            with gtar.GTAR('test' + self.suffix, 'r') as arch:
+                self.assertEqual(arch.readStr('test.txt'), 'good')
 
-    with gtar.GTAR('test' + suffix, 'w') as arch:
-        arch.writeStr('test.txt', 'bad')
-        arch.writeStr('test.txt', 'good')
+        def test_sql_records(self):
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                arch.writePath('test.f32.uni', 14)
 
-        success = success and arch.readStr('test.txt') == 'good'
+                for (rec,) in arch.querySql('SELECT record FROM records'):
+                    self.assertEqual(rec, gtar.Record('test.f32.uni'))
 
-    with gtar.GTAR('test' + suffix, 'r') as arch:
-        success = success and arch.readStr('test.txt') == 'good'
+                arch.writePath('test.f64.uni', 140)
 
-    assert success
-    return success
+                self.assertEqual(len(list(arch.querySql('SELECT record from records'))), 2)
 
-def main():
-    success = True
+        def test_sql_data(self):
+            with gtar.GTAR('test' + self.suffix, 'w') as arch:
+                arch.writePath('test.f32.uni', 14)
 
-    for suffix in ['.zip', '.tar', '.sqlite', '/']:
-        try:
-            success = test_readThenWrite(suffix) and success
-            success = test_readAndWrite(suffix) and success
-            success = test_readAndWriteRecords(suffix) and success
-            success = test_overwrite(suffix) and success
-        except AssertionError:
-            success = False
+                for (data,) in arch.querySql('SELECT data FROM records'):
+                    self.assertEqual(data, 14)
 
-    sys.exit(not success)
+                arch.writePath('test.f64.uni', 140)
 
-if __name__ == '__main__': main()
+                for (data,) in arch.querySql('SELECT data FROM records WHERE format = ?', (gtar.Format.Float64,)):
+                    self.assertEqual(data, 140)
+
+        def __str__(self):
+            return '{}({})'.format(TestCases.__name__, self.suffix)
+
+    return TestCases
+
+TestTar = CaseFactory('.tar')
+TestZip = CaseFactory('.zip')
+TestSqlite = CaseFactory('.sqlite')
+TestDirectory = CaseFactory('/')
+
+if __name__ == '__main__':
+    unittest.main()
