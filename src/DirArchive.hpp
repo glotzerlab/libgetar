@@ -49,7 +49,7 @@ namespace gtar{
 
     private:
         // Helper function to recursively search through a directory
-        void searchDirectory(const std::string &path);
+        void searchDirectory(const std::string &path, unsigned int skipLength);
 
         // Name of the archive file we're accessing
         const std::string m_filename;

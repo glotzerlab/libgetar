@@ -52,7 +52,7 @@ namespace gtar{
         // directory always has at least one slash
         const size_t stripLength(m_filename.find_last_not_of('/') + 1);
         const string stripped(m_filename.substr(0, stripLength));
-        searchDirectory(stripped);
+        searchDirectory(stripped, stripped.size());
     }
 
     DirArchive::~DirArchive()
@@ -134,7 +134,7 @@ namespace gtar{
         return m_fileNames[index];
     }
 
-    void DirArchive::searchDirectory(const string &path)
+    void DirArchive::searchDirectory(const string &path, unsigned int skipLength)
     {
         DIR *curDir(opendir(path.c_str()));
         if(curDir == NULL)
@@ -159,10 +159,10 @@ namespace gtar{
                 stat(entName.c_str(), &curStat);
                 // is a directory
                 if(curStat.st_mode & S_IFDIR)
-                    searchDirectory(entName);
+                    searchDirectory(entName, skipLength);
                 // only grab regular files
                 else if(curStat.st_mode & S_IFREG)
-                    m_fileNames.push_back(entName);
+                    m_fileNames.push_back(entName.substr(skipLength));
             }
             readdir_r(curDir, curEnt, &nextEnt);
             curEnt = nextEnt;
