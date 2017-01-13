@@ -139,6 +139,27 @@ something like the following:
    positionFrames = arch.queryFrames(positionRecord)
    positions = [arch.getRecord(positionRecord, frame) for frame in positionFrames]
 
+(Experimental) SQL API
+----------------------
+
+If you would like the fine-grained control of the advanced API without
+dealing with its verbosity, the experimental SQL-based API may be for
+you. :py:func:`gtar.GTAR.querySql` allows you to efficiently get the records or data
+inside an archive using SQL query strings.
+
+.. note:: The SQL API is currently read-only; inserting data into the table will not cause it to be saved in the archive.
+
+::
+
+   records = [rec for (rec,) in
+       arch.querySql('SELECT record FROM records WHERE name = "position"')]
+
+   for (frame, velocities) in \
+       arch.querySql('SELECT idx, data FROM records WHERE format = ? '
+           'AND name = "velocity"', (gtar.Format.Float64,)):
+       # process velocities
+       pass
+
 Record Objects
 **************
 

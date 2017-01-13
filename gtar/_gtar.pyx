@@ -686,18 +686,28 @@ cdef class GTAR:
     def querySql(self, *args, **kwargs):
         """Evaluates an SQL query and returns the results. The arguments are
         exactly the same as
-        :py:fun:`sqlite3.Connection.execute`. There is a table
+        :py:func:`sqlite3.Connection.execute`. There is a table
         "records" which contains the following data:
 
-        - behavior: int (use `gtar.Behavior`)
+        - behavior: int (use :py:class:`gtar.Behavior`)
         - grp: str (corresponds to the group of the record)
         - name: str
-        - format: int (use `gtar.Format`)
+        - format: int (use :py:class:`gtar.Format`)
         - path: str
-        - resolution: int (use `gtar.Resolution`)
+        - resolution: int (use :py:class:`gtar.Resolution`)
         - idx: str
-        - record: `gtar.Record` (read-only)
-        - data: `gtar.Record` (read-only)
+        - record: :py:class:`gtar.Record` (read-only)
+        - data: :py:class:`numpy.ndarray` (read-only)
+
+        .. note:: This API is currently experimental and read-only.
+
+        Example::
+
+            records = [rec for (rec,) in
+                arch.querySql('SELECT record FROM records WHERE name = "velocity"')]
+
+            static_data = dict(arch.queryStr('SELECT name, data FROM records WHERE behavior = ?',
+                               (gtar.Behavior.Constant,)))
 
         """
         self._requireSqlDatabase()
