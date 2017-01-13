@@ -1,3 +1,5 @@
+import os
+import shutil
 import sys
 import unittest
 import gtar
@@ -9,14 +11,19 @@ def CaseFactory(suffix):
             super(TestCases, self).__init__(methodName)
             self.suffix = suffix
 
-        # @staticmethod
-        # def specialize(cls, suffix='.tar'):
-        #     testloader = unittest.TestLoader()
-        #     testnames = testloader.getTestCaseNames(testcase_klass)
-        #     suite = unittest.TestSuite()
-        #     for name in testnames:
-        #         suite.addTest(cls(name, suffix=suffix))
-        #     return suite
+        def setUp(self):
+            if os.path.exists('test' + self.suffix):
+                if self.suffix == '/':
+                    shutil.rmtree('test/')
+                else:
+                    os.remove('test' + self.suffix)
+
+        def tearDown(self):
+            if os.path.exists('test' + self.suffix):
+                if self.suffix == '/':
+                    shutil.rmtree('test/')
+                else:
+                    os.remove('test' + self.suffix)
 
         def test_readThenWrite(self):
             records = {'test.txt': 'test string foo\n',
