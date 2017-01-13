@@ -199,6 +199,26 @@ cdef class Record:
         """Clean up the record allocated for this object"""
         del self.thisptr
 
+    def __richcmp__(self, other, int op):
+        self_vals = [self.getGroup(), self.getName(), self.getIndex(),
+                     self.getBehavior(), self.getFormat(), self.getResolution()]
+        other_vals = [self.getGroup(), self.getName(), self.getIndex(),
+                     self.getBehavior(), self.getFormat(), self.getResolution()]
+        if op == 0:
+            return self_vals < other_vals
+        elif op == 1:
+            return self_vals <= other_vals
+        elif op == 2:
+            return self_vals == other_vals
+        elif op == 3:
+            return self_vals != other_vals
+        elif op == 4:
+            return self_vals > other_vals
+        elif op == 5:
+            return self_vals >= other_vals
+        else:
+            raise TypeError('Unknown operator {} in __richcmp__'.format(op))
+
     def __reduce__(self):
         return (self.__class__, (self.getPath(),))
 
@@ -286,6 +306,7 @@ cdef class BulkWriter:
         :param mode: Optional compression mode (defaults to fast compression)
         """
         self.thisptr.writeString(py3str(path), contents, mode)
+        self.target._insertSqlRecord(Record(path))
 
     def writeStr(self, path, contents, mode=cpp.FastCompress):
         """Write the given string to the given path, optionally
@@ -333,6 +354,7 @@ cdef class BulkWriter:
             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
         else:
             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
+        self.target._insertSqlRecord(Record(path))
 
     def writeRecord(self, Record rec, contents, mode=cpp.FastCompress):
         """Writes the given contents to the path specified by the given record.
@@ -359,6 +381,7 @@ cdef class BulkWriter:
         else:
             self.writeArray(rec.getPath(), contents, mode,
                             dtype=dtypes[rec.getFormat()])
+        self.target._insertSqlRecord(rec)
 
 def _sql_record_converter(path):
     """Constructs a Record object from a stored sqlite fake record
@@ -454,9 +477,8 @@ cdef class GTAR:
 
         with self._sqldb:
             self._sqldb.execute('CREATE TABLE records (behavior INTEGER, '
-                'grp TEXT, name TEXT, format INTEGER, path TEXT, '
-                'resolution INTEGER, idx TEXT, record GTAR_RECORD, data GTAR_DATA '
-                'CONSTRAINT unique_path UNIQUE (path) ON CONFLICT REPLACE)')
+                'grp TEXT, name TEXT, format INTEGER, path TEXT UNIQUE ON CONFLICT REPLACE, '
+                'resolution INTEGER, idx TEXT, record GTAR_RECORD, data GTAR_DATA)')
 
             for rec in self.getRecordTypes():
                 for index in self.queryFrames(rec):
@@ -466,14 +488,15 @@ cdef class GTAR:
     def _insertSqlRecord(self, rec):
         """Internal helper function to insert a record into the SQL
         database"""
-        path = rec.getPath()
-        data = json.dumps([hash(self), path])
+        if self._sqldb is not None:
+            path = rec.getPath()
+            data = json.dumps([hash(self), path])
 
-        values = [rec.getBehavior(), rec.getGroup(), rec.getName(),
-                  rec.getFormat(), path, rec.getResolution(),
-                  rec.getIndex, path.encode(), data.encode()]
-        self._sqldb.execute('INSERT INTO records values ('
-                            '?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
+            values = [rec.getBehavior(), rec.getGroup(), rec.getName(),
+                      rec.getFormat(), path, rec.getResolution(),
+                      rec.getIndex(), path.encode(), data.encode()]
+            self._sqldb.execute('INSERT INTO records values ('
+                                '?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
 
     def close(self):
         """Close the file this object is writing to. It is safe to
@@ -501,6 +524,7 @@ cdef class GTAR:
         :param mode: Optional compression mode (defaults to fast compression)
         """
         self.thisptr.writeString(py3str(path), contents, mode)
+        self._insertSqlRecord(Record(path))
 
     def readStr(self, path):
         """Read the contents of the given path as a string or return
@@ -548,6 +572,7 @@ cdef class GTAR:
         """
         rec = Record(path)
         self.writeRecord(rec, contents, mode)
+        self._insertSqlRecord(rec)
 
     def writeArray(self, path, arr, mode=cpp.FastCompress, dtype=None):
         """Write the given numpy array to the location within the
@@ -570,6 +595,7 @@ cdef class GTAR:
             self.thisptr.writePtr(py3str(path), &carr[0], carr.nbytes, mode)
         else:
             self.thisptr.writePtr(py3str(path), <void*> 0, carr.nbytes, mode)
+        self._insertSqlRecord(Record(path))
 
     def getBulkWriter(self):
         """Get a :py:class:`gtar.BulkWriter` context object. These allow for more
@@ -632,6 +658,7 @@ cdef class GTAR:
         else:
             self.writeArray(rec.getPath(), contents, mode,
                             dtype=dtypes[rec.getFormat()])
+        self._insertSqlRecord(rec)
 
     def getRecordTypes(self):
         """Returns a python list of all the record types (without
