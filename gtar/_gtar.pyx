@@ -197,6 +197,29 @@ cdef class Record:
         """Clean up the record allocated for this object"""
         del self.thisptr
 
+    def __richcmp__(self, other, int op):
+        self_vals = [self.getGroup(), self.getName(), self.getIndex(),
+                     self.getBehavior(), self.getFormat(), self.getResolution()]
+        other_vals = [self.getGroup(), self.getName(), self.getIndex(),
+                     self.getBehavior(), self.getFormat(), self.getResolution()]
+        if op == 0:
+            return self_vals < other_vals
+        elif op == 1:
+            return self_vals <= other_vals
+        elif op == 2:
+            return self_vals == other_vals
+        elif op == 3:
+            return self_vals != other_vals
+        elif op == 4:
+            return self_vals > other_vals
+        elif op == 5:
+            return self_vals >= other_vals
+        else:
+            raise TypeError('Unknown operator {} in __richcmp__'.format(op))
+
+    def __hash__(self):
+        return hash((self.__class__, repr(self)))
+
     def __reduce__(self):
         return (self.__class__, (self.getPath(),))
 
