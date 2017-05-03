@@ -5,6 +5,9 @@ from distutils.command.build_ext import build_ext
 from distutils.core import Extension, setup
 import numpy
 
+with open('gtar/version.py') as version_file:
+    exec(version_file.read())
+
 macros = []
 extra_args = []
 sources = ['src/Archive.cpp', 'vogl_miniz/vogl_miniz.cpp',
@@ -48,7 +51,7 @@ else:
                          extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
 
 setup(name='gtar',
-      version='0.5',
+      version=__version__,
       description='GTAR format file wrapper',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
