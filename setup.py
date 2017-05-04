@@ -28,6 +28,10 @@ else:
     sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
     extra_args.append('-lsqlite3')
 
+if '--debug' in sys.argv:
+    extra_args.extend(['-O0', '-g'])
+    sys.argv.remove('--debug')
+
 if '--cython' in sys.argv:
     from Cython.Build import cythonize
     sys.argv.remove('--cython')
