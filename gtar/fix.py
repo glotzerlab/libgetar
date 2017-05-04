@@ -84,7 +84,9 @@ def main(input, output):
     """
 
     if input.endswith('.tar') or input.endswith('.sqlite'):
-        raise RuntimeError('Can\'t fix non-zip archives')
+        with gtar.GTAR(input, 'a'):
+            pass
+        return
 
     needsFix = True
 
