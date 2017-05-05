@@ -235,9 +235,10 @@ namespace gtar{
 
                 compressedBytes.push_back(SharedArray<char>(new char[maxSize], maxSize));
                 rawTargets.push_back(compressedBytes.back().get());
-                rawSizes.push_back(LZ4_compress(
+                rawSizes.push_back(LZ4_compress_default(
                                        ((const char*) contents) + chunkidx*LZ4_CHUNK_SIZE,
-                                       compressedBytes.back().get(), sourceSize));
+                                       compressedBytes.back().get(), sourceSize,
+                                       maxSize));
                 compressedSize += rawSizes.back();
             }
             rawCompression = 1;
@@ -251,9 +252,10 @@ namespace gtar{
 
                 compressedBytes.push_back(SharedArray<char>(new char[maxSize], maxSize));
                 rawTargets.push_back(compressedBytes.back().get());
-                rawSizes.push_back(LZ4_compressHC(
+                rawSizes.push_back(LZ4_compress_HC(
                                        ((const char*) contents) + chunkidx*LZ4_CHUNK_SIZE,
-                                       compressedBytes.back().get(), sourceSize));
+                                       compressedBytes.back().get(), sourceSize,
+                                       maxSize, LZ4HC_CLEVEL_OPT_MIN));
                 compressedSize += rawSizes.back();
             }
             rawCompression = 1;
