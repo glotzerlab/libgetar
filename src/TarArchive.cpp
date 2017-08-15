@@ -88,10 +88,7 @@ namespace gtar{
                 {
                     stringstream message;
                     message << "Error reading tar record at position " <<
-                        offset << ": magic mismatch, bytes \"";
-                    for(unsigned int i(0); i < sizeof(recordHeader.magic); ++i)
-                        message << recordHeader.magic[i];
-                    message << '"';
+                        offset << ": magic mismatch (is this actually a tar file?)";
 
                     // If this fails at offset 0, we must not have
                     // been given an actual tar archive; otherwise,
