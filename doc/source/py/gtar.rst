@@ -81,9 +81,9 @@ is to use :py:func:`GTAR.recordsNamed`:
    for (frame, vel) in arch.recordsNamed('velocity'):
        kinetic_energy += 0.5*mass*numpy.sum(vel**2)
 
-   for (frame, (position, box)) in arch:
+   for (frame, (position, box)) in arch.recordsNamed(['position', 'box']):
        # boost::python didn't like numpy's floats last time I checked
-       box = freud.trajectory.Box(float(box[0]), float(box[1]), float(box[2]))
+       box = freud.box.Box(float(box[0]), float(box[1]), float(box[2]))
        rdf.compute(box, position, position)
        matplotlib.pyplot.plot(rdf.getR(), rdf.getRDF())
 
