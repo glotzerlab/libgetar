@@ -15,9 +15,8 @@ archival tools and embed a small amount of metadata into the filename
 within the archive.  For our purposes, the underlying archive format
 (.tar.gz, .zip, .7z...) needs to support efficient random access to
 files and should be relatively common so that generic tools would also
-be useful; to begin with, we have chosen the zip file format, but it
-should be straightforward to change in the future if we find drawbacks
-to the zip format.
+be useful. We have chosen to use the zip file format as our primary
+archive format, but multiple backends are supported.
 
 GETAR Archives
 ==============
@@ -84,7 +83,7 @@ storage mode of the data (determined by the resolution and binary type
 of the data), and ``{index}`` is a string which will be discussed further
 as needed.
 
-Record filename suffices are generated based on the resolution and
+Record filename suffixes are generated based on the resolution and
 binary type of the data stored.  They are of the form ``{type}.{res}``,
 where res is "uni" for uniform properties, "ind" for individual
 properties, and anything else for text properties.  The type field

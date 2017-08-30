@@ -10,7 +10,7 @@ Usage
 
 There are currently two main objects to work with in libgetar:
 :py:class:`gtar.GTAR` archive wrappers and :py:class:`gtar.Record`
-objects
+objects.
 
 GTAR Objects
 ************
@@ -32,14 +32,14 @@ Creation
 
 ::
 
-   # Open an archive for reading
-   arch = gtar.GTAR('dump.zip', 'r')
-   # Open an archive for writing, overwriting any dump.zip in the
-   # current directory
-   arch = gtar.GTAR('dump.zip', 'w')
-   # Open an archive for appending, if you want to add to the file
-   # without overwriting
-   arch = gtar.GTAR('dump.zip', 'a')
+   # Open a trajectory archive for reading
+   traj = gtar.GTAR('dump.zip', 'r')
+   # Open a trajectory archive for writing, overwriting any dump.zip
+   # in the current directory
+   traj = gtar.GTAR('dump.zip', 'w')
+   # Open a trajectory archive for appending, if you want to add
+   # to the file without overwriting
+   traj = gtar.GTAR('dump.zip', 'a')
 
 Note that currently, due to a limitation in the miniz library we use,
 you can't append to a zip file that's not using the zip64 format, such
@@ -56,37 +56,62 @@ If you know the path you want to read from or store to, you can use
 
 ::
 
-   with gtar.GTAR('read.zip', 'r') as read, gtar.GTAR('write.zip', 'w') as write:
-       props = read.readPath('props.json')
-       diameters = read.readPath('diameter.f32.ind')
+    with gtar.GTAR('read.zip', 'r') as input_traj:
+        props = input_traj.readPath('props.json')
+        diameters = input_traj.readPath('diameter.f32.ind')
 
-       write.writePath('oldProps.json', props)
-       write.writePath('mass.f32.ind', numpy.ones_like(diameters))
+    with gtar.GTAR('write.zip', 'w') as output_traj:
+        output_traj.writePath('oldProps.json', props)
+        output_traj.writePath('mass.f32.ind', numpy.ones_like(diameters))
 
-If you just want to write a string or bytestring, there are also
-``GTAR.{read,write}{String,Bytes}``.
+If you just want to read or write a string or bytestring, there are methods
+:py:func:`GTAR.readStr`, :py:func:`GTAR.writeStr`,
+:py:func:`GTAR.readBytes`, and :py:func:`GTAR.writeBytes`.
 
 If you want to grab static properties by their name, there is
 :py:func:`GTAR.staticRecordNamed`:
 
 ::
 
-   diameters = arch.staticRecordNamed('diameter')
+   diameters = traj.staticRecordNamed('diameter')
 
-The easiest method to get per-frame data for time-varying quantities
-is to use :py:func:`GTAR.recordsNamed`:
+There are two methods that can be used to quickly get per-frame data for
+time-varying quantities:
+
+1. :py:func:`GTAR.framesWithRecordsNamed` is useful for "lazy" reading,
+   because it returns the records and frame numbers which can be processed
+   separately before actually reading data. This is especially helpful for
+   retrieving every 100th frame of a file, for example. This is usually the
+   most efficient way to retrieve data.
 
 ::
 
-   for (frame, vel) in arch.recordsNamed('velocity'):
-       kinetic_energy += 0.5*mass*numpy.sum(vel**2)
+   (velocityRecord, frames) = traj.framesWithRecordsNamed('velocity')
+   for frame in frames:
+       velocity = traj.getRecord(velocityRecord, frame)
+       kinetic_energy += 0.5*mass*numpy.sum(velocity**2)
 
-   for (frame, (position, box)) in arch.recordsNamed(['position', 'box']):
-       # boost::python didn't like numpy's floats last time I checked
-       box = freud.box.Box(float(box[0]), float(box[1]), float(box[2]))
-       rdf.compute(box, position, position)
+   ((boxRecord, positionRecord), frames) = traj.framesWithRecordsNamed(['box', 'position'])
+   good_frames = filter(lambda x: int(x) % 100 == 0, frames)
+   for frame in good_frames:
+       box = traj.getRecord(boxRecord, frame)
+       position = traj.getRecord(positionRecord, frame)
+       fbox = freud.box.Box(*box)
+       rdf.compute(fbox, position, position)
        matplotlib.pyplot.plot(rdf.getR(), rdf.getRDF())
 
+2. :py:func:`GTAR.recordsNamed`: is useful for iterating over **all** frames
+   in the archive. It reads and returns the content of the records it finds.
+
+::
+
+   for (frame, vel) in traj.recordsNamed('velocity'):
+       kinetic_energy += 0.5*mass*numpy.sum(vel**2)
+
+   for (frame, (box, position)) in traj.recordsNamed(['box', 'position']):
+       fbox = freud.box.Box(*box)
+       rdf.compute(fbox, position, position)
+       matplotlib.pyplot.plot(rdf.getR(), rdf.getRDF())
 
 Advanced API
 ------------
@@ -104,19 +129,19 @@ the following:
 
 ::
 
-   arch.getRecordTypes()
+   traj.getRecordTypes()
 
 This can be filtered further in something like:
 
 ::
 
-   positionRecord = [rec for rec in arch.getRecordTypes() if rec.getName() == 'position'][0]
+   positionRecord = [rec for rec in traj.getRecordTypes() if rec.getName() == 'position'][0]
 
 The list of frames associated with a given record can be accessed as:
 
 ::
 
-   frames = arch.queryFrames(rec)
+   frames = traj.queryFrames(rec)
 
 Reading Binary Data
 ~~~~~~~~~~~~~~~~~~~
@@ -126,7 +151,7 @@ method:
 
 ::
 
-   arch.getRecord(query, index="")
+   traj.getRecord(query, index="")
 
 This takes a :py:class:`gtar.Record` object specifying the path and an
 optional index. Note that the index field of the record is nullified
@@ -135,9 +160,9 @@ something like the following:
 
 ::
 
-   positionRecord = [rec for rec in arch.getRecordTypes() if rec.getName() == 'position'][0]
-   positionFrames = arch.queryFrames(positionRecord)
-   positions = [arch.getRecord(positionRecord, frame) for frame in positionFrames]
+   positionRecord = [rec for rec in traj.getRecordTypes() if rec.getName() == 'position'][0]
+   positionFrames = traj.queryFrames(positionRecord)
+   positions = [traj.getRecord(positionRecord, frame) for frame in positionFrames]
 
 Record Objects
 **************
