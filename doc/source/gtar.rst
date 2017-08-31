@@ -12,11 +12,12 @@ The GETAR Format
 The main idea behind GETAR (GEneric Trajectory ARchives; yes,
 pronounced like the instrument!) files is to simply use standard data
 archival tools and embed a small amount of metadata into the filename
-within the archive.  For our purposes, the underlying archive format
-(.tar.gz, .zip, .7z...) needs to support efficient random access to
-files and should be relatively common so that generic tools would also
-be useful. We have chosen to use the zip file format as our primary
-archive format, but multiple backends are supported.
+within the archive.  To efficiently support large trajectories, the
+underlying archive format (.tar.gz, .zip, .7z...) needs to support
+efficient random access to files and should be relatively common so
+that generic tools would also be useful. Each backend format has
+different performance and stability characteristics; these are
+discussed in more detail below.
 
 GETAR Archives
 ==============
