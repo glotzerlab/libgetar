@@ -8,6 +8,10 @@
 #ifndef __RECORD_HPP_
 #define __RECORD_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     /// Time behavior of properties
@@ -95,4 +99,8 @@ namespace gtar{
     };
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 #endif

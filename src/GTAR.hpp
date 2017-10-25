@@ -19,6 +19,10 @@
 #ifndef __GTAR_HPP_
 #define __GTAR_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     bool littleEndian();
@@ -259,5 +263,9 @@ namespace gtar{
     }
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif

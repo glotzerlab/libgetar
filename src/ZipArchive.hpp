@@ -13,6 +13,10 @@
 #ifndef __ZIP_ARCHIVE_HPP_
 #define __ZIP_ARCHIVE_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     // ZipArchive abstraction layer. Thin wrapper over miniz
@@ -66,5 +70,9 @@ namespace gtar{
     bool isZip64(const std::string &filename);
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif

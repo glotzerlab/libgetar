@@ -8,6 +8,10 @@ using namespace std;
 
 #include <sstream>
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
     using std::max;
     using std::string;
@@ -346,3 +350,7 @@ namespace gtar{
         }
     }
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif

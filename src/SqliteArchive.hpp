@@ -12,6 +12,10 @@
 #ifndef __SQLITE_ARCHIVE_HPP_
 #define __SQLITE_ARCHIVE_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     // Simple interface for sqlite files
@@ -65,6 +69,10 @@ namespace gtar{
         sqlite3_stmt *m_list_files_stmt;
     };
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif
 

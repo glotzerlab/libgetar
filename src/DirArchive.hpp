@@ -14,6 +14,10 @@
 #ifndef __DIR_ARCHIVE_HPP_
 #define __DIR_ARCHIVE_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     // Simple interface for dir files
@@ -62,5 +66,9 @@ namespace gtar{
         std::vector<std::string> m_fileNames;
     };
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif

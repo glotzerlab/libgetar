@@ -6,6 +6,10 @@
 
 #include <algorithm>
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
 template<typename T> class SharedArray;
@@ -191,5 +195,9 @@ private:
 };
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif

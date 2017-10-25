@@ -10,7 +10,7 @@ from libcpp cimport bool
 cdef extern from "numpy/arrayobject.h":
     cdef int PyArray_SetBaseObject(numpy.ndarray arr, obj)
 
-cdef extern from "../src/SharedArray.hpp" namespace "gtar":
+cdef extern from "../src/SharedArray.hpp" namespace "gtar_pymodule::gtar":
     cdef cppclass SharedArray[T]:
         # ctypedef (T*) iterator
 
@@ -33,7 +33,7 @@ cdef extern from "../src/SharedArray.hpp" namespace "gtar":
         T &operator[]
         const T &operator[] const
 
-cdef extern from "../src/Archive.hpp" namespace "gtar":
+cdef extern from "../src/Archive.hpp" namespace "gtar_pymodule::gtar":
     cdef enum OpenMode:
         Read
         Write
@@ -45,7 +45,7 @@ cdef extern from "../src/Archive.hpp" namespace "gtar":
         MediumCompress
         SlowCompress
 
-cdef extern from "../src/Record.hpp" namespace "gtar":
+cdef extern from "../src/Record.hpp" namespace "gtar_pymodule::gtar":
     cdef enum Behavior:
         Constant
         Discrete
@@ -87,7 +87,7 @@ cdef extern from "../src/Record.hpp" namespace "gtar":
         Resolution getResolution() const
         void setIndex(const string&)
 
-cdef extern from "../src/GTAR.hpp" namespace "gtar":
+cdef extern from "../src/GTAR.hpp" namespace "gtar_pymodule::gtar":
     cdef cppclass GTAR:
         cppclass BulkWriter:
             BulkWriter(GTAR&)
@@ -109,5 +109,5 @@ cdef extern from "../src/GTAR.hpp" namespace "gtar":
         vector[Record] getRecordTypes() const
         vector[string] queryFrames(const Record&) const
 
-cdef extern from "../src/ZipArchive.hpp" namespace "gtar":
+cdef extern from "../src/ZipArchive.hpp" namespace "gtar_pymodule::gtar":
      bool isZip64(const string&) except +

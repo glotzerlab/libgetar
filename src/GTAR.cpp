@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     using std::map;
@@ -209,3 +213,7 @@ namespace gtar{
     }
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif

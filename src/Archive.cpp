@@ -3,6 +3,10 @@
 
 #include "Archive.hpp"
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     using std::string;
@@ -16,3 +20,7 @@ namespace gtar{
         writePtr(path, (void*) &contents[0], contents.size(), mode, immediate);
     }
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif

@@ -14,6 +14,9 @@ sources = ['src/Archive.cpp', 'vogl_miniz/vogl_miniz.cpp',
         'src/TarArchive.cpp', 'src/ZipArchive.cpp', 'vogl_miniz/vogl_miniz_zip.cpp',
         'src/GTAR.cpp', 'src/Record.cpp', 'src/DirArchive.cpp']
 
+# prefix module to avoid collisions with builtin versions of libgetar
+macros.append(('GTAR_NAMESPACE_PARENT', 'gtar_pymodule'))
+
 if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')

@@ -16,6 +16,10 @@
 #define LZ4_CHUNK_SIZE LZ4_MAX_INPUT_SIZE/2
 #define RAW_CHUNK_SIZE 0x0F000000
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     using std::min;
@@ -428,5 +432,9 @@ namespace gtar{
     }
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif

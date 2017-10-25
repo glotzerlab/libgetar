@@ -9,6 +9,10 @@
 
 #include "TarArchive.hpp"
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     using std::ios_base;
@@ -307,3 +311,7 @@ namespace gtar{
     }
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif

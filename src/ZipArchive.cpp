@@ -8,6 +8,10 @@
 #include "../vogl_miniz/vogl_miniz_zip.h"
 #include "SharedArray.hpp"
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     using std::auto_ptr;
@@ -225,3 +229,7 @@ namespace gtar{
         return result;
     }
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif

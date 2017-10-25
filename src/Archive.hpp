@@ -11,6 +11,10 @@
 #ifndef __ARCHIVE_HPP_
 #define __ARCHIVE_HPP_
 
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
+#endif
+
 namespace gtar{
 
     // Modes in which we can open a file
@@ -54,5 +58,9 @@ namespace gtar{
     };
 
 }
+
+#ifdef GTAR_NAMESPACE_PARENT
+}
+#endif
 
 #endif
