@@ -544,16 +544,20 @@ cdef class GTAR:
         """Returns the contents of the given base record and index.
 
         :param query: Prototypical :py:class:`gtar.Record` object describing the record to fetch
-        :param index: Index which will be used to fetch the record
+        :param index: Index used to fetch the record (defaults to index embedded in :code:`query`)
+        :type query: :py:class:`gtar.Record`
+        :type index: string
 
         .. note::
 
-           The index embedded in the given record is not used; instead, the index passed into this function is used.
+           If an index is passed into this function, it takes precedence over the index embedded in the given record.
 
         """
         rec = Record()
         rec.copy(deref(query.thisptr))
-        rec.setIndex(index)
+
+        if index != "":
+            rec.setIndex(index)
 
         cdef cpp.SharedArray[char] inter
         inter = self.thisptr.readBytes(rec.thisptr.getPath())
