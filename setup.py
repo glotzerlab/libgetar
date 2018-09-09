@@ -62,7 +62,7 @@ setup(name='gtar',
       description='GTAR format file wrapper',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
-      url='',
+      url='https://libgetar.readthedocs.io',
       packages=['gtar'],
       ext_modules=modules
 )
