@@ -1,0 +1,7 @@
+include setup.py LICENSE README
+recursive-include gtar *.py *.pxd *.pyx *.cpp
+recursive-include lz4 *
+recursive-include src *.cpp *.hpp
+recursive-include vogl_miniz *
+include doc/Makefile
+recursive-include doc/source *.py *.rst

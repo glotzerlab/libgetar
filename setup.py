@@ -59,9 +59,19 @@ else:
 
 setup(name='gtar',
       version=__version__,
-      description='GTAR format file wrapper',
+      description='Read and write archive-based trajectory formats',
       author='Matthew Spellings',
       author_email='mspells@umich.edu',
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'License :: OSI Approved :: MIT License',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 3',
+          'Topic :: System :: Archiving',
+          'Topic :: Scientific/Engineering',
+          'Topic :: Scientific/Engineering :: Chemistry',
+          'Topic :: Scientific/Engineering :: Physics',
+      ],
       url='https://libgetar.readthedocs.io',
       packages=['gtar'],
       ext_modules=modules
