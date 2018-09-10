@@ -2,8 +2,16 @@
 
 import os, subprocess, sys
 from distutils.command.build_ext import build_ext
-from distutils.core import Extension, setup
+from setuptools import Extension, setup
 import numpy
+
+long_description = """
+libgetar is a library to read and write GEneric Trajectory ARchives, a
+binary data format designed for efficient, extensible storage of
+trajectory data.
+
+For more details, consult the documentation at https://libgetar.readthedocs.io .
+"""
 
 with open('gtar/version.py') as version_file:
     exec(version_file.read())
@@ -72,7 +80,12 @@ setup(name='gtar',
           'Topic :: Scientific/Engineering :: Chemistry',
           'Topic :: Scientific/Engineering :: Physics',
       ],
-      url='https://libgetar.readthedocs.io',
+      ext_modules=modules,
+      long_description=long_description,
       packages=['gtar'],
-      ext_modules=modules
+      project_urls={
+          'Documentation': 'http://libgetar.readthedocs.io/',
+          'Source': 'https://bitbucket.org/glotzer/libgetar'
+          },
+      url='http://libgetar.readthedocs.io/',
 )
