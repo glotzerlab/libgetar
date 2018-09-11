@@ -87,5 +87,6 @@ setup(name='gtar',
           'Documentation': 'http://libgetar.readthedocs.io/',
           'Source': 'https://bitbucket.org/glotzer/libgetar'
           },
+      install_requires=['numpy'],
       url='http://libgetar.readthedocs.io/',
 )
