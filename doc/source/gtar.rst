@@ -2,18 +2,14 @@
 The GETAR file format: GEneric Trajectory ARchives
 ==================================================
 
-In this document I will discuss a file format which I think should
-provide sufficient flexibility and power for our use cases while
-maintaining a simple design and ease of use.
-
 The GETAR Format
 ================
 
-The main idea behind GETAR (GEneric Trajectory ARchives; yes,
+The main idea behind GETAR (GEneric Trajectory ARchives;
 pronounced like the instrument!) files is to simply use standard data
 archival tools and embed a small amount of metadata into the filename
 within the archive.  To efficiently support large trajectories, the
-underlying archive format (.tar.gz, .zip, .7z...) needs to support
+underlying archive format (.tar.gz, .zip, .7z...) would ideally support
 efficient random access to files and should be relatively common so
 that generic tools would also be useful. Each backend format has
 different performance and stability characteristics; these are
@@ -22,12 +18,10 @@ discussed in more detail below.
 GETAR Archives
 ==============
 
-GETAR files are just normal zip files, the specification of which is
-available at http://www.pkware.com/documents/casestudies/APPNOTE.TXT .
-The only caveat is that they must be in the ZIP64 format instead of
-the "default" ZIP format; this enables us to create archives larger
-than 4GB in size.  Data are stored in individual **records**,
-which are simply files in the archive with a particular naming scheme.
+GETAR files are just normal archive files; a list of supported
+backends is in the :doc:`backends section <backends>`.  Data are
+stored in individual **records**, which are simply files in the
+archive with a particular naming scheme.
 
 Records
 =======

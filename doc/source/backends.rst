@@ -55,7 +55,7 @@ within a single transaction), and fast read speeds.
 Directory
 =========
 
-The directory backend stores data directly on the
+The **experimental** directory backend stores data directly on the
 filesystem. Currently, data are only stored uncompressed. Because each
 file access occurs in the filesystem, this backend is extremely robust
 to process death.
