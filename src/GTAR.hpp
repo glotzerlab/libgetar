@@ -39,7 +39,7 @@ namespace gtar{
     class IndexCompare
     {
     public:
-        bool operator()(const std::string &a, const std::string &b);
+        bool operator()(const std::string &a, const std::string &b) const;
     };
 
     /// Accessor interface for a trajectory archive

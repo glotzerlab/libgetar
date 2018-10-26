@@ -28,7 +28,7 @@ namespace gtar{
         return *(char*)&x;
     }
 
-    bool IndexCompare::operator()(const string &a, const string &b)
+    bool IndexCompare::operator()(const string &a, const string &b) const
     {
         return a.size() < b.size() || ((a.size() == b.size()) && a < b);
     }
