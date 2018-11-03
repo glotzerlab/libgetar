@@ -28,7 +28,7 @@ sources = [
     'src/ZipArchive.cpp',
     'lz4/lz4.c',
     'lz4/lz4hc.c',
-    'miniz/miniz.c',
+    'miniz/miniz.cpp',
     'sqlite3/sqlite3.c',
 ]
 

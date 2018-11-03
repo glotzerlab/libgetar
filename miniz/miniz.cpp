@@ -30,8 +30,10 @@ typedef unsigned char mz_validate_uint16[sizeof(mz_uint16) == 2 ? 1 : -1];
 typedef unsigned char mz_validate_uint32[sizeof(mz_uint32) == 4 ? 1 : -1];
 typedef unsigned char mz_validate_uint64[sizeof(mz_uint64) == 8 ? 1 : -1];
 
-#ifdef __cplusplus
-extern "C" {
+// This makes sure miniz goes into a namespace to prevent symbol collisions
+
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 /* ------------------- zlib-style API's */
@@ -570,7 +572,7 @@ const char *mz_error(int err)
 
 #endif /*MINIZ_NO_ZLIB_APIS */
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 
@@ -629,8 +631,8 @@ const char *mz_error(int err)
 
 
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 /* ------------------- Low-level Compression (independent from all decompression API's) */
@@ -2160,7 +2162,7 @@ void tdefl_compressor_free(tdefl_compressor *pComp)
 #pragma warning(pop)
 #endif
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 /**************************************************************************
@@ -2191,8 +2193,8 @@ void tdefl_compressor_free(tdefl_compressor *pComp)
 
 
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 /* ------------------- Low-level Decompression (completely independent from all compression API's) */
@@ -2894,7 +2896,7 @@ void tinfl_decompressor_free(tinfl_decompressor *pDecomp)
     MZ_FREE(pDecomp);
 }
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 /**************************************************************************
@@ -2927,8 +2929,8 @@ void tinfl_decompressor_free(tinfl_decompressor *pDecomp)
 
 #ifndef MINIZ_NO_ARCHIVE_APIS
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 /* ------------------- .ZIP archive reading */
@@ -6109,8 +6111,8 @@ mz_bool mz_zip_writer_add_mem_ex_v2(mz_zip_archive *pZip, const char *pArchive_n
     if (!pState->m_zip64)
     {
         /* Bail early if the archive would obviously become too large */
-        if ((pZip->m_archive_size + num_alignment_padding_bytes + MZ_ZIP_LOCAL_DIR_HEADER_SIZE + archive_name_size 
-			+ MZ_ZIP_CENTRAL_DIR_HEADER_SIZE + archive_name_size + comment_size + user_extra_data_len + 
+        if ((pZip->m_archive_size + num_alignment_padding_bytes + MZ_ZIP_LOCAL_DIR_HEADER_SIZE + archive_name_size
+			+ MZ_ZIP_CENTRAL_DIR_HEADER_SIZE + archive_name_size + comment_size + user_extra_data_len +
 			pState->m_central_dir.m_size + MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE + user_extra_data_central_len
 			+ MZ_ZIP_DATA_DESCRIPTER_SIZE32) > 0xFFFFFFFF)
         {
@@ -6368,7 +6370,7 @@ mz_bool mz_zip_writer_add_cfile(mz_zip_archive *pZip, const char *pArchive_name,
     if (!pState->m_zip64)
     {
         /* Bail early if the archive would obviously become too large */
-        if ((pZip->m_archive_size + num_alignment_padding_bytes + MZ_ZIP_LOCAL_DIR_HEADER_SIZE + archive_name_size + MZ_ZIP_CENTRAL_DIR_HEADER_SIZE 
+        if ((pZip->m_archive_size + num_alignment_padding_bytes + MZ_ZIP_LOCAL_DIR_HEADER_SIZE + archive_name_size + MZ_ZIP_CENTRAL_DIR_HEADER_SIZE
 			+ archive_name_size + comment_size + user_extra_data_len + pState->m_central_dir.m_size + MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE + 1024
 			+ MZ_ZIP_DATA_DESCRIPTER_SIZE32 + user_extra_data_central_len) > 0xFFFFFFFF)
         {
@@ -7557,7 +7559,7 @@ mz_bool mz_zip_end(mz_zip_archive *pZip)
     return MZ_FALSE;
 }
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 

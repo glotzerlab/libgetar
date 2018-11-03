@@ -116,7 +116,7 @@
 
 
 
-/* Defines to completely disable specific portions of miniz.c: 
+/* Defines to completely disable specific portions of miniz.c:
    If all macros here are defined the only functionality remaining will be CRC-32, adler-32, tinfl, and tdefl. */
 
 /* Define MINIZ_NO_STDIO to disable all usage and any functions which rely on stdio for file I/O. */
@@ -139,7 +139,7 @@
 /* Define MINIZ_NO_ZLIB_COMPATIBLE_NAME to disable zlib names, to prevent conflicts against stock zlib. */
 /*#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES */
 
-/* Define MINIZ_NO_MALLOC to disable all calls to malloc, free, and realloc. 
+/* Define MINIZ_NO_MALLOC to disable all calls to malloc, free, and realloc.
    Note if MINIZ_NO_MALLOC is defined then the user must always provide custom user alloc/free/realloc
    callbacks to the zlib and archive API's, and a few stand-alone helper API's which don't provide custom user
    functions (such as tdefl_compress_mem_to_heap() and tinfl_decompress_mem_to_heap()) won't work. */
@@ -184,8 +184,8 @@
 #define MINIZ_HAS_64BIT_REGISTERS 0
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 /* ------------------- zlib-style API Definitions. */
@@ -464,7 +464,7 @@ typedef void *const voidpc;
 
 #endif /* MINIZ_NO_ZLIB_APIS */
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 #pragma once
@@ -544,8 +544,8 @@ typedef struct mz_dummy_time_t_tag
 #define MZ_FORCEINLINE inline
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 extern void *miniz_def_alloc_func(void *opaque, size_t items, size_t size);
@@ -555,14 +555,14 @@ extern void *miniz_def_realloc_func(void *opaque, void *address, size_t items, s
 #define MZ_UINT16_MAX (0xFFFFU)
 #define MZ_UINT32_MAX (0xFFFFFFFFU)
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 #pragma once
 
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 /* ------------------- Low-level Compression API Definitions */
 
@@ -743,15 +743,15 @@ mz_uint tdefl_create_comp_flags_from_zip_params(int level, int window_bits, int 
 tdefl_compressor *tdefl_compressor_alloc();
 void tdefl_compressor_free(tdefl_compressor *pComp);
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 #pragma once
 
 /* ------------------- Low-level Decompression API Definitions */
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 /* Decompression flags used by tinfl_decompress(). */
 /* TINFL_FLAG_PARSE_ZLIB_HEADER: If set, the input has a valid zlib header and ends with an adler32 checksum (it's a valid zlib stream). Otherwise, the input is a raw deflate stream. */
@@ -886,7 +886,7 @@ struct tinfl_decompressor_tag
     mz_uint8 m_raw_header[4], m_len_codes[TINFL_MAX_HUFF_SYMBOLS_0 + TINFL_MAX_HUFF_SYMBOLS_1 + 137];
 };
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 
@@ -897,8 +897,8 @@ struct tinfl_decompressor_tag
 
 #ifndef MINIZ_NO_ARCHIVE_APIS
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef GTAR_NAMESPACE_PARENT
+namespace GTAR_NAMESPACE_PARENT{
 #endif
 
 enum
@@ -1314,7 +1314,7 @@ void *mz_zip_extract_archive_file_to_heap_v2(const char *pZip_filename, const ch
 
 #endif /* #ifndef MINIZ_NO_ARCHIVE_WRITING_APIS */
 
-#ifdef __cplusplus
+#ifdef GTAR_NAMESPACE_PARENT
 }
 #endif
 
