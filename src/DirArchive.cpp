@@ -5,11 +5,17 @@
 #include <cerrno>
 #include <ctime>
 #include <sys/types.h>
-#include <dirent.h>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <sys/stat.h>
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#include "../dirent/include/dirent.h"
+#include <direct.h>
+#else
+#include <dirent.h>
+#endif
 
 #include "DirArchive.hpp"
 
@@ -28,6 +34,15 @@ namespace gtar{
     using std::string;
     using std::stringstream;
     using std::vector;
+
+    void createDirectory(string dir)
+    {
+        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+        _mkdir(dir.c_str());
+        #else
+        mkdir(dir.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+        #endif
+    }
 
     DirArchive::DirArchive(const string &filename, const OpenMode mode):
         m_filename(filename), m_mode(mode), m_createdDirectories()
@@ -48,7 +63,7 @@ namespace gtar{
                 }
             }
             else
-                mkdir(m_filename.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+                createDirectory(m_filename);
         }
 
         // populate the list of found file names. first, strip all
@@ -79,7 +94,7 @@ namespace gtar{
             const string segment(path.substr(0, i));
             if(m_createdDirectories.find(segment) == m_createdDirectories.end())
             {
-                mkdir((m_filename + segment).c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+                createDirectory(m_filename + segment);
                 m_createdDirectories.insert(segment);
             }
         }
