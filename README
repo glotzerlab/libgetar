@@ -13,7 +13,7 @@ located in the miniz subdirectory.
 
 libgetar uses portions of the SQLite project, located at
 https://www.sqlite.org/ . Its code and license are located in the
-sqlite subdirectory.
+sqlite3 subdirectory.
 
 libgetar uses portions of Dirent, located at
 https://github.com/tronkko/dirent . Its code and license are
