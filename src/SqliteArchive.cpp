@@ -7,8 +7,6 @@
 #include <sstream>
 #include <stdexcept>
 
-#ifdef ENABLE_SQLITE
-
 #include "../lz4/lz4.h"
 #include "../lz4/lz4hc.h"
 #include "SqliteArchive.hpp"
@@ -435,6 +433,4 @@ namespace gtar{
 
 #ifdef GTAR_NAMESPACE_PARENT
 }
-#endif
-
 #endif

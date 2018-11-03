@@ -93,12 +93,7 @@ int main()
 
     runTests(result, ".zip");
     runTests(result, ".tar");
-
-#ifdef ENABLE_SQLITE
     runTests(result, ".sqlite");
-#else
-    cerr << "Not compiled with sqlite support, skipping .sqlite test..." << endl;
-#endif
 
     return result;
 }

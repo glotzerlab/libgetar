@@ -1,8 +1,6 @@
 // SqliteArchive.hpp
 // by Matthew Spellings <mspells@umich.edu>
 
-#ifdef ENABLE_SQLITE
-
 #include <string>
 #include "../sqlite3/sqlite3.h"
 
@@ -72,8 +70,6 @@ namespace gtar{
 
 #ifdef GTAR_NAMESPACE_PARENT
 }
-#endif
-
 #endif
 
 #endif

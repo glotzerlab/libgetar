@@ -83,11 +83,7 @@ namespace gtar{
             m_archive.reset(new DirArchive(filename, realMode));
         else if(filename.length() >= 7 && filename.rfind(".sqlite") == filename.length() - 7)
         {
-#ifdef ENABLE_SQLITE
             m_archive.reset(new SqliteArchive(filename, realMode));
-#else
-            throw runtime_error("This version of libgetar was not compiled with sqlite support!");
-#endif
         }
         else
             m_archive.reset(new ZipArchive(filename, realMode));
