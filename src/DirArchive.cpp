@@ -25,6 +25,7 @@ namespace GTAR_NAMESPACE_PARENT{
 
 namespace gtar{
 
+    using std::ios;
     using std::ios_base;
     using std::map;
     using std::oct;
@@ -99,7 +100,7 @@ namespace gtar{
             }
         }
 
-        fstream file((m_filename + path).c_str(), ios_base::out | ios_base::trunc);
+        fstream file((m_filename + path).c_str(), ios::binary | ios_base::out | ios_base::trunc);
 
         if(!file.good())
         {
