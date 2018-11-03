@@ -11,6 +11,10 @@ libgetar uses portions of the miniz project, located at
 https://github.com/richgel999/miniz . Its code and license are
 located in the miniz subdirectory.
 
+libgetar uses portions of the SQLite project, located at
+https://www.sqlite.org/ . Its code and license are located in the
+sqlite subdirectory.
+
 Changelog:
 
 - v0.6.0: use index embedded in record if no index is provided to GTAR.getRecord

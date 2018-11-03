@@ -36,8 +36,8 @@ elif on_rtd:
     pass
 else:
     macros.append(('ENABLE_SQLITE', True))
-    sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'src/SqliteArchive.cpp'])
-    extra_args.append('-lsqlite3')
+    sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'sqlite3/sqlite3.c',
+                    'src/SqliteArchive.cpp'])
 
 if '--debug' in sys.argv:
     extra_args.extend(['-O0', '-g'])
