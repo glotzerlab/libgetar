@@ -3,20 +3,19 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2 FATAL_ERROR)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 
-IF(NOT DISABLE_SQLITE)
-  FIND_PACKAGE(SQLite3)
-ENDIF(NOT DISABLE_SQLITE)
-
-IF(SQLITE3_FOUND)
-  INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
-  SET(LINK_LIBS ${LINK_LIBS} ${SQLITE3_LIBRARIES})
-  set(EXTRA_SRCS ${EXTRA_SRCS} src/SqliteArchive.cpp lz4/lz4.c lz4/lz4hc.c)
-  add_definitions(-DENABLE_SQLITE)
-ENDIF(SQLITE3_FOUND)
-
 set(GETAR_SRC
-  src/Archive.cpp src/GTAR.cpp miniz/miniz.c src/Record.cpp src/TarArchive.cpp
-  src/ZipArchive.cpp src/DirArchive.cpp ${EXTRA_SRCS})
+    src/Archive.cpp
+    src/DirArchive.cpp
+    src/GTAR.cpp
+    src/Record.cpp
+    src/SqliteArchive.cpp
+    src/TarArchive.cpp
+    src/ZipArchive.cpp
+    lz4/lz4.c
+    lz4/lz4hc.c
+    miniz/miniz.c
+    sqlite3/sqlite3.c
+)
 
 if(LIBGETAR_SHARED)
   ADD_LIBRARY(getar SHARED ${GETAR_SRC})

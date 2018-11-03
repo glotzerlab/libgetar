@@ -18,9 +18,19 @@ with open('gtar/version.py') as version_file:
 
 macros = []
 extra_args = []
-sources = ['src/Archive.cpp', 'miniz/miniz.c', 'src/TarArchive.cpp',
-           'src/ZipArchive.cpp', 'src/GTAR.cpp', 'src/Record.cpp',
-           'src/DirArchive.cpp']
+sources = [
+    'src/Archive.cpp',
+    'src/DirArchive.cpp',
+    'src/GTAR.cpp',
+    'src/Record.cpp',
+    'src/SqliteArchive.cpp',
+    'src/TarArchive.cpp',
+    'src/ZipArchive.cpp',
+    'lz4/lz4.c',
+    'lz4/lz4hc.c',
+    'miniz/miniz.c',
+    'sqlite3/sqlite3.c',
+]
 
 # prefix module to avoid collisions with builtin versions of libgetar
 macros.append(('GTAR_NAMESPACE_PARENT', 'gtar_pymodule'))
@@ -28,16 +38,6 @@ macros.append(('GTAR_NAMESPACE_PARENT', 'gtar_pymodule'))
 if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')
-
-on_rtd = os.environ.get('READTHEDOCS') == 'True'
-if '--disable-sqlite' in sys.argv:
-    sys.argv.remove('--disable-sqlite')
-elif on_rtd:
-    pass
-else:
-    macros.append(('ENABLE_SQLITE', True))
-    sources.extend(['lz4/lz4.c', 'lz4/lz4hc.c', 'sqlite3/sqlite3.c',
-                    'src/SqliteArchive.cpp'])
 
 if '--debug' in sys.argv:
     extra_args.extend(['-O0', '-g'])
