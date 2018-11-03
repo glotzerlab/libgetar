@@ -15,8 +15,8 @@ IF(SQLITE3_FOUND)
 ENDIF(SQLITE3_FOUND)
 
 set(GETAR_SRC
-  src/Archive.cpp src/GTAR.cpp vogl_miniz/vogl_miniz_zip.cpp vogl_miniz/vogl_miniz.cpp
-  src/Record.cpp src/TarArchive.cpp src/ZipArchive.cpp src/DirArchive.cpp ${EXTRA_SRCS})
+  src/Archive.cpp src/GTAR.cpp miniz/miniz.c src/Record.cpp src/TarArchive.cpp
+  src/ZipArchive.cpp src/DirArchive.cpp ${EXTRA_SRCS})
 
 if(LIBGETAR_SHARED)
   ADD_LIBRARY(getar SHARED ${GETAR_SRC})

@@ -18,9 +18,9 @@ with open('gtar/version.py') as version_file:
 
 macros = []
 extra_args = []
-sources = ['src/Archive.cpp', 'vogl_miniz/vogl_miniz.cpp',
-        'src/TarArchive.cpp', 'src/ZipArchive.cpp', 'vogl_miniz/vogl_miniz_zip.cpp',
-        'src/GTAR.cpp', 'src/Record.cpp', 'src/DirArchive.cpp']
+sources = ['src/Archive.cpp', 'miniz/miniz.c', 'src/TarArchive.cpp',
+           'src/ZipArchive.cpp', 'src/GTAR.cpp', 'src/Record.cpp',
+           'src/DirArchive.cpp']
 
 # prefix module to avoid collisions with builtin versions of libgetar
 macros.append(('GTAR_NAMESPACE_PARENT', 'gtar_pymodule'))

@@ -7,9 +7,9 @@ libgetar uses portions of the lz4 project, located at
 http://www.lz4.org/ . Its code and license are located in the lz4
 subdirectory.
 
-libgetar uses portions of the vogl project, located at
-https://github.com/ValveSoftware/vogl . Its code and license are
-located in the vogl_miniz subdirectory.
+libgetar uses portions of the miniz project, located at
+https://github.com/richgel999/miniz . Its code and license are
+located in the miniz subdirectory.
 
 Changelog:
 

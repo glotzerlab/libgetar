@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "ZipArchive.hpp"
-#include "../vogl_miniz/vogl_miniz_zip.h"
+#include "../miniz/miniz.h"
 #include "SharedArray.hpp"
 
 #ifdef GTAR_NAMESPACE_PARENT
@@ -28,8 +28,8 @@ namespace gtar{
         if(m_mode == Write)
         {
             mz_bool success(
-                mz_zip_writer_init_file(&m_archive, filename.c_str(), 0,
-                                        MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING));
+                mz_zip_writer_init_file_v2(&m_archive, filename.c_str(), 0,
+                                           MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING));
 
             if(!success)
             {
@@ -42,8 +42,8 @@ namespace gtar{
         else if(m_mode == Read)
         {
             mz_bool success(
-                mz_zip_reader_init_file(&m_archive, filename.c_str(),
-                                        MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
+                mz_zip_reader_init_file_v2(&m_archive, filename.c_str(),
+                                           MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
 
             if(!success)
             {
@@ -56,8 +56,8 @@ namespace gtar{
         else //(m_mode == Append)
         {
             mz_bool success(
-                mz_zip_reader_init_file(&m_archive, filename.c_str(),
-                                        MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
+                mz_zip_reader_init_file_v2(&m_archive, filename.c_str(),
+                                           MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
 
             if(!success)
             {
@@ -77,8 +77,8 @@ namespace gtar{
                 throw runtime_error(result.str());
             }
 
-            success = mz_zip_writer_init_from_reader(&m_archive, filename.c_str(),
-                                                     MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING);
+            success = mz_zip_writer_init_from_reader_v2(&m_archive, filename.c_str(),
+                                                        MZ_ZIP_FLAG_WRITE_ZIP64 | MZ_ZIP_FLAG_WRITE_ALLOW_READING);
 
             if(!success)
             {
@@ -175,10 +175,10 @@ namespace gtar{
 
         bool success;
         mz_zip_archive_file_stat stat;
-        mz_zip_file_stat(&m_archive, fileIndex, &stat);
+        mz_zip_reader_file_stat(&m_archive, fileIndex, &stat);
 
         SharedArray<char> result(new char[stat.m_uncomp_size], stat.m_uncomp_size);
-        success = mz_zip_extract_to_mem(&m_archive, fileIndex, result.get(), stat.m_uncomp_size, MZ_ZIP_FLAG_CASE_SENSITIVE);
+        success = mz_zip_reader_extract_to_mem(&m_archive, fileIndex, result.get(), stat.m_uncomp_size, MZ_ZIP_FLAG_CASE_SENSITIVE);
 
         if(!success)
         {
@@ -193,14 +193,14 @@ namespace gtar{
 
     unsigned int ZipArchive::size()
     {
-        return mz_zip_get_num_files(&m_archive);
+        return mz_zip_reader_get_num_files(&m_archive);
     }
 
     string ZipArchive::getItemName(unsigned int index)
     {
-        const unsigned int len(mz_zip_get_filename(&m_archive, index, NULL, 0));
+        const unsigned int len(mz_zip_reader_get_filename(&m_archive, index, NULL, 0));
         SharedArray<char> result(new char[len], len);
-        mz_zip_get_filename(&m_archive, index, result.get(), len);
+        mz_zip_reader_get_filename(&m_archive, index, result.get(), len);
         if(len)
             return string(result.get(), len - 1);
         else
@@ -212,8 +212,8 @@ namespace gtar{
         mz_zip_archive archive;
         mz_zip_zero_struct(&archive);
 
-        bool success(mz_zip_reader_init_file(&archive, filename.c_str(),
-                                             MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
+        bool success(mz_zip_reader_init_file_v2(&archive, filename.c_str(),
+                                                MZ_ZIP_FLAG_CASE_SENSITIVE, 0, 0));
 
         if(!success)
         {
