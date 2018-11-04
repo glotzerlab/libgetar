@@ -176,7 +176,7 @@ cdef class Record:
 
     - No arguments: default constructor
     - 1 argument: Parse the given path
-    - 6 arguments: Fill each field of the Record object; see `:cpp:class:Record`
+    - 6 arguments: Fill each field of the Record object; see :cpp:class:`Record`
     """
 
     cdef cpp.Record *thisptr
