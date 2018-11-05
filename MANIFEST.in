@@ -1,7 +1,9 @@
 include setup.py pyproject.toml LICENSE README
+recursive-include dirent *
 recursive-include gtar *.py *.pxd *.pyx *.cpp
 recursive-include lz4 *
 recursive-include miniz *
 recursive-include src *.cpp *.hpp
+recursive-include sqlite3 *
 include doc/Makefile
 recursive-include doc/source *.py *.rst
