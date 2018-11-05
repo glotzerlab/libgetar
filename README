@@ -18,12 +18,3 @@ sqlite3 subdirectory.
 libgetar uses portions of Dirent, located at
 https://github.com/tronkko/dirent . Its code and license are
 located in the dirent subdirectory.
-
-Changelog:
-
-- v0.6.0: use index embedded in record if no index is provided to GTAR.getRecord
-- v0.5.0: experimental directory backend, experimental java API, gtar.{read,cat} modules, removed experimental HDF5 backend
-- v0.4.0: sqlite backend, small API changes
-- v0.3.0: GTAR.writeRecord(), gtar.Record.__repr__(), gtar.copy, GTAR.close()
-- v0.2.0: GTAR.{read,write}Path(), archive name schema change, build fixes
-- v0.1.0: Basic functionality
