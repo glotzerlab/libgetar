@@ -17,13 +17,17 @@ set(GETAR_SRC
     sqlite3/sqlite3.c
 )
 
+SET(LINK_LIBS ${LINK_LIBS} ${CMAKE_DL_LIBS})
+
+find_package(Threads)
+
 if(LIBGETAR_SHARED)
   ADD_LIBRARY(getar SHARED ${GETAR_SRC})
 else()
   ADD_LIBRARY(getar STATIC ${GETAR_SRC})
 endif()
 
-target_link_libraries(getar ${LINK_LIBS})
+target_link_libraries(getar ${LINK_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS getar LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
