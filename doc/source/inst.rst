@@ -5,6 +5,16 @@ Installation and Basic Usage
 Installation
 ============
 
+Versioned releases
+------------------
+
+Install a released versions from PyPI::
+
+  pip install gtar
+
+From source
+-----------
+
 Installing the libgetar python module (``gtar``) is straightforward.
 From the root directory of the project:
 
