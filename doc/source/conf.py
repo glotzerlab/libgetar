@@ -21,7 +21,14 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../../gtar'))
+
+# (assume we have compiled and installed the cython module since we
+# won't have docstrings available otherwise)
+try:
+    import gtar
+    __version__ = gtar.__version__
+except ImportError:
+    __version__ = '(unknown version)'
 
 # determine if we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -56,14 +63,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'libgetar'
-copyright = '2014, Matthew Spellings'
+copyright = '2014-2018, Matthew Spellings'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '0.5'
+version = __version__
 # The full version, including alpha/beta/rc tags.
 release = version
 
