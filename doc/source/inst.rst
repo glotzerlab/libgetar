@@ -48,6 +48,5 @@ package manager), you can install it easily with pip:
 
    pip install breathe --user
 
-The latest version of the documentation is available online in `html
-<http://libgetar.readthedocs.io/en/latest/>`_ and `pdf
-<https://bitbucket.org/glotzer/libgetar/downloads/>`_ form.
+The latest version of the documentation is available online on `ReadTheDocs
+<http://libgetar.readthedocs.io/en/latest/>`_.

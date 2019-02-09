@@ -85,7 +85,7 @@ setup(name='gtar',
       packages=['gtar'],
       project_urls={
           'Documentation': 'http://libgetar.readthedocs.io/',
-          'Source': 'https://bitbucket.org/glotzer/libgetar'
+          'Source': 'https://github.com/glotzerlab/libgetar'
           },
       install_requires=['numpy'],
       url='http://libgetar.readthedocs.io/',
