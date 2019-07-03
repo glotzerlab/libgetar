@@ -5,6 +5,13 @@ Installation and Basic Usage
 Installation
 ============
 
+.. note::
+
+   When building the `gtar` module (even when installing from PyPI), a
+   working compiler chain is required. This means that, on Mac OSX
+   systems, you will need to install the XCode command line tools if
+   they are not already installed.
+
 Versioned releases
 ------------------
 
