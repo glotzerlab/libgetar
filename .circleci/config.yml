@@ -1,0 +1,325 @@
+version: 2.1
+
+executors:
+  glotzerlab:
+    parameters:
+      image:
+        type: string
+      python-version:
+        type: string
+    docker:
+      - image: glotzerlab/ci:2018.10-<< parameters.image >>
+    environment:
+      PYTHONPATH: /home/ci/project/build
+      PYTHON: "/usr/bin/python<< parameters.python-version >>"
+      PYTEST: "/usr/bin/python<< parameters.python-version >> -m pytest"
+    working_directory: /home/ci/project
+
+commands:
+  build:
+    parameters:
+      cc:
+        type: string
+      cxx:
+        type: string
+      cmake:
+        type: string
+    steps:
+      - checkout:
+          path: code
+      - run:
+          name: Configure CMake build
+          command: export CC=<< parameters.cc >> CXX=<< parameters.cxx >> && mkdir build && cd build && << parameters.cmake >> ../code -DPYTHON_EXECUTABLE=${PYTHON} -DCYTHON_EXECUTABLE=`which cython3` -GNinja
+      - run:
+          name: Build with CMake
+          command: cd build && ninja
+      - run:
+          name: Build Python module
+          command: cd code && ${PYTHON} setup.py install --user --cython
+
+  test:
+    steps:
+      - run:
+          name: Test CMake build
+          command: build/test/test_records && build/test/test_gtar
+      - run:
+          name: Test Python module
+          command: mkdir test-results && cd code/test && ${PYTEST} --junit-xml=/home/ci/project/test-results/test.xml
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+      - store_test_results:
+          path: test-results
+
+
+jobs:
+  build_and_test:
+    parameters:
+      image:
+        type: string
+      cc:
+        type: string
+      cxx:
+        type: string
+      python-version:
+        type: string
+      cmake:
+        default: /usr/bin/cmake
+        type: string
+    executor:
+      name: glotzerlab
+      image: << parameters.image >>
+      python-version: << parameters.python-version >>
+    steps:
+      - build:
+          cc: << parameters.cc >>
+          cxx: << parameters.cxx >>
+          cmake: << parameters.cmake >>
+      - test
+
+  pypi-linux-wheels:
+    parameters:
+      python:
+        type: string
+      upload-package:
+        type: boolean
+        default: false
+      run-tests:
+        type: boolean
+        default: true
+      build-sdist:
+        type: boolean
+        default: false
+    docker:
+      - image: quay.io/pypa/manylinux1_x86_64
+    environment:
+      PYBIN: "/opt/python/<< parameters.python >>/bin"
+    steps:
+      - run:
+          name: Install software
+          working_directory: /root/code
+          command: yum install -y openssh-clients
+      - run:
+          name: Checkout repository
+          command: |
+            cd /root
+            git clone https://github.com/glotzerlab/${CIRCLE_PROJECT_REPONAME} code
+            cd code
+            if [ -n "$CIRCLE_TAG" ]
+            then
+              git reset --hard "$CIRCLE_SHA1"
+              git checkout -q "$CIRCLE_TAG"
+            elif [ -n "$CIRCLE_BRANCH" ]
+            then
+              git reset --hard "$CIRCLE_SHA1"
+              git checkout -q -B "$CIRCLE_BRANCH"
+            fi
+      - run:
+          name: Build numpy
+          working_directory: /
+          command: |
+            "${PYBIN}/python" -m pip install cython --no-deps --ignore-installed -q --progress-bar=off
+            curl -sSLO https://github.com/numpy/numpy/archive/v1.9.3.tar.gz
+            tar -xzf v1.9.3.tar.gz
+            cd numpy-1.9.3
+            rm -f numpy/random/mtrand/mtrand.c
+            rm -f PKG-INFO
+            "${PYBIN}/python" -m pip install . --no-deps --ignore-installed -v --progress-bar=off -q
+      - run:
+          name: Compile gtar wheels
+          working_directory: /root/code
+          command: |
+            "${PYBIN}/python" -m pip wheel -w wheels/ . --no-deps --progress-bar=off --no-build-isolation --no-use-pep517
+      - run:
+          name: Audit wheels
+          working_directory: /root/code
+          command: |
+            for whl in wheels/gtar*.whl; do
+                auditwheel repair "$whl" -w dist/
+            done
+      - when:
+          condition: << parameters.run-tests >>
+          steps:
+            - run:
+                name: Test wheels (old numpy)
+                working_directory: /root/code
+                command: |
+                  "${PYBIN}/pip" install nose --progress-bar=off
+                  "${PYBIN}/pip" install gtar --no-index -f dist --progress-bar=off
+                  cd test && "${PYBIN}/nosetests"
+            - run:
+                name: Test wheels (latest numpy)
+                working_directory: /root/code
+                command: |
+                  "${PYBIN}/pip" install numpy --upgrade --progress-bar=off
+                  "${PYBIN}/pip" install gtar --no-index -f dist --progress-bar=off
+                  cd test && "${PYBIN}/nosetests"
+      - when:
+          condition: << parameters.build-sdist >>
+          steps:
+            - run:
+                name: Build sdist
+                working_directory: /root/code
+                command: |
+                  export PYBIN=/opt/python/cp37-cp37m/bin
+                  "${PYBIN}/python" setup.py sdist
+      - when:
+          condition: << parameters.upload-package >>
+          steps:
+            - run:
+                name: Upload
+                working_directory: /root/code
+                command: |
+                  export PYBIN=/opt/python/cp37-cp37m/bin
+                  "${PYBIN}/pip" install twine --progress-bar=off
+                  "${PYBIN}/twine" upload --username bdice --password ${PYPI_PASSWORD} dist/*
+      - unless:
+          condition: << parameters.upload-package >>
+          steps:
+            - run: echo "Branch build, skipping upload"
+      - store_artifacts:
+          path: /root/code/dist
+workflows:
+  test:
+    jobs:
+      - build_and_test:
+          name: gcc8-py36
+          image: ubuntu18.04
+          cc: gcc-8
+          cxx: g++-8
+          python-version: "3.6"
+
+      - build_and_test:
+          name: gcc7-py36
+          image: ubuntu18.04
+          cc: gcc-7
+          cxx: g++-7
+          python-version: "3.6"
+
+      - build_and_test:
+          name: gcc6-py36
+          image: ubuntu18.04
+          cc: gcc-6
+          cxx: g++-6
+          python-version: "3.6"
+
+      - build_and_test:
+          name: clang6-py36
+          image: ubuntu18.04
+          cc: clang-6.0
+          cxx: clang++-6.0
+          python-version: "3.6"
+
+      - build_and_test:
+          name: clang5-py36
+          image: ubuntu18.04
+          cc: clang-5.0
+          cxx: clang++-5.0
+          python-version: "3.6"
+
+      - build_and_test:
+          name: clang4-py36
+          image: ubuntu18.04
+          cc: clang-4.0
+          cxx: clang++-4.0
+          python-version: "3.6"
+
+      - build_and_test:
+          name: gcc5-py35
+          image: ubuntu16.04
+          cc: gcc-5
+          cxx: g++-5
+          python-version: "3.5"
+
+      - build_and_test:
+          name: clang38-py35
+          image: ubuntu16.04
+          cc: clang-3.8
+          cxx: clang++-3.8
+          python-version: "3.5"
+
+      - build_and_test:
+          name: gcc48-py35-cm28
+          image: ubuntu16.04
+          cc: gcc-4.8
+          cxx: g++-4.8
+          python-version: "3.5"
+          cmake: /opt/cmake-2.8.12/bin/cmake
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp27m
+          python: cp27-cp27m
+          run-tests: false
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp27mu
+          python: cp27-cp27mu
+          run-tests: false
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp35m
+          python: cp35-cp35m
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp36m
+          python: cp36-cp36m
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp37m
+          python: cp37-cp37m
+          build-sdist: true
+
+  deploy:
+    jobs:
+      - pypi-linux-wheels:
+          name: wheel-upload-cp27m
+          python: cp27-cp27m
+          run-tests: false
+          upload-package: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-upload-cp27mu
+          python: cp27-cp27mu
+          run-tests: false
+          upload-package: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-upload-cp35m
+          python: cp35-cp35m
+          upload-package: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-upload-cp36m
+          python: cp36-cp36m
+          upload-package: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-upload-cp37m
+          python: cp37-cp37m
+          build-sdist: true
+          upload-package: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
