@@ -19,7 +19,7 @@ void runTests(int &result, string suffix)
         arch.close();
 
         GTAR readArch("test" + suffix, Read);
-        auto_ptr<int> readUniform(readArch.readUniform<int>("test.i64.uni"));
+        unique_ptr<int> readUniform(readArch.readUniform<int>("test.i64.uni"));
 
         if(!readUniform.get())
         {

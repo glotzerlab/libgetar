@@ -119,7 +119,7 @@ namespace gtar{
         /// Read a uniform binary property to the specified location,
         /// converting from little endian if necessary.
         template<typename T>
-        std::auto_ptr<T> readUniform(const std::string &path);
+        std::unique_ptr<T> readUniform(const std::string &path);
         /// Read a bytestring from the specified location
         SharedArray<char> readBytes(const std::string &path);
 
@@ -162,7 +162,7 @@ namespace gtar{
         void insertRecord(const std::string &path);
 
         /// The archive abstraction object we'll use
-        std::auto_ptr<Archive> m_archive;
+        std::unique_ptr<Archive> m_archive;
 
         /// Cached record objects
         std::map<Record, indexSet> m_records;
@@ -250,16 +250,16 @@ namespace gtar{
     }
 
     template<typename T>
-    std::auto_ptr<T> GTAR::readUniform(const std::string &path)
+    std::unique_ptr<T> GTAR::readUniform(const std::string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
 
         if(bytes.size())
-            return std::auto_ptr<T>(new T(*(T*) bytes.get()));
+            return std::unique_ptr<T>(new T(*(T*) bytes.get()));
         else
-            return std::auto_ptr<T>();
+            return std::unique_ptr<T>();
     }
 
 }

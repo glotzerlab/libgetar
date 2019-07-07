@@ -14,7 +14,7 @@ namespace GTAR_NAMESPACE_PARENT{
 
 namespace gtar{
 
-    using std::auto_ptr;
+    using std::unique_ptr;
     using std::runtime_error;
     using std::string;
     using std::stringstream;
