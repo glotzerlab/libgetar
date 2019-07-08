@@ -2,10 +2,7 @@
 
 import os, subprocess, sys
 from distutils.command.build_ext import build_ext
-try:
-    from setuptools import Extension, setup
-except ImportError:
-    from distutils.core import Extension, setup
+from setuptools import Extension, setup
 import numpy
 
 long_description = """
