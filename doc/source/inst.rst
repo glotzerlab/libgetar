@@ -15,19 +15,19 @@ Installation
 Versioned releases
 ------------------
 
-Install a released versions from PyPI::
+Install a released version from PyPI using `pip`::
 
   pip install gtar
 
 From source
 -----------
 
-Installing the libgetar python module (``gtar``) is straightforward.
-From the root directory of the project:
+Installing the libgetar python module (``gtar``) from source is
+straightforward. From the root directory of the project:
 
 ::
 
-   python setup.py install --user
+   pip install .
    # Test installation:
    cd
    python -c 'import gtar'
