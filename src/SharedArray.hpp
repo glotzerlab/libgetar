@@ -13,6 +13,7 @@ namespace GTAR_NAMESPACE_PARENT{
 namespace gtar{
 
 template<typename T> class SharedArray;
+template<typename T> class SharedPtr;
 
 /// Shim for the SharedArray class. Wraps the reference counting and
 /// pointer storage for a SharedArray.
@@ -61,6 +62,7 @@ private:
 template<typename T>
 class SharedArray
 {
+    friend class SharedPtr<T>;
 public:
     typedef T* iterator;
 
@@ -78,6 +80,15 @@ public:
     /// Copy constructor: make this object point to the same array as
     /// rhs, increasing the reference count if necessary
     SharedArray(const SharedArray<T> &rhs):
+        m_shim(rhs.m_shim)
+    {
+        if(m_shim)
+            m_shim->increment();
+    }
+
+    /// Initialize from SharedPtr: make this object point to the same
+    /// shim as rhs, increasing the reference count if necessary
+    SharedArray(const SharedPtr<T> &rhs):
         m_shim(rhs.m_shim)
     {
         if(m_shim)
@@ -192,6 +203,57 @@ private:
     /// Our pointer to the shim, which holds the array pointer and
     /// reference count
     SharedArrayShim<T> *m_shim;
+};
+
+/// Exposes a pointer-like interface to a single element for a
+/// SharedArray's contents. This is only a shim; elements should still
+/// be allocated using new[], for example.
+template<typename T>
+class SharedPtr: public SharedArray<T>
+{
+public:
+    /// Default constructor. Allocates nothing.
+    SharedPtr():
+        SharedArray<T>()
+    {}
+
+    /// Target constructor: allocates a new SharedArrayShim for the
+    /// given pointer and takes ownership of it. target will be
+    /// deallocated using delete[] after all references to it have
+    /// been removed.
+    SharedPtr(T *target):
+        SharedArray<T>(target, 1)
+    {}
+
+    /// Copy constructor: make this object point to the same array as
+    /// rhs, increasing the reference count if necessary
+    SharedPtr(const SharedPtr<T> &rhs):
+        SharedArray<T>(rhs)
+    {}
+
+    /// Initialize from SharedArray: make this object point to the
+    /// same shim as rhs, increasing the reference count if necessary
+    SharedPtr(const SharedArray<T> &rhs):
+        SharedArray<T>(rhs)
+    {}
+
+    T &operator*()
+    {
+        return *(this->get());
+    }
+    const T &operator*() const
+    {
+        return *(this->get());
+    }
+
+    T* operator->()
+    {
+        return this->get();
+    }
+    const T* operator->() const
+    {
+        return this->get();
+    }
 };
 
 }

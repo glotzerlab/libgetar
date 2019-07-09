@@ -8,6 +8,13 @@
 #include <string>
 #include <vector>
 
+// if C++11 or greater, use unique_ptr
+#if __cplusplus > 199711L
+#define gtar_unique_ptr std::unique_ptr
+#else
+#define gtar_unique_ptr std::auto_ptr
+#endif
+
 #include "Archive.hpp"
 #include "DirArchive.hpp"
 #include "SqliteArchive.hpp"
@@ -119,7 +126,7 @@ namespace gtar{
         /// Read a uniform binary property to the specified location,
         /// converting from little endian if necessary.
         template<typename T>
-        std::unique_ptr<T> readUniform(const std::string &path);
+        SharedPtr<T> readUniform(const std::string &path);
         /// Read a bytestring from the specified location
         SharedArray<char> readBytes(const std::string &path);
 
@@ -162,7 +169,7 @@ namespace gtar{
         void insertRecord(const std::string &path);
 
         /// The archive abstraction object we'll use
-        std::unique_ptr<Archive> m_archive;
+        gtar_unique_ptr<Archive> m_archive;
 
         /// Cached record objects
         std::map<Record, indexSet> m_records;
@@ -250,16 +257,16 @@ namespace gtar{
     }
 
     template<typename T>
-    std::unique_ptr<T> GTAR::readUniform(const std::string &path)
+    SharedPtr<T> GTAR::readUniform(const std::string &path)
     {
         SharedArray<char> bytes(m_archive->read(path));
 
         maybeSwapEndian<T>((T*) bytes.get(), bytes.size());
 
         if(bytes.size())
-            return std::unique_ptr<T>(new T(*(T*) bytes.get()));
+            return SharedPtr<T>((SharedArray<T>&) bytes);
         else
-            return std::unique_ptr<T>();
+            return SharedPtr<T>();
     }
 
 }
