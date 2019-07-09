@@ -81,6 +81,7 @@ setup(name='gtar',
           'Topic :: Scientific/Engineering :: Physics',
       ],
       ext_modules=modules,
+      license='MIT',
       long_description=long_description,
       packages=['gtar'],
       project_urls={

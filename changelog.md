@@ -1,3 +1,9 @@
+## v1.0
+
+- Binary wheel releases (bdice)
+- Add SharedPtr wrapper for SharedArray (mspells)
+- **API change**: GTAR::readUniform() now returns a SharedPtr instead of a std::auto_ptr (mspells)
+
 ## v0.7
 
 - Use embedded versions of miniz, sqlite3, and dirent (bdice)
