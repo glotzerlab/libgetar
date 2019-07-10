@@ -166,7 +166,6 @@ namespace gtar{
         }
 
         dirent *curEnt(readdir(curDir));
-        dirent *nextEnt(NULL);
         struct stat curStat;
 
         while(curEnt != NULL)
@@ -184,9 +183,10 @@ namespace gtar{
                 else if(curStat.st_mode & S_IFREG)
                     m_fileNames.push_back(entName);
             }
-            readdir_r(curDir, curEnt, &nextEnt);
-            curEnt = nextEnt;
+            curEnt = readdir(curDir);
         }
+
+        closedir(curDir);
     }
 }
 
