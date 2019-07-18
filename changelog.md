@@ -1,3 +1,7 @@
+## v1.0.1
+
+- Remove warnings from use of readdir_r (mspells)
+
 ## v1.0
 
 - Binary wheel releases (bdice)
