@@ -67,6 +67,13 @@ class TestGTAR(unittest.TestCase):
             self.assertEqual(0, len(list(arch.recordsNamed(
                 'test.txt', group='prefi'))))
 
+            self.assertEqual(
+                gtar.Record('prefix/test.txt'), arch.staticRecordNamed(
+                    'test.txt', group='prefix'))
+            self.assertEqual(
+                gtar.Record('prefix/test.txt'), arch.staticRecordNamed(
+                    'test.txt', group_prefix='p'))
+
     def test_readThenWrite(self, suffix):
         records = {'test.txt': 'test string foo\n',
                    'blah.txt': 'another string',

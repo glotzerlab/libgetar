@@ -598,15 +598,35 @@ cdef class GTAR:
             self.writeArray(rec.getPath(), contents, mode,
                             dtype=dtypes[rec.getFormat()])
 
-    def getRecordTypes(self):
-        """Returns a python list of all the record types (without
-        index information) available in this archive"""
+    def getRecordTypes(self, group=None, group_prefix=None):
+        """Returns a python list of all the record types (without index
+        information) available in this archive. Optionally filters
+        results down to records found with a particular group name, if
+        requested.
+
+        :param group: Exact group name to select (default: do not filter by group); overrules `group_prefix`
+        :param group_prefix: Prefix of group name to select (default: do not filter by group)
+
+        """
         result = []
         types = self.thisptr.getRecordTypes()
-        for rec in types:
-            copy = Record()
-            copy.copy(rec)
-            result.append(copy)
+        if group is not None:
+            for rec in types:
+                if unpy3str(rec.getGroup()) == group:
+                    copy = Record()
+                    copy.copy(rec)
+                    result.append(copy)
+        elif group_prefix is not None:
+            for rec in types:
+                if unpy3str(rec.getGroup()).startswith(group_prefix):
+                    copy = Record()
+                    copy.copy(rec)
+                    result.append(copy)
+        else:
+            for rec in types:
+                copy = Record()
+                copy.copy(rec)
+                result.append(copy)
         return result
 
     def queryFrames(self, Record target):
@@ -630,14 +650,8 @@ cdef class GTAR:
         :param group: Exact group name to select (default: do not filter by group); overrules `group_prefix`
         :param group_prefix: Prefix of group name to select (default: do not filter by group)
         """
-        if group_prefix is not None:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
-                              if rec.getGroup().startswith(group_prefix))
-        elif group is not None:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
-                              if rec.getGroup() == group)
-        else:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        allRecords = dict((rec.getName(), rec) for rec in
+            self.getRecordTypes(group=group, group_prefix=group_prefix))
 
         frames = None
         records = []
@@ -687,14 +701,8 @@ cdef class GTAR:
             for (idx, (pos, quat)) in g.recordsNamed(['position', 'orientation']):
                 pass
         """
-        if group_prefix is not None:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
-                              if rec.getGroup().startswith(group_prefix))
-        elif group is not None:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
-                              if rec.getGroup() == group)
-        else:
-            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        allRecords = dict((rec.getName(), rec) for rec in
+            self.getRecordTypes(group=group, group_prefix=group_prefix))
 
         frames = None
 
@@ -722,14 +730,21 @@ cdef class GTAR:
             for frame in sorted(frames, key=self._sortFrameKey):
                 yield frame, self.getRecord(allRecords[names[0]], frame)
 
-    def staticRecordNamed(self, name):
-        """Returns a static record with the given name. If the property is found in
-        ``gtar.widths``, returns it as an Nxwidths[prop] array.
+    def staticRecordNamed(self, name, group=None, group_prefix=None):
+        """Returns a static record with the given name. If the property is
+        found in ``gtar.widths``, returns it as an Nxwidths[prop]
+        array. Optionally restricts the search to records with the
+        given group name or group name prefix.
 
         :param name: Name of the property to find
+        :param group: Exact group name to select (default: do not filter by group); overrules `group_prefix`
+        :param group_prefix: Prefix of group name to select (default: do not filter by group)
+
         """
         try:
-            rec = [rec for rec in self.getRecordTypes() if rec.getName() == name][0]
+            rec = [rec for rec in
+                   self.getRecordTypes(group=group, group_prefix=group_prefix)
+                   if rec.getName() == name][0]
             return self.getRecord(rec)
         except IndexError:
             raise KeyError('Can\'t find a static record named {}'.format(name))
