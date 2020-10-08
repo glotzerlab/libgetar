@@ -33,6 +33,40 @@ class MultiSuffixMeta(type):
         return super(MultiSuffixMeta, cls).__new__(cls, name, bases, dct)
 
 class TestGTAR(unittest.TestCase):
+    def test_group_selection(self, suffix):
+        if suffix == '/':
+            raise unittest.SkipTest(
+                'directory support is currently experimental'
+                ' and more robust group parsing needs to be added')
+
+        with gtar.GTAR('test' + suffix, 'w') as arch:
+            arch.writeStr('prefix/test.txt', 'sample text')
+
+        with gtar.GTAR('test' + suffix, 'r') as arch:
+            self.assertEqual(1, len(arch.framesWithRecordsNamed(
+                'test.txt')[1]))
+            self.assertEqual(1, len(arch.framesWithRecordsNamed(
+                'test.txt', group='prefix')[1]))
+            self.assertEqual(1, len(arch.framesWithRecordsNamed(
+                'test.txt', group_prefix='p')[1]))
+
+            self.assertEqual(0, len(arch.framesWithRecordsNamed(
+                'test.txt', group_prefix='t')[1]))
+            self.assertEqual(0, len(arch.framesWithRecordsNamed(
+                'test.txt', group='prefi')[1]))
+
+            self.assertEqual(1, len(list(arch.recordsNamed(
+                'test.txt'))))
+            self.assertEqual(1, len(list(arch.recordsNamed(
+                'test.txt', group='prefix'))))
+            self.assertEqual(1, len(list(arch.recordsNamed(
+                'test.txt', group_prefix='p'))))
+
+            self.assertEqual(0, len(list(arch.recordsNamed(
+                'test.txt', group_prefix='t'))))
+            self.assertEqual(0, len(list(arch.recordsNamed(
+                'test.txt', group='prefi'))))
+
     def test_readThenWrite(self, suffix):
         records = {'test.txt': 'test string foo\n',
                    'blah.txt': 'another string',

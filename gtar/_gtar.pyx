@@ -621,14 +621,24 @@ cdef class GTAR:
             result.append(unpy3str(f))
         return result
 
-    def framesWithRecordsNamed(self, names):
+    def framesWithRecordsNamed(self, names, group=None, group_prefix=None):
         """Returns ``([record(val) for val in names], [frames])`` given a
         set of record names names. If only given a single name,
         returns ``(record, [frames])``.
 
         :param names: Iterable object yielding a set of property names
+        :param group: Exact group name to select (default: do not filter by group); overrules `group_prefix`
+        :param group_prefix: Prefix of group name to select (default: do not filter by group)
         """
-        allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        if group_prefix is not None:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
+                              if rec.getGroup().startswith(group_prefix))
+        elif group is not None:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
+                              if rec.getGroup() == group)
+        else:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+
         frames = None
         records = []
 
@@ -654,7 +664,7 @@ cdef class GTAR:
         else:
             return (records[0], sorted(frames, key=self._sortFrameKey))
 
-    def recordsNamed(self, names):
+    def recordsNamed(self, names, group=None, group_prefix=None):
         """Returns ``(frame, [val[frame] for val in names])`` for each frame which
         contains records matching each of the given names. If only given
         a single name, returns ``(frame, val[frame])`` for each found
@@ -662,6 +672,8 @@ cdef class GTAR:
         as an Nxwidths[prop] array.
 
         :param names: Iterable object yielding a set of property names
+        :param group: Exact group name to select (default: do not filter by group); overrules `group_prefix`
+        :param group_prefix: Prefix of group name to select (default: do not filter by group)
 
         Example::
 
@@ -675,7 +687,15 @@ cdef class GTAR:
             for (idx, (pos, quat)) in g.recordsNamed(['position', 'orientation']):
                 pass
         """
-        allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+        if group_prefix is not None:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
+                              if rec.getGroup().startswith(group_prefix))
+        elif group is not None:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes()
+                              if rec.getGroup() == group)
+        else:
+            allRecords = dict((rec.getName(), rec) for rec in self.getRecordTypes())
+
         frames = None
 
         if type(names) == type(''):
