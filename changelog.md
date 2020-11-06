@@ -1,3 +1,7 @@
+## v1.1.0
+
+- Add group and group prefix selection to methods like `GTAR.getRecordTypes()` (mspells)
+
 ## v1.0.1
 
 - Remove warnings from use of readdir_r (mspells)
