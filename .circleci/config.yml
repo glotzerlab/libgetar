@@ -8,7 +8,7 @@ executors:
       python-version:
         type: string
     docker:
-      - image: glotzerlab/ci:2018.10-<< parameters.image >>
+      - image: glotzerlab/ci:2021.03-<< parameters.image >>
     environment:
       PYTHONPATH: /home/ci/project/build
       PYTHON: "/usr/bin/python<< parameters.python-version >>"
@@ -40,7 +40,9 @@ commands:
             ${PYTHON} get-pip.py --user
       - run:
           name: Build Python module
-          command: export CC=<< parameters.cc >> CXX=<< parameters.cxx >> && ${PYTHON} -m pip install --user --no-build-isolation --no-use-pep517 ./code
+          command: |
+            ${PYTHON} -m pip install --user numpy pytest
+            export CC=<< parameters.cc >> CXX=<< parameters.cxx >> && ${PYTHON} -m pip install --user --no-build-isolation --no-use-pep517 ./code
 
   test:
     steps:
@@ -83,6 +85,8 @@ jobs:
 
   pypi-linux-wheels:
     parameters:
+      image:
+        type: string
       python:
         type: string
       run-tests:
@@ -91,8 +95,11 @@ jobs:
       build-sdist:
         type: boolean
         default: false
+      numpy:
+        type: string
+        default: 1.9.3
     docker:
-      - image: quay.io/pypa/manylinux1_x86_64
+      - image: "quay.io/pypa/<< parameters.image >>"
     environment:
       PYBIN: "/opt/python/<< parameters.python >>/bin"
     steps:
@@ -120,9 +127,9 @@ jobs:
           working_directory: /
           command: |
             "${PYBIN}/python" -m pip install cython --no-deps --ignore-installed -q --progress-bar=off
-            curl -sSLO https://github.com/numpy/numpy/archive/v1.9.3.tar.gz
-            tar -xzf v1.9.3.tar.gz
-            cd numpy-1.9.3
+            curl -sSLO https://github.com/numpy/numpy/archive/v<< parameters.numpy >>.tar.gz
+            tar -xzf v<< parameters.numpy >>.tar.gz
+            cd numpy-<< parameters.numpy >>
             rm -f numpy/random/mtrand/mtrand.c
             rm -f PKG-INFO
             "${PYBIN}/python" -m pip install . --no-deps --ignore-installed -v --progress-bar=off -q
@@ -171,118 +178,82 @@ workflows:
   test:
     jobs:
       - build_and_test:
-          name: gcc8-py36
-          image: ubuntu18.04
+          name: gcc10-py39
+          image: gcc10_py39
+          cc: gcc-10
+          cxx: g++-10
+          python-version: "3.9"
+
+      - build_and_test:
+          name: gcc9-py38
+          image: gcc9_py38
+          cc: gcc-9
+          cxx: g++-9
+          python-version: "3.8"
+
+      - build_and_test:
+          name: gcc8-py37
+          image: gcc8_py37
           cc: gcc-8
-          cxx: g++-8
-          python-version: "3.6"
+          cxx: g++-7
+          python-version: "3.7"
 
       - build_and_test:
           name: gcc7-py36
-          image: ubuntu18.04
+          image: gcc7_py36
           cc: gcc-7
           cxx: g++-7
           python-version: "3.6"
 
       - build_and_test:
-          name: gcc6-py36
-          image: ubuntu18.04
-          cc: gcc-6
-          cxx: g++-6
-          python-version: "3.6"
+          name: clang8-py38
+          image: clang8_py38
+          cc: clang-8
+          cxx: clang++-8
+          python-version: "3.8"
 
       - build_and_test:
-          name: clang6-py36
-          image: ubuntu18.04
+          name: clang7-py38
+          image: clang7_py38
+          cc: clang-7
+          cxx: clang++-7
+          python-version: "3.8"
+
+      - build_and_test:
+          name: clang6-py37
+          image: clang6_py37
           cc: clang-6.0
           cxx: clang++-6.0
-          python-version: "3.6"
-
-      - build_and_test:
-          name: clang5-py36
-          image: ubuntu18.04
-          cc: clang-5.0
-          cxx: clang++-5.0
-          python-version: "3.6"
-
-      - build_and_test:
-          name: clang4-py36
-          image: ubuntu18.04
-          cc: clang-4.0
-          cxx: clang++-4.0
-          python-version: "3.6"
-
-      - build_and_test:
-          name: gcc5-py35
-          image: ubuntu16.04
-          cc: gcc-5
-          cxx: g++-5
-          python-version: "3.5"
-
-      - build_and_test:
-          name: clang38-py35
-          image: ubuntu16.04
-          cc: clang-3.8
-          cxx: clang++-3.8
-          python-version: "3.5"
-
-      - pypi-linux-wheels:
-          name: wheel-build-cp27m
-          python: cp27-cp27m
-          run-tests: false
-
-      - pypi-linux-wheels:
-          name: wheel-build-cp27mu
-          python: cp27-cp27mu
-          run-tests: false
-
-      - pypi-linux-wheels:
-          name: wheel-build-cp35m
-          python: cp35-cp35m
+          python-version: "3.7"
 
       - pypi-linux-wheels:
           name: wheel-build-cp36m
           python: cp36-cp36m
+          image: manylinux1_x86_64
 
       - pypi-linux-wheels:
           name: wheel-build-cp37m
           python: cp37-cp37m
           build-sdist: true
+          image: manylinux2010_x86_64
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp38
+          python: cp38-cp38
+          image: manylinux2010_x86_64
+
+      - pypi-linux-wheels:
+          name: wheel-build-cp39
+          python: cp39-cp39
+          image: manylinux2014_x86_64
+          numpy: 1.14.6
 
   deploy:
     jobs:
       - pypi-linux-wheels:
-          name: wheel-deploy-cp27m
-          python: cp27-cp27m
-          run-tests: false
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
-      - pypi-linux-wheels:
-          name: wheel-deploy-cp27mu
-          python: cp27-cp27mu
-          run-tests: false
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
-      - pypi-linux-wheels:
-          name: wheel-deploy-cp35m
-          python: cp35-cp35m
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
-      - pypi-linux-wheels:
           name: wheel-deploy-cp36m
           python: cp36-cp36m
+          image: manylinux1_x86_64_x86_64
           filters:
             tags:
               only: /^v.*/
@@ -292,7 +263,29 @@ workflows:
       - pypi-linux-wheels:
           name: wheel-deploy-cp37m
           python: cp37-cp37m
+          image: manylinux2010_x86_64
           build-sdist: true
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-deploy-cp38
+          python: cp38-cp38
+          image: manylinux2010_x86_64
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-deploy-cp39
+          python: cp39-cp39
+          image: manylinux2014_x86_64
+          numpy: 1.14.6
           filters:
             tags:
               only: /^v.*/
