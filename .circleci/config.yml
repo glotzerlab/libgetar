@@ -95,6 +95,9 @@ jobs:
       build-sdist:
         type: boolean
         default: false
+      numpy:
+        type: string
+        default: 1.9.3
     docker:
       - image: "quay.io/pypa/<< parameters.image >>"
     environment:
@@ -124,9 +127,9 @@ jobs:
           working_directory: /
           command: |
             "${PYBIN}/python" -m pip install cython --no-deps --ignore-installed -q --progress-bar=off
-            curl -sSLO https://github.com/numpy/numpy/archive/v1.9.3.tar.gz
-            tar -xzf v1.9.3.tar.gz
-            cd numpy-1.9.3
+            curl -sSLO https://github.com/numpy/numpy/archive/v<< parameters.numpy >>.tar.gz
+            tar -xzf v<< parameters.numpy >>.tar.gz
+            cd numpy-<< parameters.numpy >>
             rm -f numpy/random/mtrand/mtrand.c
             rm -f PKG-INFO
             "${PYBIN}/python" -m pip install . --no-deps --ignore-installed -v --progress-bar=off -q
@@ -239,6 +242,12 @@ workflows:
           python: cp38-cp38
           image: manylinux2010_x86_64
 
+      - pypi-linux-wheels:
+          name: wheel-build-cp39
+          python: cp39-cp39
+          image: manylinux2014_x86_64
+          numpy: 1.14.6
+
   deploy:
     jobs:
       - pypi-linux-wheels:
@@ -266,6 +275,17 @@ workflows:
           name: wheel-deploy-cp38
           python: cp38-cp38
           image: manylinux2010_x86_64
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - pypi-linux-wheels:
+          name: wheel-deploy-cp39
+          python: cp39-cp39
+          image: manylinux2014_x86_64
+          numpy: 1.14.6
           filters:
             tags:
               only: /^v.*/
