@@ -253,7 +253,7 @@ workflows:
       - pypi-linux-wheels:
           name: wheel-deploy-cp36m
           python: cp36-cp36m
-          image: manylinux1_x86_64_x86_64
+          image: manylinux1_x86_64
           filters:
             tags:
               only: /^v.*/

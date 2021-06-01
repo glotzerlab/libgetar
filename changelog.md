@@ -1,3 +1,8 @@
+## v1.1.1
+
+- Update minimum CMake version requirement (joaander)
+- Update CI and wheel support for python 3.9 (mspells,bdice)
+
 ## v1.1.0
 
 - Add group and group prefix selection to methods like `GTAR.getRecordTypes()` (mspells)
