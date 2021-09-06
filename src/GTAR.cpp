@@ -73,7 +73,7 @@ namespace gtar{
             struct stat fileStat;
             fileExists = stat(filename.c_str(), &fileStat) == 0;
 
-            if(!fileExists)
+            if(!fileExists || !fileStat.st_size)
                 realMode = Write;
         }
 
