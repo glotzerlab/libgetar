@@ -33,6 +33,7 @@ with open('gtar/version.py') as version_file:
 
 macros = []
 extra_args = []
+include_dirs = [numpy.get_include(), 'lz4', 'miniz', 'sqlite3']
 sources = [
     'src/Archive.cpp',
     'src/DirArchive.cpp',
@@ -66,7 +67,7 @@ if '--cython' in sys.argv:
         result = cythonize(*args, **kwargs)
         for r in result:
             r.define_macros.extend(macros)
-            r.include_dirs.append(numpy.get_include())
+            r.include_dirs.extend(include_dirs)
             r.extra_compile_args.extend(extra_args)
             r.extra_link_args.extend(extra_args)
             r.sources.extend(sources)
@@ -78,7 +79,7 @@ else:
     sources.append('gtar/_gtar.cpp')
     modules = [Extension('gtar._gtar', sources=sources,
                          define_macros=macros, extra_compile_args=extra_args,
-                         extra_link_args=extra_args, include_dirs=[numpy.get_include()])]
+                         extra_link_args=extra_args, include_dirs=include_dirs)]
 
 setup(name='gtar',
       version=__version__,

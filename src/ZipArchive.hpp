@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "Archive.hpp"
-#include "../miniz/miniz.h"
+#include "miniz.h"
 
 #ifndef __ZIP_ARCHIVE_HPP_
 #define __ZIP_ARCHIVE_HPP_

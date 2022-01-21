@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include "ZipArchive.hpp"
-#include "../miniz/miniz.h"
+#include "miniz.h"
 #include "SharedArray.hpp"
 
 #ifdef GTAR_NAMESPACE_PARENT
