@@ -1,3 +1,7 @@
+## v1.1.3
+
+- Support python 3.10 (mspells)
+
 ## v1.1.2
 
 - Automatically open files in write mode, instead of append mode, if they have 0 size (mspells)
