@@ -132,6 +132,7 @@ jobs:
             cd numpy-<< parameters.numpy >>
             rm -f numpy/random/mtrand/mtrand.c
             rm -f PKG-INFO
+            rm -rf branding
             "${PYBIN}/python" -m pip install . --no-deps --ignore-installed -v --progress-bar=off -q
       - run:
           name: Compile gtar wheels
