@@ -63,3 +63,13 @@ this:
      what():  basic_string::_S_construct null not valid
 
 If you see any of those, let me know!
+
+ImportError: cannot import name '_gtar' from partially initialized module 'gtar'
+================================================================================
+
+This typically stems from trying to import the `gtar` source directory
+directly as a python module. Since the python module depends on a
+compiled C extension, it must first be installed separately. To fix
+this, install the module (see :doc:`inst`) and run python outside of
+the `libgetar` source directory to avoid python automatically
+importing the `gtar` source directory.
