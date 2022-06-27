@@ -200,13 +200,6 @@ workflows:
           python-version: "3.7"
 
       - build_and_test:
-          name: gcc7-py36
-          image: gcc7_py36
-          cc: gcc-7
-          cxx: g++-7
-          python-version: "3.6"
-
-      - build_and_test:
           name: clang8-py38
           image: clang8_py38
           cc: clang-8
