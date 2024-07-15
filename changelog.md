@@ -1,3 +1,15 @@
+## v1.1.6
+
+- Fix bugs when saving very large records in sqlite archives
+
+## v1.1.5
+
+- Fix a typo in .gitignore
+
+## v1.1.4
+
+- Fix .gitignore for egg-info files
+
 ## v1.1.3
 
 - Support python 3.10 (mspells)
