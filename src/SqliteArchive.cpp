@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <climits>
 #include <sstream>
 #include <stdexcept>
 
@@ -11,8 +12,8 @@
 #include "lz4hc.h"
 #include "SqliteArchive.hpp"
 
-#define LZ4_CHUNK_SIZE LZ4_MAX_INPUT_SIZE/2
-#define RAW_CHUNK_SIZE 0x0F000000
+#define LZ4_CHUNK_SIZE std::min(LZ4_MAX_INPUT_SIZE, SQLITE_MAX_LENGTH)/2
+#define RAW_CHUNK_SIZE SQLITE_MAX_LENGTH/2
 
 #ifdef GTAR_NAMESPACE_PARENT
 namespace GTAR_NAMESPACE_PARENT{
@@ -296,6 +297,15 @@ namespace gtar{
                                         rawSizes[chunkidx], 0);
                     sqlite3_bind_int64(m_insert_contents_stmt, 3, chunkidx);
                     status = sqlite3_step(m_insert_contents_stmt);
+
+                    if(status != SQLITE_DONE)
+                    {
+                        stringstream result;
+                        result << "Couldn't insert chunk in sqlite database: ";
+                        result << sqlite3_errstr(status);
+                        throw runtime_error(result.str());
+                    }
+
                     sqlite3_reset(m_insert_contents_stmt);
                 }
 
@@ -380,8 +390,12 @@ namespace gtar{
                 else
                 {
                     SharedArray<char> concat(new char[uncompSize], uncompSize);
-                    for(size_t chunkidx(0), totalBytes(0); chunkidx < chunks.size(); ++chunkidx)
+                    size_t totalBytes(0);
+                    for(size_t chunkidx(0); chunkidx < chunks.size(); ++chunkidx)
+                    {
                         memcpy(concat.get() + totalBytes, chunks[chunkidx].get(), chunkSizes[chunkidx]);
+                        totalBytes += chunkSizes[chunkidx];
+                    }
                     result = concat;
                 }
                 break;
@@ -390,10 +404,18 @@ namespace gtar{
                 SharedArray<char> uncompressed(new char[uncompSize], uncompSize);
                 for(size_t chunkidx(0), totalBytes(0); chunkidx < chunks.size(); ++chunkidx)
                 {
-                    totalBytes += LZ4_decompress_safe(
+                    int byteCount(LZ4_decompress_safe(
                         (const char*) chunks[chunkidx].get(),
-                        uncompressed.get() + totalBytes, chunks[chunkidx].size(),
-                        uncompSize - totalBytes);
+                        uncompressed.get() + totalBytes, chunkSizes[chunkidx],
+                        std::min((size_t) INT_MAX, uncompSize - totalBytes)));
+                    if(byteCount < 0)
+                    {
+                        stringstream message;
+                        message << "Error decompressing record at " << path;
+                        message << ": LZ4 decompression error";
+                        throw runtime_error(message.str());
+                    }
+                    totalBytes += byteCount;
                 }
                 result = uncompressed;
             }

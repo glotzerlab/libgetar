@@ -51,6 +51,9 @@ sources = [
 # prefix module to avoid collisions with builtin versions of libgetar
 macros.append(('GTAR_NAMESPACE_PARENT', 'gtar_pymodule'))
 
+# set max length manually
+macros.append(('SQLITE_MAX_LENGTH', '1000000000'))
+
 if '--disable-read-check' in sys.argv:
     macros.append(('MINIZ_DISABLE_ZIP_READER_CRC32_CHECKS', None))
     sys.argv.remove('--disable-read-check')
