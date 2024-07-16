@@ -1,6 +1,8 @@
 project(getar)
 cmake_minimum_required(VERSION 2.6.2...3.13 FATAL_ERROR)
 
+add_compile_definitions(SQLITE_MAX_LENGTH=1000000000)
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 
 set(GETAR_SRC
